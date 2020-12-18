@@ -59,13 +59,15 @@ public class MongoDBConnection
         //getInfo(db, printFormattedDocuments, "AAAAAAA", "CarPlate", "orders"); //gibby
         //getInfo(db, printFormattedDocuments, " edward w ", " Surname", "orders"); //gibby
         //getMostUsedCars(db, printFormattedDocuments, 5);
+        //System.out.println("Insert the new car");
         //insertNewCar(db);
         //getInfo(db, printFormattedDocuments, " AA001AA", " CarPlate", "cars");
+        //System.out.println("Delete the car");
         //deleteCar(db, printFormattedDocuments, "AAAAAAA");
         //insertOrder(db);
         //deleteOrder(db, printFormattedDocuments, "AAAAAAA", "pippo", "pippo");
         //insertUser(db);
-        deleteUser(db, printFormattedDocuments);
+        //deleteUser(db, printFormattedDocuments);
         //getInfo(db, printFormattedDocuments, "andrea", "E-mail", "users"); //gibby
    /*     //---List all the collection names---
         for(String name : db.listCollectionNames()) {
@@ -316,12 +318,16 @@ public class MongoDBConnection
     private static void deleteCar(MongoDatabase db, Consumer<Document> printFormattedDocuments, String plate) {
         MongoCollection<Document> myColl = db.getCollection("cars");
         MongoCursor<Document> cursor  = myColl.find(eq(" CarPlate", plate)).iterator();
+
         if (cursor.hasNext()) {
-            cursor.forEachRemaining(printFormattedDocuments);
+            Document d = cursor.next();
+            Car c = getCarFromDocument(d);
+            c.printCar();
         }  else {
             System.out.println("Car not found !");
             return ;
         }
+
         System.out.print("Do you want to proceed with the delete operation? (Y/N) ");
         Scanner sc = new Scanner(System.in);
         String a = sc.nextLine();
@@ -337,6 +343,7 @@ public class MongoDBConnection
         Scanner sc = new Scanner(System.in);
 
         System.out.print("Insert the Car Plate: ");
+        Car c = new Car();
         String carPlate = sc.nextLine();
         MongoCollection<Document> myColl = db.getCollection("cars");
 
@@ -346,59 +353,56 @@ public class MongoDBConnection
                 return ;
             }
         }
-
-
+        c.setPlate(carPlate);
 
         System.out.print("Insert the Brand: ");
-        String brand = sc.nextLine();
+        c.setBrand(sc.nextLine());
 
         System.out.print("Insert the Vehicle: ");
-        String vehicle = sc.nextLine();
+        c.setVehicle(sc.nextLine());
 
 
         System.out.print("Insert the Engine: ");
-        String engine = sc.nextLine();
+        c.setEngine(sc.nextLine());
 
 
         System.out.print("Insert the Power: ");
-        String power = sc.nextLine();
+        c.setPower(sc.nextLine());
 
 
         System.out.print("Insert the average fuel consumption: ");
-        String avgFuelCons = sc.nextLine();
+        c.setAvgFuelCons(sc.nextLine());
 
 
         System.out.print("Insert the CO2: ");
-        String co2 = sc.nextLine();
+        c.setCo2(sc.nextLine());
 
 
         System.out.print("Insert the weight: ");
-        String weight = sc.nextLine();
-
+        c.setWeight(sc.nextLine());
 
         System.out.print("Insert the gearBox type: ");
-        String gearBoxType = sc.nextLine();
-
+        c.setGearBoxType(sc.nextLine());
 
         System.out.print("Insert the Tyre: ");
-        String tyre = sc.nextLine();
-
+        c.setTyre(sc.nextLine());
 
         System.out.print("Insert the Traction type: ");
-        String tractionType = sc.nextLine();
+        c.setTractionType(sc.nextLine());
 
-        Document car = new Document("Brand", brand)
-                .append("Vehicle", vehicle)
-                .append("Engine", engine)
-                .append("Power (hp - kW /rpm)", power)
-                .append("Average fuel consumption (l/100 km)", avgFuelCons)
-                .append("CO2 (g/km)", co2)
-                .append("Weight(3p/5p) kg", weight)
-                .append("GearBox type", gearBoxType)
-                .append("Tyre", tyre)
-                .append("Traction type", tractionType)
-                .append(" CarPlate", carPlate);
+        Document car = new Document("Brand", c.getBrand())
+                .append("Vehicle", c.getVehicle())
+                .append("Engine", c.getEngine())
+                .append("Power (hp - kW /rpm)", c.getPower())
+                .append("Average fuel consumption (l/100 km)", c.getAvgFuelCons())
+                .append("CO2 (g/km)", c.getCo2())
+                .append("Weight(3p/5p) kg", c.getWeight())
+                .append("GearBox type", c.getGearBoxType())
+                .append("Tyre", c.getTyre())
+                .append("Traction type", c.getTractionType())
+                .append(" CarPlate", c.getPlate());
         myColl.insertOne(car);
+
         System.out.println();
     }
 
@@ -420,6 +424,14 @@ public class MongoDBConnection
         /*DeleteResult dr = myColl.deleteMany( exists(" CarPlate", false) ); //100464
         System.out.println("Deleted documents: " + dr.getDeletedCount()); */
 
+    }
+
+    private static Car getCarFromDocument(Document d){
+        Car c = new Car(d.getString(" CarPlate"), d.getString("Brand"), d.getString("Vehicle"),
+                d.getString("Engine"), d.getString("Average fuel consumption (l/100 km)"), d.getString("CO2 (g/km)"),
+                d.getString("Weight(3p/5p) kg"), d.getString("GearBox type"), d.getString("Tyre"),
+                d.getString("Traction type"));
+        return c;
     }
 
 }
