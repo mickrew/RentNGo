@@ -11,6 +11,8 @@ import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
 
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
+
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.json.JsonWriterSettings;
@@ -27,14 +29,26 @@ public class MongoDBConnection
     private static Consumer<Document> printDocuments() {
         return doc -> System.out.println(doc.toJson());
     }
+    Consumer<Document> printFormattedDocuments;
+    private MongoClient mongoClient;
+    private MongoDatabase db;
 
-    public static void main(String[] args)
-    {
+    public MongoDBConnection(String database){
+        mongoClient = MongoClients.create();
+        db = mongoClient.getDatabase("local");
+        Consumer<Document> printFormattedDocuments = new Consumer<Document>() {
+            @Override
+            public void accept(Document document) {
+                System.out.println(document.toJson(JsonWriterSettings.builder().indent(true).build()));
+            }
+        };
+    }
+    /*
+    public static void main(String[] args) {
         //-------------------------------
         //-----Connect to the MongoDB----
         //-------------------------------
         // 1 - Default URI "mongodb://localhost:27017"
-        MongoClient mongoClient = MongoClients.create();
         //ConnectionString uri = new ConnectionString("mongodb://localhost:27017");
         //MongoClient mongoClient = MongoClients.create(uri);
 
@@ -47,14 +61,14 @@ public class MongoDBConnection
         //---------Get database----------
         //-------------------------------
         //If the database does not exists, mongoDB will create a new one
-        Consumer<Document> printFormattedDocuments = new Consumer<Document>() {
+      /*  Consumer<Document> printFormattedDocuments = new Consumer<Document>() {
             @Override
             public void accept(Document document) {
                 System.out.println(document.toJson(JsonWriterSettings.builder().indent(true).build()));
             }
-        };
+        }; */
 
-        MongoDatabase db = mongoClient.getDatabase("local");
+
         //getInfo(db, printFormattedDocuments, "", "Power (hp - kW /rpm)\", power", "cars");
         //getInfo(db, printFormattedDocuments, "AAAAAAA", "CarPlate", "orders"); //gibby
         //getInfo(db, printFormattedDocuments, " edward w ", " Surname", "orders"); //gibby
@@ -188,12 +202,15 @@ public class MongoDBConnection
         // myColl.find().sort({"age": 1}).explain().queryPlanner.winningPlan
         // myColl.find().sort({"student": 1}).explain().queryPlanner.winningPlan
 
-        //--- Close connection --- */
         mongoClient.close();
         //mongoClientAtlas.close();
+    } */
+
+    public void closeConnection(){
+        mongoClient.close();
     }
 
-    private static void deleteUser(MongoDatabase db, Consumer<Document> printFormattedDocuments) {
+    public void deleteUser() {
         Scanner sc = new Scanner(System.in);
         System.out.print("Insert the user email: ");
         MongoCollection<Document> myColl = db.getCollection("users");
@@ -218,7 +235,7 @@ public class MongoDBConnection
 
     }
 
-    private static void insertUser(MongoDatabase db) {
+    public void insertUser() {
         MongoCollection<Document> myColl = db.getCollection("users");
         Scanner sc = new Scanner(System.in);
 
@@ -251,7 +268,7 @@ public class MongoDBConnection
         myColl.insertOne(user); */
     }
 
-    private static void deleteOrder(MongoDatabase db, Consumer<Document> printFormattedDocuments, String plate, String name,String surname) {
+    public void deleteOrder(String plate, String name,String surname) {
         MongoCollection<Document> myColl = db.getCollection("orders");
         MongoCursor<Document> cursor  = myColl.find(and(eq("CarPlate", plate),
                 eq(" Name", name),eq(" Surname", surname) )).iterator();
@@ -281,7 +298,7 @@ public class MongoDBConnection
 
     }
 
-    private static void insertOrder(MongoDatabase db) {
+    public void insertOrder() {
         MongoCollection<Document> myColl = db.getCollection("cars");
 
         Scanner sc = new Scanner(System.in);
@@ -315,7 +332,7 @@ public class MongoDBConnection
         myCollOrder.insertOne(order);
     }
 
-    private static void deleteCar(MongoDatabase db, Consumer<Document> printFormattedDocuments, String plate) {
+    public void deleteCar(String plate) {
         MongoCollection<Document> myColl = db.getCollection("cars");
         MongoCursor<Document> cursor  = myColl.find(eq(" CarPlate", plate)).iterator();
 
@@ -339,12 +356,19 @@ public class MongoDBConnection
         }
     }
 
-    private static void insertNewCar(MongoDatabase db) {
+    public void insertNewCar() {
         Scanner sc = new Scanner(System.in);
 
-        System.out.print("Insert the Car Plate: ");
         Car c = new Car();
-        String carPlate = sc.nextLine();
+        String carPlate ;
+        String regex = "[A-Z][A-Z][0-9][0-9][0-9][A-Z][A-Z]";
+        Pattern pattern = Pattern.compile(regex);
+
+        do {
+            System.out.print("Insert the Car Plate: ");
+            carPlate = sc.nextLine();
+
+        } while(!pattern.matcher(carPlate).matches());
         MongoCollection<Document> myColl = db.getCollection("cars");
 
         try (MongoCursor<Document> cursor = myColl.find(eq(" CarPlate", carPlate)).iterator()) {
@@ -406,7 +430,7 @@ public class MongoDBConnection
         System.out.println();
     }
 
-    private static void getMostUsedCars(MongoDatabase db, Consumer<Document> printFormattedDocuments, int i) {
+    public void getMostUsedCars(int i) {
         MongoCollection<Document> myColl = db.getCollection("orders");
         Bson b1 = sort(descending("nUsed"));
         Bson b2 = group("$CarPlate", sum("nUsed", 1));
@@ -416,7 +440,7 @@ public class MongoDBConnection
                 .forEach(printFormattedDocuments);
     }
 
-    private static void getInfo(MongoDatabase db, Consumer<Document> printFormattedDocuments, String plate, String field, String collection) {
+    public void getInfo(String plate, String field, String collection) {
         MongoCollection<Document> myColl = db.getCollection(collection);
         myColl.find(eq(field, plate))
                 .forEach(printFormattedDocuments);
@@ -426,7 +450,7 @@ public class MongoDBConnection
 
     }
 
-    private static Car getCarFromDocument(Document d){
+    public Car getCarFromDocument(Document d){
         Car c = new Car(d.getString(" CarPlate"), d.getString("Brand"), d.getString("Vehicle"),
                 d.getString("Engine"), d.getString("Average fuel consumption (l/100 km)"), d.getString("CO2 (g/km)"),
                 d.getString("Weight(3p/5p) kg"), d.getString("GearBox type"), d.getString("Tyre"),
