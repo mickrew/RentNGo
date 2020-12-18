@@ -22,7 +22,7 @@ import static com.mongodb.client.model.Aggregates.*;
 import static com.mongodb.client.model.Accumulators.*;
 import static com.mongodb.client.model.Sorts.*;
 
-public class Main
+public class MongoDBConnection
 {
     private static Consumer<Document> printDocuments() {
         return doc -> System.out.println(doc.toJson());
