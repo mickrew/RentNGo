@@ -1,11 +1,15 @@
 package main.java;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Office {
     String city;
     String region;
     String id;
     String name;
     Integer capacity;
+    List<Car> officeCars = new ArrayList<Car>();
 
     public Office(String city, String region, String name, String id, Integer capacity){
         this.city=city;
@@ -57,5 +61,20 @@ public class Office {
         this.region = region;
     }
 
+    public List<Car> getOfficeCars() {
+        return officeCars;
+    }
+
+    public void setOfficeCars(List<Car> officeCars) {
+        this.officeCars = officeCars;
+    }
+
+    /*
+    return the list of car belonging to a specific office
+
+    public List<Car> getOfficeCars(String nameOffice){
+
+    }
+    */
 
 }
