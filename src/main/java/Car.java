@@ -19,7 +19,7 @@ public class Car {
         }
 
         Car(String plate, String brand, String vehicle, String engine, String avgFuelCons, String co2, String weight
-        , String gearBoxType, String tyre, String tractionType){
+        , String gearBoxType, String tyre, String tractionType, String power){
             this.plate = plate;
             this.brand = brand;
             this.vehicle = vehicle;
@@ -31,6 +31,7 @@ public class Car {
             this.gearBoxType = gearBoxType;
             this.tyre = tyre;
             this.tractionType = tractionType;
+            this.power = power;
         }
 
         public String getAvgFuelCons() {
@@ -122,8 +123,30 @@ public class Car {
         }
 
         public void printCar(){
-            System.out.println("Car Plate: " + getPlate() + ", Brand: "+ getBrand() + ", Vehicle: " + getVehicle() + ", Engine: "
+            String out = "Car Plate: " + plate;
+            if(brand!=null)
+                out += ", Brand: " + brand ;
+            if(vehicle!=null)
+                out += ", Vehicle: " + vehicle ;
+            if(engine!=null)
+                out += ", Engine: " + engine ;
+            if(avgFuelCons!=null)
+                out += ", Average Fuel Consumption: " + avgFuelCons ;
+            if(co2!=null)
+                out += ", CO2: " + co2 ;
+            if(weight!=null)
+                out += ", Weight: " + weight ;
+            if(gearBoxType!=null)
+                out += ", Gear Box Type: " + gearBoxType ;
+            if(tyre!=null)
+                out += ", Tyre: " + tyre;
+            if(tractionType!=null)
+                out += ", Traction Type: " + tractionType ;
+            if(power!=null)
+                out += ", Power: " + power ;
+           /* System.out.println("Car Plate: " + getPlate() + ", Brand: "+ getBrand() + ", Vehicle: " + getVehicle() + ", Engine: "
             + getEngine() + ", Average Fuel Consumption: " + getAvgFuelCons() + ", CO2: "+ getCo2()+ ", Weight: " + getWeight() +
-                    ", GearBoxType: " + getGearBoxType() + ", Tyre: " + getTyre() + ", TractionType: " + getTractionType());
+                    ", GearBoxType: " + getGearBoxType() + ", Tyre: " + getTyre() + ", TractionType: " + getTractionType() + ", Power: " + getPower() );*/
+            System.out.println(out);
         }
 }

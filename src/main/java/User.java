@@ -9,10 +9,10 @@ public class User {
         String password;
         Date dateOfBirth = new Date();
 
-    User() {
-    }
+        User() {
+        }
 
-    User(String surname, String name, String email, String password, Date dateOfBirth){
+        User(String surname, String name, String email, String password, Date dateOfBirth){
             this.surname = surname;
             this.name = name;
             this.email = email;
@@ -61,8 +61,7 @@ public class User {
         }
 
         public void printUser(){
-            System.out.print("User: \n");
-            System.out.print("Surname: "+ getSurname() +", Name: " +getName() +", E-mail: " +getEmail() + ", Password: " + getPassword() + ", Date of birth: " +getDateOfBirth());
+            System.out.println("Surname: "+ getSurname() +", Name: " +getName() +", E-mail: " +getEmail() + ", Password: " + getPassword() + ", Date of birth: " +getDateOfBirth());
         }
 }
 

@@ -2,6 +2,10 @@ package main.java;
 
 import com.mongodb.client.*;
 import com.mongodb.ConnectionString;
+
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 import com.mongodb.client.model.Accumulators;
@@ -211,23 +215,29 @@ public class MongoDBConnection
     }
 
     public void deleteUser() {
+        MongoCollection<Document> myColl = db.getCollection("users");
         Scanner sc = new Scanner(System.in);
         System.out.print("Insert the user email: ");
-        MongoCollection<Document> myColl = db.getCollection("users");
-
         String email = sc.nextLine();
 
-        MongoCursor<Document> cursor  = myColl.find(eq("E-mail", email)).iterator();
+        MongoCursor<Document> cursor  = myColl.find(eq("Email", email)).iterator();
+        User u;
         if (!cursor.hasNext()) {
             System.out.println("User not found");
             return ;
+        } else {
+            Document d = cursor.next();
+            u = createUser(d);
         }
-        cursor.forEachRemaining(printFormattedDocuments);
+
+        //cursor.forEachRemaining(printFormattedDocuments);
+        u.printUser();
+
         System.out.print("Do you want to proceed with the delete operation? (Y/N) ");
         String r = sc.nextLine();
 
         if(r.equals("Y")){
-            myColl.deleteOne(eq("E-mail", email));
+            myColl.deleteOne(eq("Email", email));
             System.out.println("User deleted successfully");
         } else {
             System.out.println("Operation failed");
@@ -235,20 +245,33 @@ public class MongoDBConnection
 
     }
 
+    private User createUser(Document d) {
+        //String surname, String name, String email, String password, Date dateOfBirth
+        User u = new User(d.getString("Surname"), d.getString("Name"),d.getString("Email"), d.getString("Password"), d.getDate("DateOfBirth"));
+        return u;
+    }
+
     public void insertUser() {
         MongoCollection<Document> myColl = db.getCollection("users");
         Scanner sc = new Scanner(System.in);
+        User u = new User();
 
         System.out.print("Insert the user name: ");
-        String name = sc.nextLine();
+        u.setName(sc.nextLine());
 
         System.out.print("Insert the user surname: ");
-        String surname = sc.nextLine();
+        u.setSurname(sc.nextLine());
 
         System.out.print("Insert the user email: ");
-        String email = sc.nextLine();
+        u.setEmail(sc.nextLine());
         //check email
-        String[] a = email.split("@");
+        MongoCursor<Document> cursor = myColl.find(eq("Email", u.getEmail())).iterator();
+        if(cursor.hasNext()){
+            System.out.println("User already present in the database");
+            return ;
+        }
+
+        String[] a = u.getEmail().split("@");
         if(Arrays.stream(a).count() != 2){
             System.out.println("Wrong email");
             return ;
@@ -256,16 +279,43 @@ public class MongoDBConnection
             if(!a[1].equals("outlook.it") && !a[1].equals("outlook.com") && !a[1].equals("live.it") && !a[1].equals("live.com") && !a[1].equals("gmail.it"))
                 return ;
         }
-        //CHECK IF USER ALREADY PRESENT !!! (WITH ITERATOR)
-        /*
-        System.out.print("Insert the user password: ");
-        String password = sc.nextLine();
 
-        Document user = new Document("Name", name)
-                .append("Surname", surname)
-                .append("E-mail", email)
-                .append("Password", password);
-        myColl.insertOne(user); */
+        System.out.print("Insert the user password: ");
+        u.setPassword(sc.nextLine());
+
+        System.out.print("Insert the date of birth. ( DD/MM/YYYY ): ");
+        Date d= new Date();
+
+
+        String dateString = sc.nextLine();
+        //System.out.println(dateString);
+
+        DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+        try {
+            d = formatter.parse(dateString);
+        } catch (ParseException p){
+            System.out.println("Error");
+        }
+        //System.out.println(date);
+        //d.setDate(sc.next());
+
+
+
+       /* String date = sc.nextLine().trim();
+        List<String> l = Arrays.asList(date.split("/"));
+
+        d.setYear(Integer.valueOf(l.get(2)) - 1900);
+        d.setMonth(Integer.valueOf(l.get(1)) - 1);
+        d.setDate(Integer.valueOf(l.get(0))); */
+
+        u.setDateofbirth(d);
+
+        Document user = new Document("Name", u.getName())
+                .append("Surname", u.getSurname())
+                .append("Email", u.getEmail())
+                .append("Password", u.getPassword())
+                .append("DateOfBirth", u.getDateOfBirth());
+        myColl.insertOne(user);
     }
 
     public void deleteOrder(String plate, String name,String surname) {
@@ -440,21 +490,35 @@ public class MongoDBConnection
                 .forEach(printFormattedDocuments);
     }
 
-    public void getInfo(String plate, String field, String collection) {
-        MongoCollection<Document> myColl = db.getCollection(collection);
-        myColl.find(eq(field, plate))
-                .forEach(printFormattedDocuments);
-        //myColl.find( exists("Power (hp - kW /rpm)", false) ).forEach(printFormattedDocuments);
-        /*DeleteResult dr = myColl.deleteMany( exists(" CarPlate", false) ); //100464
-        System.out.println("Deleted documents: " + dr.getDeletedCount()); */
+    public ArrayList<Car> getListOfCars() {
+        MongoCollection<Document> myColl = db.getCollection("cars");
+        MongoCursor<Document> cursor = myColl.find().iterator();
+        ArrayList<Car> cars = new ArrayList<>();
+        while(cursor.hasNext()){
+            Document d = cursor.next();
+            Car c = getCarFromDocument(d);
+            cars.add(c);
+        }
+        return cars;
+    }
 
+    public void updateUser(){
+        MongoCollection<Document> myColl = db.getCollection("users");
+        MongoCursor<Document> cursor = myColl.find().iterator();
+        while(cursor.hasNext()){
+            Document d = cursor.next();
+            myColl.updateOne(eq("Email", d.get("Email")), set("Email", d.get("Email").toString().trim()));
+            myColl.updateOne(eq("Name", d.get("Name")), set("Name", d.get("Name").toString().trim()));
+            myColl.updateOne(eq("Password", d.get("Password")), set("Password", d.get("Password").toString().trim()));
+            myColl.updateOne(eq("DateOfBirth", d.get("DateOfBirth")), set("DateOfBirth", d.get("DateOfBirth").toString().trim()));
+        }
     }
 
     public Car getCarFromDocument(Document d){
         Car c = new Car(d.getString(" CarPlate"), d.getString("Brand"), d.getString("Vehicle"),
                 d.getString("Engine"), d.getString("Average fuel consumption (l/100 km)"), d.getString("CO2 (g/km)"),
                 d.getString("Weight(3p/5p) kg"), d.getString("GearBox type"), d.getString("Tyre"),
-                d.getString("Traction type"));
+                d.getString("Traction type"), d.getString("Power (hp - kW /rpm)"));
         return c;
     }
 
