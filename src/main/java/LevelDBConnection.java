@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Iterator;
 
 import static org.iq80.leveldb.impl.Iq80DBFactory.*;
@@ -109,6 +110,12 @@ public class LevelDBConnection {
             s = plate + "~" + brand + "~" + vehicle + "~" + engine + "~" + power;
         putValue(key, s);
         return false;
+    }
+
+    public ArrayList<Car> getAvailableCars(Date pick, Office officePick, Date delivery, String type){
+        ArrayList<Car> cars = new ArrayList<>();
+        //Cars that are available in that period for a specif office
+        return cars;
     }
 
 }

@@ -36,6 +36,8 @@ public class MongoDBConnection
     Consumer<Document> printFormattedDocuments;
     private MongoClient mongoClient;
     private MongoDatabase db;
+    private ArrayList<Office> offices;
+    private ArrayList<Service> services;
 
     public MongoDBConnection(String database){
         mongoClient = MongoClients.create();
@@ -46,6 +48,29 @@ public class MongoDBConnection
                 System.out.println(document.toJson(JsonWriterSettings.builder().indent(true).build()));
             }
         };
+        MongoCollection<Document> myColl = db.getCollection("offices");
+        MongoCursor<Document> cursor  = myColl.find().iterator();
+        while(cursor.hasNext()){
+            Document d = cursor.next();
+            Office o = new Office();
+            o.setCapacity(Integer.valueOf(d.getString("Capacity")));
+            o.setCity(d.getString("City"));
+            o.setId(d.getString("ID"));
+            o.setName(d.getString("Name"));
+            o.setRegion(d.getString("Region"));
+            offices.add(o);
+        }
+
+        myColl = db.getCollection("services");
+        cursor  = myColl.find().iterator();
+        while(cursor.hasNext()){
+            Document d = cursor.next();
+            Service s = new Service();
+            s.setMultiplicator(d.getString("MULTIPLICATOR"));
+            s.setNameService(d.getString("SERVICES"));
+            s.setPrice(Double.valueOf(d.getString("PRICE VAT INCLUDED")));
+        }
+
     }
     /*
     public static void main(String[] args) {
@@ -251,64 +276,16 @@ public class MongoDBConnection
         return u;
     }
 
-    public void insertUser() {
+    public boolean insertUser(User u) {
         MongoCollection<Document> myColl = db.getCollection("users");
-        Scanner sc = new Scanner(System.in);
-        User u = new User();
 
-        System.out.print("Insert the user name: ");
-        u.setName(sc.nextLine());
-
-        System.out.print("Insert the user surname: ");
-        u.setSurname(sc.nextLine());
-
-        System.out.print("Insert the user email: ");
-        u.setEmail(sc.nextLine());
         //check email
         MongoCursor<Document> cursor = myColl.find(eq("Email", u.getEmail())).iterator();
         if(cursor.hasNext()){
             System.out.println("User already present in the database");
-            return ;
+            return false;
         }
 
-        String[] a = u.getEmail().split("@");
-        if(Arrays.stream(a).count() != 2){
-            System.out.println("Wrong email");
-            return ;
-        } else {
-            if(!a[1].equals("outlook.it") && !a[1].equals("outlook.com") && !a[1].equals("live.it") && !a[1].equals("live.com") && !a[1].equals("gmail.it"))
-                return ;
-        }
-
-        System.out.print("Insert the user password: ");
-        u.setPassword(sc.nextLine());
-
-        System.out.print("Insert the date of birth. ( DD/MM/YYYY ): ");
-        Date d= new Date();
-
-
-        String dateString = sc.nextLine();
-        //System.out.println(dateString);
-
-        DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
-        try {
-            d = formatter.parse(dateString);
-        } catch (ParseException p){
-            System.out.println("Error");
-        }
-        //System.out.println(date);
-        //d.setDate(sc.next());
-
-
-
-       /* String date = sc.nextLine().trim();
-        List<String> l = Arrays.asList(date.split("/"));
-
-        d.setYear(Integer.valueOf(l.get(2)) - 1900);
-        d.setMonth(Integer.valueOf(l.get(1)) - 1);
-        d.setDate(Integer.valueOf(l.get(0))); */
-
-        u.setDateofbirth(d);
 
         Document user = new Document("Name", u.getName())
                 .append("Surname", u.getSurname())
@@ -316,6 +293,29 @@ public class MongoDBConnection
                 .append("Password", u.getPassword())
                 .append("DateOfBirth", u.getDateOfBirth());
         myColl.insertOne(user);
+        return true;
+    }
+
+    public User logInUser(String email, String password){
+        User u = new User();
+        MongoCollection<Document> myColl = db.getCollection("users");
+        MongoCursor<Document> cursor  = myColl.find(and(eq("Email", email),
+                eq("Password", password))).iterator();
+        if(!cursor.hasNext()) {
+            System.out.println("Email or Password wrong, try again");
+        } else{
+            Document d = cursor.next();
+            u = createUser(d);
+        }
+        return u;
+    }
+
+    public ArrayList<Office> listOffices(){
+        return offices;
+    }
+
+    public ArrayList<Service> listServices(){
+        return services;
     }
 
     public void deleteOrder(String plate, String name,String surname) {

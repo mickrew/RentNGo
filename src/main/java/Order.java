@@ -1,8 +1,12 @@
 package main.java;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Scanner;
 
 public class Order {
     Car car = new Car();
@@ -99,6 +103,54 @@ public class Order {
 
     public void setpickOffice(Office pickOffice) {
         this.pickOffice = pickOffice;
+    }
+
+    public void chooseParameters(ArrayList<Office> offices){
+        Scanner sc = new Scanner(System.in);
+        System.out.print("Insert the date of pick. ( DD/MM/YYYY ): ");
+        Date d= new Date();
+
+        String dateString = sc.nextLine();
+        //System.out.println(dateString);
+
+        DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+        try {
+            d = formatter.parse(dateString);
+        } catch (ParseException p){
+            System.out.println("Error");
+        }
+        setPickDate(d);
+
+        System.out.println("Insert the pick Office");
+        int i = 0;
+        for(Office o : offices){
+            System.out.print(i++ + ") ");
+            o.printOffice();
+        }
+        i = Integer.valueOf(sc.nextLine());
+        setpickOffice(offices.get(i));
+
+        System.out.print("Insert the date of delivery. ( DD/MM/YYYY ): ");
+        Date d2= new Date();
+
+        String dateString2 = sc.nextLine();
+        //System.out.println(dateString);
+
+        try {
+            d2 = formatter.parse(dateString2);
+        } catch (ParseException p){
+            System.out.println("Error");
+        }
+        setDeliveryDate(d2);
+
+        System.out.println("Insert the delivery Office");
+        i = 0;
+        for(Office o : offices){
+            System.out.print(i++ + ") ");
+            o.printOffice();
+        }
+        i = Integer.valueOf(sc.nextLine());
+        setDeliveryOffice(offices.get(i));
     }
 
 }

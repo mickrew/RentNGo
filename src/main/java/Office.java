@@ -21,6 +21,10 @@ public class Office {
 
     public Office(){};
 
+    public void printOffice(){
+        System.out.println("Office: " + id + ", City: "+ city+ ", Region: " + region);
+    }
+
     public String getCity() {
         return city;
     }
