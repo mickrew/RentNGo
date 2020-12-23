@@ -18,6 +18,7 @@ public class User {
         String email;
         String password;
         Date dateOfBirth = new Date();
+        String role;
 
         User() {
         }
@@ -30,16 +31,37 @@ public class User {
             this.dateOfBirth = dateOfBirth;
         }
 
-        public void logIn(){
+        public static User logIn(MongoDBConnection db){
             String email;
             String password;
+            User u;
 
-            System.out.println("Insert the Email");
-            Scanner sc = new Scanner(System.in);
-            setEmail(sc.nextLine());
 
-            System.out.println("Insert the Password");
-            setPassword(sc.nextLine());
+                System.out.println("Insert the Email");
+                Scanner sc = new Scanner(System.in);
+                email = sc.nextLine();
+
+                System.out.println("Insert the Password");
+                password = sc.nextLine();
+
+                u = db.findUser(email);
+
+                if (u==null){
+                    Worker w = db.findWorker(email);
+                    if (w==null){
+                        Admin a = db.findAdmin(email);
+                    }
+                }
+
+
+                /*
+                if (u.getRole().equals("worker")){
+                    return new Worker(u.getSurname(), u.getName(), u.getEmail(), u.getPassword(), u.getDateOfBirth());
+                }
+                */
+            return u;
+
+
         }
 
         public void signIn(){
@@ -77,7 +99,15 @@ public class User {
             setDateofbirth(d);
         }
 
-        public String getSurname(){
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role){
+            this.role = role;
+    }
+
+    public String getSurname(){
             return surname;
         }
 

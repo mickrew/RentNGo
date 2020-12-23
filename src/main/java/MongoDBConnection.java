@@ -257,6 +257,53 @@ public class MongoDBConnection
 
         return u;
     }
+    public Worker findWorker(String email){
+        MongoCollection<Document> myColl = db.getCollection("workers");
+        MongoCursor<Document> cursor  = myColl.find(eq("Email", email)).iterator();
+        Worker w;
+
+        if (!cursor.hasNext()) {
+            System.out.println("Worker not found");
+            return null;
+        } else {
+            Document d = cursor.next();
+            w = createWorker(d);
+        }
+
+        w.printUser();
+
+        return w;
+    }
+
+    private Worker createWorker(Document d) {
+        //String surname, String name, String email, String password, Date dateOfBirth
+        Worker w = new Worker(d.getString("Surname"), d.getString("Name"),d.getString("Email"), d.getString("Password"), d.getDate("DateOfBirth"), d.getInteger("Salary"), d.getDate("Date of hiring"));
+        return w;
+    }
+
+    private Admin createAdmin(Document d) {
+        //String surname, String name, String email, String password, Date dateOfBirth
+        Admin a = new Admin(d.getString("Surname"), d.getString("Name"),d.getString("Email"), d.getString("Password"), d.getDate("DateOfBirth"), d.getInteger("Salary"), d.getDate("Date of hiring"), d.getDate("Date WtoA"));
+        return a;
+    }
+
+    public Admin findAdmin(String email){
+        MongoCollection<Document> myColl = db.getCollection("admins");
+        MongoCursor<Document> cursor  = myColl.find(eq("Email", email)).iterator();
+        Admin a;
+
+        if (!cursor.hasNext()) {
+            System.out.println("Admin not found");
+            return null;
+        } else {
+            Document d = cursor.next();
+            a = createAdmin(d);
+        }
+
+        a.printUser();
+
+        return a;
+    }
     public void deleteUser(String email) {
         MongoCollection<Document> myColl = db.getCollection("users");
         MongoCursor<Document> cursor  = myColl.find(eq("Email", email)).iterator();
@@ -266,7 +313,11 @@ public class MongoDBConnection
 
     private User createUser(Document d) {
         //String surname, String name, String email, String password, Date dateOfBirth
-        User u = new User(d.getString("Surname"), d.getString("Name"),d.getString("Email"), d.getString("Password"), d.getDate("DateOfBirth"));
+        ////////
+        //////// errore d.getDate("DateOfBirth")
+        ////////
+        Date date = new Date(String.valueOf(d.getDate("DateOfBirth")));
+        User u = new User(d.getString("Surname"), d.getString("Name"),d.getString("Email"), d.getString("Password"), date);
         return u;
     }
 
@@ -390,6 +441,7 @@ public class MongoDBConnection
         }
 
         c.printCar();
+        System.out.println();
 
         return c;
     }
@@ -401,8 +453,8 @@ public class MongoDBConnection
             System.out.println("Car not found");
             return ;
         } else {
-            myColl.deleteOne(eq(" CarPlate", plate));
-            System.out.println("Car deleted succesfully");
+            myColl.deleteOne(eq("CarPlate", plate));
+            System.out.println("Car deleted successfully");
         }
 
     }
@@ -468,11 +520,67 @@ public class MongoDBConnection
     }
 
     public Car getCarFromDocument(Document d){
-        Car c = new Car(d.getString(" CarPlate"), d.getString("Brand"), d.getString("Vehicle"),
+        Car c = new Car(d.getString("CarPlate"), d.getString("Brand"), d.getString("Vehicle"),
                 d.getString("Engine"), d.getString("Average fuel consumption (l/100 km)"), d.getString("CO2 (g/km)"),
                 d.getString("Weight(3p/5p) kg"), d.getString("GearBox type"), d.getString("Tyre"),
                 d.getString("Traction type"), d.getString("Power (hp - kW /rpm)"));
         return c;
     }
+
+    public User logIn(ArrayList<String> parameters){
+        String email = parameters.get(0);
+        User u = findUser(email);
+        if (u==null) {
+            u = findWorker(email);
+            if (u == null) {
+                u = findAdmin(email);
+            }
+        }
+        return u;
+    }
+
+    /*
+
+    public void createWorker(){
+        MongoCollection<Document> myColl = db.getCollection("users");
+        MongoCollection<Document> myColl1 = db.getCollection("workers");
+
+
+        MongoCursor<Document> cursor  = myColl.find().limit(50).iterator();
+
+        while (cursor.hasNext()) {
+
+            Document d = cursor.next();
+            d.remove("_id");
+            d.append("Salary", 1200);
+            d.append("Date of hiring", "01/01/2000");
+
+            myColl1.insertOne(d);
+            deleteUser(d.getString("Email"));
+        }
+
+    }
+
+    public void createAdmin(){
+    MongoCollection<Document> myColl = db.getCollection("users");
+    MongoCollection<Document> myColl1 = db.getCollection("admins");
+
+
+    MongoCursor<Document> cursor  = myColl.find().limit(20).iterator();
+
+    while (cursor.hasNext()) {
+
+        Document d = cursor.next();
+        d.remove("_id");
+        d.append("Salary", 2000);
+        d.append("Date of hiring", "01/01/2000");
+        d.append("Date WtoA", "01/01/2010");
+
+        myColl1.insertOne(d);
+        deleteUser(d.getString("Email"));
+    }
+
+    }
+    */
 
 }

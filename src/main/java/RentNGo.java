@@ -2,15 +2,30 @@ package main.java;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.Scanner;
+import java.util.*;
 
 public class RentNGo {
     static private MongoDBConnection db;
     static private LevelDBConnection ldb;
     static private User u;
+
+    public static ArrayList<String> setParameters(){
+        String email;
+        String password;
+        ArrayList<String> parameters= new ArrayList<String>();
+
+        System.out.println("Insert the Email");
+        Scanner sc = new Scanner(System.in);
+        email = sc.nextLine();
+        parameters.add(email);
+
+        System.out.println("Insert the Password");
+        password = sc.nextLine();
+        parameters.add(password);
+
+
+        return parameters;
+    }
 
     public static void main(String args[]){
         db = new MongoDBConnection("CarRental");
@@ -22,12 +37,26 @@ public class RentNGo {
         try {
             d = formatter.parse("06/05/1993");
         } catch(Exception e){} */
-        User u = new User(); //= new User(); //"aaron", "billy r", "billyr.aaron@outlook.it", "Vxyy5cpIB5" , d); */
-        Admin a = new Admin();
+        User u ; //"aaron", "billy r", "billyr.aaron@outlook.it", "Vxyy5cpIB5" , d); */
+        Worker w ;
+        Admin a ;
+        ArrayList<String> parameters = setParameters();
 
+        u = db.logIn(parameters);
+
+        u.printUser();
+
+
+
+
+
+/*
+        Admin a = new Admin();
         a.insertNewCar(db);
         db.findCar("ZZ999ZZ");
-        //a.deleteCar(db);
+        a.deleteCar(db);
+        */
+
         /*
         System.out.println("1) Log in");
         System.out.println("2) Sign in");
@@ -39,7 +68,7 @@ public class RentNGo {
         }
         if(i==1)
             do {
-                u.logIn();
+                u.logIn(db);
                 email = u.getEmail();
                 u = db.logInUser(u.getEmail(), u.getPassword());
             } while(u.getEmail()==null || !u.getEmail().equals(email));

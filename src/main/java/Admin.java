@@ -75,7 +75,7 @@ public class Admin extends  Worker{
         boolean check = false;
         String regex = "[A-Z][A-Z][0-9][0-9][0-9][A-Z][A-Z]";
         Pattern pattern = Pattern.compile(regex);
-        String plate = sc.nextLine();
+        String plate;
         Car c = new Car();
         while(!check) {
             System.out.print("Insert the Car Plate: ");
@@ -96,7 +96,6 @@ public class Admin extends  Worker{
 
         if(r.equals("Y")){
             db.deleteCar(c.getPlate());
-            System.out.println("Car deleted successfully");
         } else {
             System.out.println("Operation failed");
         }
@@ -174,7 +173,7 @@ public class Admin extends  Worker{
 
         System.out.print("Insert the Traction type: ");
         c.setTractionType(sc.nextLine());
-
+        
         db.insertNewCar(c);
     }
 }
