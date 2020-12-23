@@ -34,4 +34,6 @@ public class Worker extends User{
         this.hiringDate = hiringDate;
     }
 
+
+
 }

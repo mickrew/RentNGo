@@ -153,4 +153,16 @@ public class Order {
         setDeliveryOffice(offices.get(i));
     }
 
+    public void printOrder(){
+        System.out.println("Car: " + "\t" + car.getPlate());
+        System.out.println("User: " + "\t" +user.getEmail());
+        System.out.println("Price: " + "\t" + priceCar + "€");
+        System.out.println("Pick Office: " + "\t" + pickOffice);
+        System.out.println("Pick Date: " + "\t" + pickDate);
+        System.out.println("Delivery Office: " + "\t" + deliveryOffice);
+        System.out.println("Delivery Date: " + "\t" + deliveryDate);
+        System.out.println("Price accessores: " + "\t" + priceAccessories + "€");
+        System.out.println("List accessories: " + "\t" + accessories.toString());
+    }
+
 }

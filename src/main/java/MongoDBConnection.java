@@ -36,12 +36,12 @@ public class MongoDBConnection
     Consumer<Document> printFormattedDocuments;
     private MongoClient mongoClient;
     private MongoDatabase db;
-    private ArrayList<Office> offices;
-    private ArrayList<Service> services;
+    private ArrayList<Office> offices = new ArrayList<Office>();
+    private ArrayList<Service> services = new ArrayList<Service>();
 
     public MongoDBConnection(String database){
         mongoClient = MongoClients.create();
-        db = mongoClient.getDatabase("local");
+        db = mongoClient.getDatabase("CarRental");
         Consumer<Document> printFormattedDocuments = new Consumer<Document>() {
             @Override
             public void accept(Document document) {
@@ -68,7 +68,7 @@ public class MongoDBConnection
             Service s = new Service();
             s.setMultiplicator(d.getString("MULTIPLICATOR"));
             s.setNameService(d.getString("SERVICES"));
-            s.setPrice(Double.valueOf(d.getString("PRICE VAT INCLUDED")));
+            //s.setPrice(Double.valueOf(d.getString("PRICE VAT INCLUDED")));
         }
 
     }
@@ -239,35 +239,29 @@ public class MongoDBConnection
         mongoClient.close();
     }
 
-    public void deleteUser() {
-        MongoCollection<Document> myColl = db.getCollection("users");
-        Scanner sc = new Scanner(System.in);
-        System.out.print("Insert the user email: ");
-        String email = sc.nextLine();
 
+    public User findUser(String email){
+        MongoCollection<Document> myColl = db.getCollection("users");
         MongoCursor<Document> cursor  = myColl.find(eq("Email", email)).iterator();
         User u;
+
         if (!cursor.hasNext()) {
             System.out.println("User not found");
-            return ;
+            return null;
         } else {
             Document d = cursor.next();
             u = createUser(d);
         }
 
-        //cursor.forEachRemaining(printFormattedDocuments);
         u.printUser();
 
-        System.out.print("Do you want to proceed with the delete operation? (Y/N) ");
-        String r = sc.nextLine();
-
-        if(r.equals("Y")){
-            myColl.deleteOne(eq("Email", email));
-            System.out.println("User deleted successfully");
-        } else {
-            System.out.println("Operation failed");
-        }
-
+        return u;
+    }
+    public void deleteUser(String email) {
+        MongoCollection<Document> myColl = db.getCollection("users");
+        MongoCursor<Document> cursor  = myColl.find(eq("Email", email)).iterator();
+        myColl.deleteOne(eq("Email", email));
+        System.out.println("User deleted successfully");
     }
 
     private User createUser(Document d) {
@@ -286,13 +280,13 @@ public class MongoDBConnection
             return false;
         }
 
-
         Document user = new Document("Name", u.getName())
                 .append("Surname", u.getSurname())
                 .append("Email", u.getEmail())
                 .append("Password", u.getPassword())
                 .append("DateOfBirth", u.getDateOfBirth());
         myColl.insertOne(user);
+
         return true;
     }
 
@@ -382,88 +376,47 @@ public class MongoDBConnection
         myCollOrder.insertOne(order);
     }
 
+    public Car findCar(String plate){
+        MongoCollection<Document> myColl = db.getCollection("cars");
+        MongoCursor<Document> cursor  = myColl.find(eq("CarPlate", plate)).iterator();
+        Car c;
+
+        if (!cursor.hasNext()) {
+            System.out.println("Car not found");
+            return null;
+        } else {
+            Document d = cursor.next();
+            c = getCarFromDocument(d);
+        }
+
+        c.printCar();
+
+        return c;
+    }
     public void deleteCar(String plate) {
         MongoCollection<Document> myColl = db.getCollection("cars");
-        MongoCursor<Document> cursor  = myColl.find(eq(" CarPlate", plate)).iterator();
-
-        if (cursor.hasNext()) {
-            Document d = cursor.next();
-            Car c = getCarFromDocument(d);
-            c.printCar();
-        }  else {
-            System.out.println("Car not found !");
+        MongoCursor<Document> cursor  = myColl.find(eq("CarPlate", plate)).iterator();
+        Car c;
+        if (!cursor.hasNext()) {
+            System.out.println("Car not found");
             return ;
-        }
-
-        System.out.print("Do you want to proceed with the delete operation? (Y/N) ");
-        Scanner sc = new Scanner(System.in);
-        String a = sc.nextLine();
-        if(a.equals("Y")) {
+        } else {
             myColl.deleteOne(eq(" CarPlate", plate));
             System.out.println("Car deleted succesfully");
-        }  else {
-            System.out.println("Operation failed");
         }
+
     }
 
-    public void insertNewCar() {
-        Scanner sc = new Scanner(System.in);
+    public void insertNewCar(Car c) {
 
-        Car c = new Car();
-        String carPlate ;
-        String regex = "[A-Z][A-Z][0-9][0-9][0-9][A-Z][A-Z]";
-        Pattern pattern = Pattern.compile(regex);
-
-        do {
-            System.out.print("Insert the Car Plate: ");
-            carPlate = sc.nextLine();
-
-        } while(!pattern.matcher(carPlate).matches());
         MongoCollection<Document> myColl = db.getCollection("cars");
 
-        try (MongoCursor<Document> cursor = myColl.find(eq(" CarPlate", carPlate)).iterator()) {
+        try (MongoCursor<Document> cursor = myColl.find(eq("CarPlate", c.getPlate())).iterator()) {
             while (cursor.hasNext()) {
                 System.out.println("Car's plate already present in the database");
-                return ;
+                return;
             }
         }
-        c.setPlate(carPlate);
-
-        System.out.print("Insert the Brand: ");
-        c.setBrand(sc.nextLine());
-
-        System.out.print("Insert the Vehicle: ");
-        c.setVehicle(sc.nextLine());
-
-
-        System.out.print("Insert the Engine: ");
-        c.setEngine(sc.nextLine());
-
-
-        System.out.print("Insert the Power: ");
-        c.setPower(sc.nextLine());
-
-
-        System.out.print("Insert the average fuel consumption: ");
-        c.setAvgFuelCons(sc.nextLine());
-
-
-        System.out.print("Insert the CO2: ");
-        c.setCo2(sc.nextLine());
-
-
-        System.out.print("Insert the weight: ");
-        c.setWeight(sc.nextLine());
-
-        System.out.print("Insert the gearBox type: ");
-        c.setGearBoxType(sc.nextLine());
-
-        System.out.print("Insert the Tyre: ");
-        c.setTyre(sc.nextLine());
-
-        System.out.print("Insert the Traction type: ");
-        c.setTractionType(sc.nextLine());
-
         Document car = new Document("Brand", c.getBrand())
                 .append("Vehicle", c.getVehicle())
                 .append("Engine", c.getEngine())
@@ -474,7 +427,7 @@ public class MongoDBConnection
                 .append("GearBox type", c.getGearBoxType())
                 .append("Tyre", c.getTyre())
                 .append("Traction type", c.getTractionType())
-                .append(" CarPlate", c.getPlate());
+                .append("CarPlate", c.getPlate());
         myColl.insertOne(car);
 
         System.out.println();

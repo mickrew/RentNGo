@@ -13,7 +13,7 @@ public class RentNGo {
     static private User u;
 
     public static void main(String args[]){
-        db = new MongoDBConnection("local");
+        db = new MongoDBConnection("CarRental");
         ldb = new LevelDBConnection();
         ldb.openDB();
         //        User(String surname, String name, String email, String password, Date dateOfBirth){
@@ -23,6 +23,12 @@ public class RentNGo {
             d = formatter.parse("06/05/1993");
         } catch(Exception e){} */
         User u = new User(); //= new User(); //"aaron", "billy r", "billyr.aaron@outlook.it", "Vxyy5cpIB5" , d); */
+        Admin a = new Admin();
+
+        a.insertNewCar(db);
+        db.findCar("ZZ999ZZ");
+        //a.deleteCar(db);
+        /*
         System.out.println("1) Log in");
         System.out.println("2) Sign in");
         String email;
@@ -69,7 +75,7 @@ public class RentNGo {
         services = db.listServices();
         for(Service s: services){
             System.out.print(i++ + ") ");
-            //s.printService();
+            s.printService();
         }
         ArrayList<Service> selectedServices = new ArrayList<>();
         do {
@@ -113,6 +119,7 @@ public class RentNGo {
         }
         //ldb.elementInDatabase();
 */
+        System.out.println("Fine");
         ldb.closeDB();
         db.closeConnection();
     }
