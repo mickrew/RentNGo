@@ -10,15 +10,19 @@ import java.util.regex.Pattern;
 
 import static com.mongodb.client.model.Filters.eq;
 
-public class Admin extends  Worker{
+public class Admin extends  UnregisteredUser{
     Date workertoAdmin =  new Date();
+    int salary;
+    Date hiringDate = new Date();
 
     public Admin (){
         super();
     }
 
     public Admin(String surname, String name, String email, String password, Date dateofbirth, int salary, Date hiringDate, Date workertoAdmin){
-        super(surname, name, email, password, dateofbirth, salary, hiringDate);
+        super(surname, name, email, password, dateofbirth);
+        this.salary =salary;
+        this.hiringDate = hiringDate;
         this.workertoAdmin = workertoAdmin;
     }
 
@@ -175,5 +179,21 @@ public class Admin extends  Worker{
         c.setTractionType(sc.nextLine());
         
         db.insertNewCar(c);
+    }
+
+    public int getSalary(){
+        return salary;
+    }
+
+    public void setSalary(int salary){
+        this.salary = salary;
+    }
+
+    public Date getHiringDate(){
+        return hiringDate;
+    }
+
+    public void setHiringDate(Date hiringDate){
+        this.hiringDate = hiringDate;
     }
 }

@@ -12,60 +12,40 @@ import java.util.Scanner;
 
 import static com.mongodb.client.model.Filters.eq;
 
-public class User {
-        String surname;
-        String name;
-        String email;
-        String password;
-        Date dateOfBirth = new Date();
-        String role;
+public class User extends UnregisteredUser{
+        //String surname;
+        //String name;
+        //String email;
+        //String password;
+        //Date dateOfBirth = new Date();
 
         User() {
         }
 
         User(String surname, String name, String email, String password, Date dateOfBirth){
-            this.surname = surname;
+            /*this.surname = surname;
             this.name = name;
             this.email = email;
             this.password = password;
-            this.dateOfBirth = dateOfBirth;
+            this.dateOfBirth = dateOfBirth; */
+            super(surname, name, email, password, dateOfBirth);
         }
-
-        public static User logIn(MongoDBConnection db){
-            String email;
+/*
+        public void logIn(){
+           String email;
             String password;
-            User u;
 
+            System.out.println("Insert the Email");
+            Scanner sc = new Scanner(System.in);
+            setEmail(sc.nextLine());
 
-                System.out.println("Insert the Email");
-                Scanner sc = new Scanner(System.in);
-                email = sc.nextLine();
-
-                System.out.println("Insert the Password");
-                password = sc.nextLine();
-
-                u = db.findUser(email);
-
-                if (u==null){
-                    Worker w = db.findWorker(email);
-                    if (w==null){
-                        Admin a = db.findAdmin(email);
-                    }
-                }
-
-
-                /*
-                if (u.getRole().equals("worker")){
-                    return new Worker(u.getSurname(), u.getName(), u.getEmail(), u.getPassword(), u.getDateOfBirth());
-                }
-                */
-            return u;
-
-
-        }
+            System.out.println("Insert the Password");
+            setPassword(sc.nextLine());
+        } */
 
         public void signIn(){
-            Scanner sc = new Scanner(System.in);
+                System.out.println("Already Signed");
+        /*    Scanner sc = new Scanner(System.in);
 
             System.out.print("Insert the user name: ");
             setName(sc.nextLine());
@@ -96,18 +76,10 @@ public class User {
             } catch (ParseException p){
                 System.out.println("Error");
             }
-            setDateofbirth(d);
+            setDateofbirth(d); */
         }
 
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role){
-            this.role = role;
-    }
-
-    public String getSurname(){
+   /*     public String getSurname(){
             return surname;
         }
 
@@ -149,7 +121,7 @@ public class User {
 
         public void printUser(){
             System.out.println("Surname: "+ getSurname() +", Name: " +getName() +", E-mail: " +getEmail() + ", Password: " + getPassword() + ", Date of birth: " +getDateOfBirth());
-        }
+        } */
 }
 
 

@@ -41,7 +41,7 @@ public class MongoDBConnection
 
     public MongoDBConnection(String database){
         mongoClient = MongoClients.create();
-        db = mongoClient.getDatabase("CarRental");
+        db = mongoClient.getDatabase("local");
         Consumer<Document> printFormattedDocuments = new Consumer<Document>() {
             @Override
             public void accept(Document document) {
@@ -316,7 +316,7 @@ public class MongoDBConnection
         ////////
         //////// errore d.getDate("DateOfBirth")
         ////////
-        Date date = new Date(String.valueOf(d.getDate("DateOfBirth")));
+        Date date = new Date(String.valueOf(d.getString("DateOfBirth")));
         User u = new User(d.getString("Surname"), d.getString("Name"),d.getString("Email"), d.getString("Password"), date);
         return u;
     }
@@ -527,6 +527,27 @@ public class MongoDBConnection
         return c;
     }
 
+    public UnregisteredUser getUser(ArrayList<String> s) {
+        //check if user
+        User us = findUser(s.get(0));
+        if(us != null){
+            return new User(us.getSurname(), us.getName(), us.getEmail(), us.getPassword(), us.getDateOfBirth());
+            //u=us;
+        }
+
+        Worker w = findWorker(s.get(0));
+        if(w != null){
+            return new Worker(w.getSurname(), w.getName(), w.getEmail(), w.getPassword(), w.getDateOfBirth(), w.getSalary(), w.getHiringDate());
+        }
+
+        Admin a = findAdmin(s.get(0));
+        if(a != null){
+            return new Admin(a.getSurname(), a.getName(), a.getEmail(), a.getPassword(), a.getDateOfBirth(), a.getSalary(), a.getHiringDate(), a.getWtoAdDate());
+        }
+        System.out.println("User not found");
+        return null;
+    }
+/*
     public User logIn(ArrayList<String> parameters){
         String email = parameters.get(0);
         User u = findUser(email);
@@ -538,6 +559,7 @@ public class MongoDBConnection
         }
         return u;
     }
+*/
 
     /*
 

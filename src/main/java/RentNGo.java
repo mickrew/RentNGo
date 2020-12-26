@@ -37,7 +37,7 @@ public class RentNGo {
         try {
             d = formatter.parse("06/05/1993");
         } catch(Exception e){} */
-        User u ; //"aaron", "billy r", "billyr.aaron@outlook.it", "Vxyy5cpIB5" , d); */
+   /*     User u ; //"aaron", "billy r", "billyr.aaron@outlook.it", "Vxyy5cpIB5" , d);
         Worker w ;
         Admin a ;
         ArrayList<String> parameters = setParameters();
@@ -45,10 +45,16 @@ public class RentNGo {
         u = db.logIn(parameters);
 
         u.printUser();
+  */
 
-
-
-
+        UnregisteredUser u = db.getUser(UnregisteredUser.logIn());
+        if(u == null){
+            System.out.println("Login failed");
+        }
+        if(u instanceof User){
+            u.printUser();
+            ((User) u).signIn();
+        }
 
 /*
         Admin a = new Admin();

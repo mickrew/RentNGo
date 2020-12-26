@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Date;
 
-public class Worker extends User{
+public class Worker extends UnregisteredUser{
     int salary;
     Date hiringDate = new Date();
 
