@@ -111,17 +111,19 @@ public class RentNGo {
                             case 0:
                                 break;
                             case 1:
-                                ((Worker) u).addRemoveWorker();
+                                ((Admin) u).addRemoveWorker();
                             case 2:
-                                ((Worker) u).addRemoveCar();
+                                ((Admin) u).addRemoveCar();
                             case 3:
-                                ((Worker) u).promoteWorker();
+                                ((Admin) u).promoteWorker();
                             case 4:
-                                ((Worker) u).modifyWorker();
+                                ((Admin) u).modifyWorker();
                             case 5:
-                                ((Worker) u).deliveryCar();
+                                ((Admin) u).deliveryCar();
                             case 6:
-                                ((Worker) u).deliveryCar();
+                                ((Admin) u).deliveryCar();
+                            case 7:
+                                ((Admin) u).addOffice();
                             default:
                                 System.out.println("Try again.");
                         }
