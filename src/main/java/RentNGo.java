@@ -46,15 +46,93 @@ public class RentNGo {
 
         u.printUser();
   */
+        int i = 0;
+        do {
+            System.out.println("0) Exit");
+            System.out.println("1) Log in");
+            System.out.println("2) Sign in");
+            Scanner sc =new Scanner(System.in);
+            i = sc.nextInt();
 
-        UnregisteredUser u = db.getUser(UnregisteredUser.logIn());
-        if(u == null){
-            System.out.println("Login failed");
-        }
-        if(u instanceof User){
-            u.printUser();
-            ((User) u).signIn();
-        }
+            if(i == 1) {
+                UnregisteredUser u = db.getUser(UnregisteredUser.logIn());
+                if (u == null) {
+                    System.out.println("Login failed");
+                }
+                if (u instanceof User) {
+                    int j = 1;
+                    while (j != 0) {
+                        ((User) u).showMenu();
+                        j = sc.nextInt();
+                        switch (j) {
+                            case 0:
+                                break;
+                            case 1:
+                                ((User) u).createOrder();
+                            case 2:
+                                ((User) u).showOrders();
+                            case 3:
+                                ((User) u).showCart();
+                            case 4:
+                                ((User) u).deleteAccount();
+                            default:
+                                System.out.println("Try again.");
+                        }
+                    }
+                } else if (u instanceof Worker) {
+                    int j = 1;
+                    while (j != 0) {
+                        ((Worker) u).showMenu();
+                        j = sc.nextInt();
+                        switch (j) {
+                            case 0:
+                                break;
+                            case 1:
+                                ((Worker) u).searchCars();
+                            case 2:
+                                ((Worker) u).searchOrders();
+                            case 3:
+                                ((Worker) u).searchUser();
+                            case 4:
+                                ((Worker) u).pickCar();
+                            case 5:
+                                ((Worker) u).deliveryCar();
+                            default:
+                                System.out.println("Try again.");
+                        }
+                    }
+                    //u.showMenu
+                } else if (u instanceof Admin) {
+                    int j = 1;
+                    while (j != 0) {
+                        ((Admin) u).showMenu();
+                        j = sc.nextInt();
+                        switch (j) {
+                            case 0:
+                                break;
+                            case 1:
+                                ((Worker) u).addRemoveWorker();
+                            case 2:
+                                ((Worker) u).addRemoveCar();
+                            case 3:
+                                ((Worker) u).promoteWorker();
+                            case 4:
+                                ((Worker) u).modifyWorker();
+                            case 5:
+                                ((Worker) u).deliveryCar();
+                            case 6:
+                                ((Worker) u).deliveryCar();
+                            default:
+                                System.out.println("Try again.");
+                        }
+                    }
+                    //u.showMenu
+                }
+            }  else if (i == 2){
+                db.insertUser(UnregisteredUser.signIn());
+            }
+        } while(i!=0);
+
 
 /*
         Admin a = new Admin();

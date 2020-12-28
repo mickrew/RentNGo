@@ -34,6 +34,13 @@ public class Worker extends UnregisteredUser{
         this.hiringDate = hiringDate;
     }
 
-
+    public void showMenu(){
+        System.out.println("0) Exit");
+        System.out.println("1) Search Car by Parameters");
+        System.out.println("2) Show Orders by Parameters"); //even delete or modify
+        System.out.println("3) Seach User");
+        System.out.println("4) Pick Car");
+        System.out.println("5) Delivery Car");
+    }
 
 }

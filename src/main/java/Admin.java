@@ -196,4 +196,13 @@ public class Admin extends  UnregisteredUser{
     public void setHiringDate(Date hiringDate){
         this.hiringDate = hiringDate;
     }
+
+    public void showMenu(){
+        System.out.println("0) Exit");
+        System.out.println("1) Add/Remove worker");
+        System.out.println("2) Add/Remove Cars"); //even delete or modify
+        System.out.println("3) Promote Worker to Admin");
+        System.out.println("4) Modify Worker"); //es. Salary
+        System.out.println("5) Modify Car");
+    }
 }
