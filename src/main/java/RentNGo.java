@@ -78,7 +78,8 @@ public class RentNGo {
                         }
                         switch (j) {
                             case 0:
-                                i=0;
+                                j=0;
+                                u =null;
                                 break;
                             case 1:
                                 Order o = ((User) u).createOrder(db.listOffices());
@@ -86,7 +87,7 @@ public class RentNGo {
                                      break;
                                 }
                                 //CONTROLLA SPAZIO SU CARS
-                                ldb.searchCar(o.getpickOffice(),o.getDeliveryOffice(), o.getPickDate(), o.getDeliveryDate(), db.getListOfCars(), u.getEmail());
+                                ldb.searchCar(o.getpickOffice(),o.getDeliveryOffice(), o.getPickDate(), o.getDeliveryDate(), db.getListOfCars(), (User)u);
                                 break;
                             case 2:
                                 //((User) u).showOrders();

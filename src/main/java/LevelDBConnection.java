@@ -6,6 +6,8 @@ import org.iq80.leveldb.Options;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static org.iq80.leveldb.impl.Iq80DBFactory.*;
@@ -115,7 +117,7 @@ public class LevelDBConnection {
         return cars;
     }
 
-    public void searchCar(String getpickOffice,String deliveryOffice, Date pickDate, Date deliveryDate, ArrayList<Car> cars, String email) {
+    public void searchCar(String getpickOffice,String deliveryOffice, Date pickDate, Date deliveryDate, ArrayList<Car> cars, User u) {
         System.out.println("Choose the best cars");
         int i = 0;
         int choice = 0;
@@ -123,7 +125,7 @@ public class LevelDBConnection {
         Scanner sc =new Scanner(System.in);
         Long dPick = pickDate.getTime();
         Long dDelivery = deliveryDate.getTime();
-        String key = email + ":cart";
+        String key = u.getEmail() + ":cart";
         String value = "";
         String carsInCart = getValue(key);
         int j = 0;
@@ -161,7 +163,7 @@ public class LevelDBConnection {
                         if (choice > (i - 10) && choice < i) {
                             c = cars.get(choice);
                             if(carsInCart==null || !carsInCart.contains(c.getPlate()))
-                                addCarInCart(email, c.getPlate(), c.getBrand(), c.getEngine(), c.getPower(), c.getVehicle());
+                                addCarInCart(u.getEmail(), c.getPlate(), c.getBrand(), c.getEngine(), c.getPower(), c.getVehicle());
                         }
                     } while (choice != -1 && choice != -2);
                 }
@@ -174,9 +176,16 @@ public class LevelDBConnection {
             j=0;
             //
         }
-        key= email + ":order";
+        key= u.getEmail() + ":order";
         value = getpickOffice + "~" + pickDate.getTime() + "~" + deliveryDate.getTime() + "~" + deliveryOffice;
         putValue(key, value);
+        DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+        Date d = new Date();
+        if((u.getDateOfBirth().getYear() + 21) >  d.getYear() ){ // if he has less than 20 years
+            addAccessories(u.getEmail(),"Young Driver 19/20",19, "day" );
+        } else if((u.getDateOfBirth().getYear() + 25) >  d.getYear()){
+            addAccessories(u.getEmail(),"Young Driver 21/24",6, "day" );
+        }
     }
 
     public Order payment(String email, Car car) {

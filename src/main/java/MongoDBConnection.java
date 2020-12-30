@@ -313,16 +313,22 @@ public class MongoDBConnection
     }
 
     private User createUser(Document d) {
-        //String surname, String name, String email, String password, Date dateOfBirth
         ////////
         //////// errore d.getDate("DateOfBirth")
         ////////
-        Date date = new Date(String.valueOf(d.getString("DateOfBirth")));
+        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+        Date date;
+        try {
+            date = formatter.parse(d.getString("DateOfBirth"));
+        } catch (ParseException e){
+            System.out.println("Error");
+            return null;
+        }
         User u = new User(d.getString("Surname"), d.getString("Name"),d.getString("Email"), d.getString("Password"), date);
         return u;
     }
 
-    public boolean insertUser(User u) {
+    public boolean insertUser(User u)  {
         MongoCollection<Document> myColl = db.getCollection("users");
 
         //check email
@@ -331,12 +337,13 @@ public class MongoDBConnection
             System.out.println("User already present in the database");
             return false;
         }
+        DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
 
         Document user = new Document("Name", u.getName())
-                .append("Surname", u.getSurname())
-                .append("Email", u.getEmail())
-                .append("Password", u.getPassword())
-                .append("DateOfBirth", u.getDateOfBirth());
+                    .append("Surname", u.getSurname())
+                    .append("Email", u.getEmail())
+                    .append("Password", u.getPassword())
+                    .append("DateOfBirth",formatter.format(u.getDateOfBirth()));
         myColl.insertOne(user);
 
         return true;
