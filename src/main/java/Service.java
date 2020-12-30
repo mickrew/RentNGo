@@ -1,5 +1,7 @@
 package main.java;
 
+import java.util.ArrayList;
+
 public class Service {
     String nameService;
     Double price;
@@ -11,6 +13,20 @@ public class Service {
     }
 
     public Service(){}
+
+    public static ArrayList<Service> clientServices(ArrayList<Service> services){
+        ArrayList<Service> clientServicies = new ArrayList<>();
+        for(Service s: services) {
+            if (!s.getNameService().equals("Young Driver 19/20") && !s.getNameService().equals("Young Driver 21/24")
+                    && !s.getNameService().equals("Administrative expenses for fines/tolls/parking")
+                    && !s.getNameService().equals("Administrative expenses for damages")
+                    && !s.getNameService().equals("Deductible for insolvency or passive claim / car accident")
+                    && !s.getNameService().equals("Truck Service")){
+                clientServicies.add(s);
+            }
+        }
+        return clientServicies;
+    }
 
     public void setName(String name) {
         this.nameService = name;

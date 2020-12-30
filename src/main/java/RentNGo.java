@@ -52,29 +52,89 @@ public class RentNGo {
             System.out.println("1) Log in");
             System.out.println("2) Sign in");
             Scanner sc =new Scanner(System.in);
-            i = sc.nextInt();
+            i = Integer.valueOf(sc.nextLine());
 
             if(i == 1) {
                 UnregisteredUser u = db.getUser(UnregisteredUser.logIn());
                 if (u == null) {
                     System.out.println("Login failed");
+                    continue;
                 }
                 if (u instanceof User) {
                     int j = 1;
                     while (j != 0) {
                         ((User) u).showMenu();
-                        j = sc.nextInt();
+                        j = Integer.valueOf(sc.nextLine());
                         switch (j) {
                             case 0:
+                                i=0;
                                 break;
                             case 1:
-                                ((User) u).createOrder();
+                                Order o = ((User) u).createOrder(db.listOffices());
+                                //CONTROLLA SPAZIO SU CARS
+                                ldb.searchCar(o.getpickOffice(),o.getDeliveryOffice(), o.getPickDate(), o.getDeliveryDate(), db.getListOfCars(), u.getEmail());
+                                break;
                             case 2:
-                                ((User) u).showOrders();
+                                //((User) u).showOrders();
+                                db.showListOrders(u.getEmail());
+                                System.out.println("Do you want to Delete an order? Y/N");
+                                String a = sc.nextLine();
+                                if(a.equals("Y")){
+                                    //db.deleteOrder();
+                                    System.out.println("Select which one:");
+                                    int choice = Integer.valueOf(sc.nextLine());
+                                    db.deleteOrder(u.getEmail(),choice);
+                                }
+                                break;
                             case 3:
-                                ((User) u).showCart();
+                                //((User) u).showCart();
+                                ArrayList<Car> cars = ldb.getListOfCarsInCart(u.getEmail());
+                                for(Car c: cars){
+                                    c.printCar();
+                                    System.out.println("The car price per day is: "+ Math.ceil(c.calcolatePrice(c)) + "€");
+                                }
+                                ldb.showOrderInfo(u.getEmail());
+                                System.out.println("Do you want to proceed with the payment? Y/N");
+                                a = sc.nextLine();
+                                if(a.equals("Y")){
+                                    Order order = ldb.payment(u.getEmail(), ((User)u).chooseCar(cars));
+                                    if(order == null){
+                                        System.out.println("Car is already rented");
+                                    } else {
+                                        order.printOrder();
+                                        db.insertOrder(order);
+                                    }
+                                }
+                                break;
                             case 4:
-                                ((User) u).deleteAccount();
+                                db.deleteUser(u.getEmail());
+                                ldb.deleteUserCart(u.getEmail());
+                                System.out.println("User deleted successfully");
+                                i=0;
+                                break;
+                            case 5:
+                                ArrayList<Service> services=Service.clientServices(db.getServices());
+                                System.out.println("Do you want to delete(D) or add(A)?");
+                                String ad =sc.nextLine();
+                                int choice =0;
+                                for(Service s: services){
+                                    System.out.print(choice + ") ");
+                                    s.printService();
+                                    choice ++;
+                                }
+                                while(choice!=-1) {
+                                    System.out.println("Which Accessories do you want to add/remove? (-1 to stop)");
+                                    choice = Integer.valueOf(sc.nextLine());
+                                    if(choice <= services.size() && choice > -1) {
+                                        if(ad.equals("A"))
+                                            ldb.addAccessories(u.getEmail(), services.get(choice).getNameService(), services.get(choice).getPrice(), services.get(choice).getMultiplicator());
+                                        else if(ad.equals("D"))
+                                            ldb.deleteAccessories(u.getEmail(), services.get(choice).getNameService(), services.get(choice).getPrice(), services.get(choice).getMultiplicator());
+                                    } else {
+                                        System.out.println("Error. Try again");
+                                    }
+                                }
+                                break;
                             default:
                                 System.out.println("Try again.");
                         }
@@ -88,15 +148,15 @@ public class RentNGo {
                             case 0:
                                 break;
                             case 1:
-                                ((Worker) u).searchCars();
+                                //((Worker) u).searchCars();
                             case 2:
-                                ((Worker) u).searchOrders();
+                                //((Worker) u).searchOrders();
                             case 3:
-                                ((Worker) u).searchUser();
+                                //((Worker) u).searchUser();
                             case 4:
-                                ((Worker) u).pickCar();
+                                //((Worker) u).pickCar();
                             case 5:
-                                ((Worker) u).deliveryCar();
+                                //((Worker) u).deliveryCar();
                             default:
                                 System.out.println("Try again.");
                         }
@@ -111,19 +171,19 @@ public class RentNGo {
                             case 0:
                                 break;
                             case 1:
-                                ((Admin) u).addRemoveWorker();
+                                //((Admin) u).addRemoveWorker();
                             case 2:
-                                ((Admin) u).addRemoveCar();
+                                //((Admin) u).addRemoveCar();
                             case 3:
-                                ((Admin) u).promoteWorker();
+                                //((Admin) u).promoteWorker();
                             case 4:
-                                ((Admin) u).modifyWorker();
+                                //((Admin) u).modifyWorker();
                             case 5:
-                                ((Admin) u).deliveryCar();
+                                //((Admin) u).deliveryCar();
                             case 6:
-                                ((Admin) u).deliveryCar();
+                                //((Admin) u).deliveryCar();
                             case 7:
-                                ((Admin) u).addOffice();
+                                //((Admin) u).addOffice();
                             default:
                                 System.out.println("Try again.");
                         }

@@ -9,17 +9,17 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Order {
-    Car car = new Car();
-    User user = new User();
+    String car;
+    String user;
     Date pickDate = new Date();
     Date deliveryDate = new Date();
-    Office pickOffice = new Office();
-    Office deliveryOffice = new Office();
-    List<Service> accessories = new ArrayList<Service>();
+    String pickOffice ;
+    String deliveryOffice ;
+    String accessories ;
     Double priceCar;
     Double priceAccessories;
     
-    public Order(Car car, User user, Double priceCar, Date pickDate, Office pickOffice,Date deliveryDate, Office deliveryOffice, Double priceAccessories, List<Service> accessories) {
+    public Order(String car, String user, Double priceCar, Date pickDate, String pickOffice,Date deliveryDate, String deliveryOffice, Double priceAccessories, String accessories) {
         this.car=car;
         this.user=user;
         this.priceCar=priceCar;
@@ -33,19 +33,19 @@ public class Order {
 
     public Order(){}
     
-    public Car getCar() {
+    public String getCar() {
         return car;
     }
 
-    public void setCar(Car car) {
+    public void setCar(String car) {
         this.car = car;
     }
 
-    public User getUser() {
+    public String getUser() {
         return user;
     }
 
-    public List<Service> getAccessories() {
+    public String getAccessories() {
         return accessories;
     }
 
@@ -65,23 +65,23 @@ public class Order {
         return priceAccessories;
     }
 
-    public Office getDeliveryOffice() {
+    public String getDeliveryOffice() {
         return deliveryOffice;
     }
 
-    public Office getpickOffice() {
+    public String getpickOffice() {
         return pickOffice;
     }
 
-    public void setDeliveryOffice(Office deliveryOffice) {
+    public void setDeliveryOffice(String deliveryOffice) {
         this.deliveryOffice = deliveryOffice;
     }
 
-    public void setAccessories(List<Service> accessories) {
+    public void setAccessories(String accessories) {
         this.accessories = accessories;
     }
 
-    public void setUser(User user) {
+    public void setUser(String user) {
         this.user = user;
     }
 
@@ -101,7 +101,7 @@ public class Order {
         this.priceCar = priceCar;
     }
 
-    public void setpickOffice(Office pickOffice) {
+    public void setpickOffice(String pickOffice) {
         this.pickOffice = pickOffice;
     }
 
@@ -128,7 +128,7 @@ public class Order {
             o.printOffice();
         }
         i = Integer.valueOf(sc.nextLine());
-        setpickOffice(offices.get(i));
+        setpickOffice(offices.get(i).getName());
 
         System.out.print("Insert the date of delivery. ( DD/MM/YYYY ): ");
         Date d2= new Date();
@@ -150,18 +150,18 @@ public class Order {
             o.printOffice();
         }
         i = Integer.valueOf(sc.nextLine());
-        setDeliveryOffice(offices.get(i));
+        setDeliveryOffice(offices.get(i).getName());
     }
 
     public void printOrder(){
-        System.out.println("Car: " + "\t" + car.getPlate());
-        System.out.println("User: " + "\t" +user.getEmail());
+        System.out.println("Car: " + "\t" + car);
+        System.out.println("User: " + "\t" +user);
         System.out.println("Price: " + "\t" + priceCar + "€");
         System.out.println("Pick Office: " + "\t" + pickOffice);
         System.out.println("Pick Date: " + "\t" + pickDate);
         System.out.println("Delivery Office: " + "\t" + deliveryOffice);
         System.out.println("Delivery Date: " + "\t" + deliveryDate);
-        System.out.println("Price accessores: " + "\t" + priceAccessories + "€");
+        System.out.println("Price accessories: " + "\t" + priceAccessories + "€");
         System.out.println("List accessories: " + "\t" + accessories.toString());
     }
 

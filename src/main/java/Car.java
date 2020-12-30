@@ -1,5 +1,9 @@
 package main.java;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
+
 public class Car {
     private
         String plate;
@@ -149,4 +153,15 @@ public class Car {
                     ", GearBoxType: " + getGearBoxType() + ", Tyre: " + getTyre() + ", TractionType: " + getTractionType() + ", Power: " + getPower() );*/
             System.out.println(out);
         }
+
+    public Double calcolatePrice(Car chosenCar) {
+        List<String> power = Arrays.asList(chosenCar.getPower().split("/"));
+        List<String> power1 = Arrays.asList(power.get(0).split("-"));
+
+        Double kW = Double.valueOf(power1.get(1));
+        Double multiplicatoPrice = 0.4;
+        Double priceCar = kW.doubleValue() * multiplicatoPrice;
+        return priceCar;
+
+    }
 }
