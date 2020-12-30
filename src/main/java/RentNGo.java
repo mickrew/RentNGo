@@ -52,7 +52,13 @@ public class RentNGo {
             System.out.println("1) Log in");
             System.out.println("2) Sign in");
             Scanner sc =new Scanner(System.in);
-            i = Integer.valueOf(sc.nextLine());
+            try{
+                i = Integer.valueOf(sc.nextLine());
+            }
+            catch(Exception e){
+                System.out.println("Error. Didn't insert an integer");
+                i=4;
+            }
 
             if(i == 1) {
                 UnregisteredUser u = db.getUser(UnregisteredUser.logIn());
@@ -64,13 +70,21 @@ public class RentNGo {
                     int j = 1;
                     while (j != 0) {
                         ((User) u).showMenu();
-                        j = Integer.valueOf(sc.nextLine());
+                        try {
+                            j = Integer.valueOf(sc.nextLine());
+                        }catch (Exception e){
+                            System.out.println("Didn't insert an integer");
+                            j=7;
+                        }
                         switch (j) {
                             case 0:
                                 i=0;
                                 break;
                             case 1:
                                 Order o = ((User) u).createOrder(db.listOffices());
+                                if(o == null){
+                                     break;
+                                }
                                 //CONTROLLA SPAZIO SU CARS
                                 ldb.searchCar(o.getpickOffice(),o.getDeliveryOffice(), o.getPickDate(), o.getDeliveryDate(), db.getListOfCars(), u.getEmail());
                                 break;
@@ -89,20 +103,23 @@ public class RentNGo {
                             case 3:
                                 //((User) u).showCart();
                                 ArrayList<Car> cars = ldb.getListOfCarsInCart(u.getEmail());
-                                for(Car c: cars){
-                                    c.printCar();
-                                    System.out.println("The car price per day is: "+ Math.ceil(c.calcolatePrice(c)) + "€");
-                                }
-                                ldb.showOrderInfo(u.getEmail());
-                                System.out.println("Do you want to proceed with the payment? Y/N");
-                                a = sc.nextLine();
-                                if(a.equals("Y")){
-                                    Order order = ldb.payment(u.getEmail(), ((User)u).chooseCar(cars));
-                                    if(order == null){
-                                        System.out.println("Car is already rented");
-                                    } else {
-                                        order.printOrder();
-                                        db.insertOrder(order);
+                                if(cars != null){
+                                    for(Car c: cars){
+                                        c.printCar();
+                                        System.out.println("The car price per day is: "+ Math.ceil(c.calcolatePrice(c)) + "€");
+                                    }
+                                    ldb.showOrderInfo(u.getEmail());
+
+                                    System.out.println("Do you want to proceed with the payment? Y/N");
+                                    a = sc.nextLine();
+                                    if(a.equals("Y")){
+                                        Order order = ldb.payment(u.getEmail(), ((User)u).chooseCar(cars));
+                                        if(order == null){
+                                            System.out.println("Car is already rented");
+                                        } else {
+                                            order.printOrder();
+                                            db.insertOrder(order);
+                                        }
                                     }
                                 }
                                 break;
