@@ -58,8 +58,9 @@ public class MongoDBConnection
             Document d = cursor.next();
             Service s = new Service();
             s.setMultiplicator(d.getString("MULTIPLICATOR"));
+            s.setPrice(Double.valueOf(d.getString(" PRICE VAT INCLUDED ")));
             s.setNameService(d.getString("SERVICES"));
-            //s.setPrice(Double.valueOf(d.getString("PRICE VAT INCLUDED")));
+            services.add(s);
         }
 
     }
@@ -244,7 +245,7 @@ public class MongoDBConnection
             u = createUser(d);
         }
 
-        u.printUser();
+        //u.printUser();
 
         return u;
     }
@@ -361,69 +362,32 @@ public class MongoDBConnection
         return services;
     }
 
-
-    public void deleteOrder(String plate, String name,String surname) {
+    public void deleteOrder(String email, int choice) {
         MongoCollection<Document> myColl = db.getCollection("orders");
-        MongoCursor<Document> cursor  = myColl.find(and(eq("CarPlate", plate),
-                eq(" Name", name),eq(" Surname", surname) )).iterator();
-        if(!cursor.hasNext()) {
-            System.out.println("There are no orders");
-            return ;
-        }
-        do {
-            cursor.forEachRemaining(printFormattedDocuments);
-        }  while (cursor.hasNext());
-
-        System.out.print("Which one do you want to delete? (Insert date of pick) ");
-        Scanner sc = new Scanner(System.in);
-        String datePick = sc.nextLine();
-
-        MongoCursor<Document> cursor2  = myColl.find(and(eq("CarPlate", plate),
-                eq(" Name", name),eq(" Surname", surname), eq(" DatePick", datePick) )).iterator();
-
-
-        if(cursor2.hasNext()) {
-            myColl.deleteOne(and(eq("CarPlate", plate),
-                    eq(" Name", name),eq(" Surname", surname), eq(" DatePick", datePick) ));
-            System.out.println("Order deleted successfully");
-        }  else {
-            System.out.println("Operation failed");
+        MongoCursor<Document> cursor = myColl.find(eq("Email", email)).iterator();
+        int i=0;
+        while(cursor.hasNext()){
+            Document d = cursor.next();
+            if(choice == i){
+                myColl.deleteOne(d);
+            }
+            i++;
         }
 
     }
 
-    public void insertOrder() {
-        MongoCollection<Document> myColl = db.getCollection("cars");
-
-        Scanner sc = new Scanner(System.in);
-        System.out.print("Insert the car plate");
-        String carPlate = sc.nextLine();
-
-        MongoCursor<Document> cursor  = myColl.find(eq(" CarPlate", carPlate)).iterator();
-        if (!cursor.hasNext()) {
-            System.out.println("Car not found");
-            return ;
-        }
-
-        System.out.print("Insert the user name");
-        String name = sc.nextLine();
-
-        System.out.print("Insert the user surname");
-        String surname = sc.nextLine();
-
-        System.out.print("Insert the date of pick");
-        String datePick = sc.nextLine();
-
-        System.out.print("Insert the date of delivery");
-        String dateDelivery = sc.nextLine();
-
-        MongoCollection<Document> myCollOrder = db.getCollection("orders");
-        Document order = new Document("CarPlate", carPlate)
-                .append(" Name", name)
-                .append(" Surname", surname)
-                .append(" DatePick", datePick)
-                .append(" DateDelivery", dateDelivery);
-        myCollOrder.insertOne(order);
+    public void insertOrder(Order o) {
+        MongoCollection<Document> myColl = db.getCollection("orders");
+        Document order = new Document("CarPlate", o.getCar())
+                .append("Email", o.getUser())
+                .append("CarPrice",o.getPriceCar().toString())
+                .append("StartOffice", o.getpickOffice())
+                .append("PickDate", String.valueOf(o.getPickDate().getTime()))
+                .append("EndOffice", o.getDeliveryOffice())
+                .append("DeliveryDate", String.valueOf(o.getDeliveryDate().getTime()))
+                .append("PriceAccessories", o.getPriceAccessories().toString())
+                .append("ListAccessories", o.getAccessories());
+        myColl.insertOne(order);
     }
 /*
     public Order findOrder(String email){
@@ -544,7 +508,7 @@ public class MongoDBConnection
     }
 
     public Car getCarFromDocument(Document d){
-        Car c = new Car(d.getString("CarPlate"), d.getString("Brand"), d.getString("Vehicle"),
+        Car c = new Car(d.getString(" CarPlate"), d.getString("Brand"), d.getString("Vehicle"),
                 d.getString("Engine"), d.getString("Average fuel consumption (l/100 km)"), d.getString("CO2 (g/km)"),
                 d.getString("Weight(3p/5p) kg"), d.getString("GearBox type"), d.getString("Tyre"),
                 d.getString("Traction type"), d.getString("Power (hp - kW /rpm)"));
@@ -555,7 +519,11 @@ public class MongoDBConnection
         //check if user
         User us = findUser(s.get(0));
         if(us != null){
-            return new User(us.getSurname(), us.getName(), us.getEmail(), us.getPassword(), us.getDateOfBirth());
+            if(s.get(1).equals(us.getPassword())) {
+                us.printUser();
+                return new User(us.getSurname(), us.getName(), us.getEmail(), us.getPassword(), us.getDateOfBirth());
+            }
+            return null;
             //u=us;
         }
 
@@ -570,6 +538,33 @@ public class MongoDBConnection
         }
         System.out.println("User not found");
         return null;
+    }
+
+    public void showListOrders(String email) {
+        MongoCollection<Document> myColl = db.getCollection("orders");
+        MongoCursor<Document> cursor = myColl.find(eq("Email", email)).iterator();
+        int i=0;
+        while(cursor.hasNext()){
+            Document d = cursor.next();
+            System.out.print(i + ") ");
+            System.out.print("CarPlate: " + d.getString("CarPlate") + " ");
+            System.out.print("CarPrice: " + d.getString("CarPrice") + " ");
+            Date datPick =new Date(Long.valueOf(d.getString("PickDate")));
+            System.out.print("DatePick: " + datPick.toString() + " ");
+            Date datDelivery =new Date(Long.valueOf(d.getString("DeliveryDate")));
+            System.out.print("DateDelivery: " + datDelivery.toString() + " ");
+            System.out.print("StartOffice: " + d.getString("StartOffice") + " ");
+            System.out.print("EndOffice: " + d.getString("EndOffice") + " ");
+            System.out.print("PriceAccessories: " + d.getString("PriceAccessories") + " ");
+            System.out.print("ListAccessories: " + d.getString("ListAccessories") + " ");
+            System.out.println();
+            i++;
+        }
+
+    }
+
+    public ArrayList<Service> getServices() {
+        return services;
     }
 /*
     public User logIn(ArrayList<String> parameters){
