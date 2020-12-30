@@ -69,11 +69,11 @@ public class UnregisteredUser {
 
     public static ArrayList<String> logIn() {
         ArrayList<String> r =new ArrayList<>();
-        System.out.print("Insert the email ");
+        System.out.print("Insert the email: ");
         Scanner sc = new Scanner(System.in);
         r.add(sc.nextLine());
 
-        System.out.print("Insert the password ");
+        System.out.print("Insert the password: ");
         r.add(sc.nextLine());
         return r;
     }

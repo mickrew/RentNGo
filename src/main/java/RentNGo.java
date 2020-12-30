@@ -1,6 +1,7 @@
 package main.java;
 
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -27,8 +28,8 @@ public class RentNGo {
         return parameters;
     }
 
-    public static void main(String args[]){
-        db = new MongoDBConnection("CarRental");
+    public static void main(String args[]) throws ParseException {
+        db = new MongoDBConnection("local");
         ldb = new LevelDBConnection();
         ldb.openDB();
         //        User(String surname, String name, String email, String password, Date dateOfBirth){
@@ -47,66 +48,66 @@ public class RentNGo {
         u.printUser();
   */
         int i = 0;
-        do {
-            System.out.println("0) Exit");
-            System.out.println("1) Log in");
-            System.out.println("2) Sign in");
-            Scanner sc =new Scanner(System.in);
-            i = sc.nextInt();
 
-            if(i == 1) {
-                UnregisteredUser u = db.getUser(UnregisteredUser.logIn());
-                if (u == null) {
-                    System.out.println("Login failed");
-                }
-                if (u instanceof User) {
-                    int j = 1;
-                    while (j != 0) {
-                        ((User) u).showMenu();
-                        j = sc.nextInt();
-                        switch (j) {
-                            case 0:
-                                break;
-                            case 1:
+        System.out.println("0) Exit");
+        System.out.println("1) Log in");
+        System.out.println("2) Sign in");
+        Scanner sc = new Scanner(System.in);
+        i = sc.nextInt();
+        //do {
+        if (i == 1) {
+            UnregisteredUser u = db.getUser(UnregisteredUser.logIn());
+            if (u == null) {
+                System.out.println("Login failed");
+            }
+            if (u instanceof User) {
+                int j = 1;
+                while (j != 0) {
+                    ((User) u).showMenu();
+                    j = sc.nextInt();
+                    switch (j) {
+                        case 0:
+                            break;
+                           /* case 1:
                                 ((User) u).createOrder();
                             case 2:
                                 ((User) u).showOrders();
                             case 3:
                                 ((User) u).showCart();
                             case 4:
-                                ((User) u).deleteAccount();
-                            default:
-                                System.out.println("Try again.");
-                        }
+                                ((User) u).deleteAccount();*/
+                        default:
+                            System.out.println("Try again.");
                     }
-                } else if (u instanceof Worker) {
-                    int j = 1;
-                    while (j != 0) {
-                        ((Worker) u).showMenu();
-                        j = sc.nextInt();
-                        switch (j) {
-                            case 0:
-                                break;
-                            case 1:
-                                ((Worker) u).searchCars();
-                            case 2:
-                                ((Worker) u).searchOrders();
-                            case 3:
-                                ((Worker) u).searchUser();
-                            case 4:
+                }
+            } else if (u instanceof Worker) {
+                int j = 1;
+                while (j != 0) {
+                    ((Worker) u).showMenu();
+                    j = sc.nextInt();
+                    switch (j) {
+                        case 0:
+                            break;
+                        //case 1:
+                        // ((Worker) u).searchCars(db);
+                        // case 2:
+                        //    ((Worker) u).searchOrders();
+                        case 3:
+                            // ((Worker) u).searchUser(db);
+                           /* case 4:
                                 ((Worker) u).pickCar();
                             case 5:
-                                ((Worker) u).deliveryCar();
-                            default:
-                                System.out.println("Try again.");
-                        }
+                                ((Worker) u).deliveryCar();*/
+                        default:
+                            System.out.println("Try again.");
                     }
-                    //u.showMenu
-                } else if (u instanceof Admin) {
-                    int j = 1;
-                    while (j != 0) {
-                        ((Admin) u).showMenu();
-                        j = sc.nextInt();
+                }
+                //u.showMenu
+            } else if (u instanceof Admin) {
+                int j = 1;
+                while (j != 0) {
+                    ((Admin) u).showMenu();
+                       /* j = sc.nextInt();
                         switch (j) {
                             case 0:
                                 break;
@@ -127,13 +128,13 @@ public class RentNGo {
                             default:
                                 System.out.println("Try again.");
                         }
-                    }
+                    }*/
                     //u.showMenu
                 }
-            }  else if (i == 2){
+            } else if (i == 2) {
                 db.insertUser(UnregisteredUser.signIn());
             }
-        } while(i!=0);
+            // } while(i!=0);
 
 
 /*
@@ -234,9 +235,9 @@ public class RentNGo {
         }
         //ldb.elementInDatabase();
 */
-        System.out.println("Fine");
-        ldb.closeDB();
-        db.closeConnection();
+            System.out.println("Fine");
+            ldb.closeDB();
+            db.closeConnection();
+        }
     }
-
 }

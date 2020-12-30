@@ -31,7 +31,7 @@ public class Order {
         this.accessories=accessories;
     }
 
-    public Order(){}
+    public Order(String car, String brand, String vehicle, String engine, String string, String dString, String s, String gearBox_type, String tyre, String traction_type, String string1){}
     
     public Car getCar() {
         return car;

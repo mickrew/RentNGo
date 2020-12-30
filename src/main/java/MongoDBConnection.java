@@ -1,21 +1,12 @@
 package main.java;
 
 import com.mongodb.client.*;
-import com.mongodb.ConnectionString;
 
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import com.mongodb.client.model.Accumulators;
-import com.mongodb.client.model.Updates;
-import com.mongodb.client.result.DeleteResult;
-
-import com.mongodb.client.result.UpdateResult;
-
 import java.util.function.Consumer;
-import java.util.regex.Pattern;
 
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -257,7 +248,8 @@ public class MongoDBConnection
 
         return u;
     }
-    public Worker findWorker(String email){
+
+    public Worker findWorker(String email) throws ParseException {
         MongoCollection<Document> myColl = db.getCollection("workers");
         MongoCursor<Document> cursor  = myColl.find(eq("Email", email)).iterator();
         Worker w;
@@ -275,19 +267,25 @@ public class MongoDBConnection
         return w;
     }
 
-    private Worker createWorker(Document d) {
+    private Worker createWorker(Document d) throws ParseException {
         //String surname, String name, String email, String password, Date dateOfBirth
-        Worker w = new Worker(d.getString("Surname"), d.getString("Name"),d.getString("Email"), d.getString("Password"), d.getDate("DateOfBirth"), d.getInteger("Salary"), d.getDate("Date of hiring"));
+        Date date1=new SimpleDateFormat("dd/MM/yyyy").parse(d.getString("DateOfBirth"));
+        Date date2=new SimpleDateFormat("dd/MM/yyyy").parse(d.getString("Date of hiring"));
+
+        Worker w = new Worker(d.getString("Surname"), d.getString("Name"),d.getString("Email"), d.getString("Password"), date1, d.getInteger("Salary"),date2);
         return w;
     }
 
-    private Admin createAdmin(Document d) {
+    private Admin createAdmin(Document d) throws ParseException {
         //String surname, String name, String email, String password, Date dateOfBirth
-        Admin a = new Admin(d.getString("Surname"), d.getString("Name"),d.getString("Email"), d.getString("Password"), d.getDate("DateOfBirth"), d.getInteger("Salary"), d.getDate("Date of hiring"), d.getDate("Date WtoA"));
+        Date date1=new SimpleDateFormat("dd/MM/yyyy").parse(d.getString("DateOfBirth"));
+        Date date2=new SimpleDateFormat("dd/MM/yyyy").parse(d.getString("Date of hiring"));
+        Date date3=new SimpleDateFormat("dd/MM/yyyy").parse(d.getString("Date WtoA"));
+        Admin a = new Admin(d.getString("Surname"), d.getString("Name"),d.getString("Email"), d.getString("Password"), date1, d.getInteger("Salary"), date2, date3);
         return a;
     }
 
-    public Admin findAdmin(String email){
+    public Admin findAdmin(String email) throws ParseException {
         MongoCollection<Document> myColl = db.getCollection("admins");
         MongoCursor<Document> cursor  = myColl.find(eq("Email", email)).iterator();
         Admin a;
@@ -363,6 +361,7 @@ public class MongoDBConnection
         return services;
     }
 
+
     public void deleteOrder(String plate, String name,String surname) {
         MongoCollection<Document> myColl = db.getCollection("orders");
         MongoCursor<Document> cursor  = myColl.find(and(eq("CarPlate", plate),
@@ -426,6 +425,31 @@ public class MongoDBConnection
                 .append(" DateDelivery", dateDelivery);
         myCollOrder.insertOne(order);
     }
+/*
+    public Order findOrder(String email){
+        MongoCollection<Document> myColl = db.getCollection("orders");
+        MongoCursor<Document> cursor  = myColl.find(eq("Email", email)).iterator();
+        Order o;
+
+        if(!cursor.hasNext()) {
+            System.out.println("There are no orders");
+            return null;
+        }
+        else {
+            Document d = cursor.next();
+            o = getOrderFromDocument(d);
+        }
+
+        o.printOrder();
+        System.out.println();
+
+        return o;
+    }
+/*
+    public Order getOrderFromDocument(Document d){
+        Order o = new Order(d.getString("Car"), d.getString("User"), d.getDouble("priceCar"), d.getDate("pickDate"), d.getString("pickOffice"), d.getDate("deliveryDate"), d.getString("deliveryOffice"), d.getDouble("priceAccessories"), d.getString("accessories"));
+        return o;
+    }*/
 
     public Car findCar(String plate){
         MongoCollection<Document> myColl = db.getCollection("cars");
@@ -527,7 +551,7 @@ public class MongoDBConnection
         return c;
     }
 
-    public UnregisteredUser getUser(ArrayList<String> s) {
+    public UnregisteredUser getUser(ArrayList<String> s) throws ParseException {
         //check if user
         User us = findUser(s.get(0));
         if(us != null){
@@ -561,7 +585,7 @@ public class MongoDBConnection
     }
 */
 
-    /*
+/*
 
     public void createWorker(){
         MongoCollection<Document> myColl = db.getCollection("users");
@@ -603,6 +627,6 @@ public class MongoDBConnection
     }
 
     }
-    */
+*/
 
 }
