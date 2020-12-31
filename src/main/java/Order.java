@@ -19,7 +19,7 @@ public class Order {
     Double priceCar;
     Double priceAccessories;
     
-    public Order(String car, String user, Double priceCar, Date pickDate, String pickOffice,Date deliveryDate, String deliveryOffice, Double priceAccessories, String accessories) {
+    public Order() {
         this.car=car;
         this.user=user;
         this.priceCar=priceCar;

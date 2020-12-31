@@ -409,11 +409,30 @@ public class MongoDBConnection
 
         return o;
     }
-/*
+
     public Order getOrderFromDocument(Document d){
         Order o = new Order(d.getString("Car"), d.getString("User"), d.getDouble("priceCar"), d.getDate("pickDate"), d.getString("pickOffice"), d.getDate("deliveryDate"), d.getString("deliveryOffice"), d.getDouble("priceAccessories"), d.getString("accessories"));
         return o;
     }*/
+
+    public Car findCarByBrand(String brand, String vehicle){
+        MongoCollection<Document> myColl = db.getCollection("cars");
+        MongoCursor<Document> cursor  = myColl.find(and(eq("Brand", brand), eq("Vehicle", vehicle))).iterator();
+        Car c;
+
+        if (!cursor.hasNext()) {
+            System.out.println("Car not found");
+            return null;
+        } else {
+            Document d = cursor.next();
+            c = getCarFromDocument(d);
+        }
+
+        c.printCar();
+        System.out.println();
+
+        return c;
+    }
 
     public Car findCar(String plate){
         MongoCollection<Document> myColl = db.getCollection("cars");
@@ -559,6 +578,34 @@ public class MongoDBConnection
             System.out.print("ListAccessories: " + d.getString("ListAccessories") + " ");
             System.out.println();
             i++;
+        }
+
+    }
+
+    public void showListOrdersByParameter(String parameter) {
+        /*
+        switch (parameter){
+            case
+        }*/
+
+        MongoCollection<Document> myColl = db.getCollection("orders");
+        MongoCursor<Document> cursor = myColl.find(eq("StartOffice", pickOffice)).iterator();
+        int j=0;
+        while(cursor.hasNext()){
+            Document d = cursor.next();
+            System.out.print(j + ") ");
+            System.out.print("CarPlate: " + d.getString("CarPlate") + " ");
+            System.out.print("CarPrice: " + d.getString("CarPrice") + " ");
+            Date datPick =new Date(Long.valueOf(d.getString("PickDate")));
+            System.out.print("DatePick: " + datPick.toString() + " ");
+            Date datDelivery =new Date(Long.valueOf(d.getString("DeliveryDate")));
+            System.out.print("DateDelivery: " + datDelivery.toString() + " ");
+            System.out.print("StartOffice: " + d.getString("StartOffice") + " ");
+            System.out.print("EndOffice: " + d.getString("EndOffice") + " ");
+            System.out.print("PriceAccessories: " + d.getString("PriceAccessories") + " ");
+            System.out.print("ListAccessories: " + d.getString("ListAccessories") + " ");
+            System.out.println();
+            j++;
         }
 
     }

@@ -153,7 +153,7 @@ public class LevelDBConnection {
                 cars.get(i).printCar();
                 if ((i + 1) % 10 == 0) {
                     do {
-                        System.out.println("Whick cars do you want to add on the cart? (Press -2 to exit, -1 to continue)");
+                        System.out.println("Which cars do you want to add on the cart? (Press -2 to exit, -1 to continue)");
                         choice = sc.nextInt();
                         if (choice > (i - 10) && choice < i) {
                             c = cars.get(choice);

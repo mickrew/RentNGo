@@ -1,6 +1,7 @@
 package main.java;
 
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -27,7 +28,7 @@ public class RentNGo {
         return parameters;
     }
 
-    public static void main(String args[]){
+    public static void main(String args[]) throws ParseException {
         db = new MongoDBConnection("CarRental");
         ldb = new LevelDBConnection();
         ldb.openDB();
@@ -148,11 +149,14 @@ public class RentNGo {
                             case 0:
                                 break;
                             case 1:
-                                //((Worker) u).searchCars();
+                                ((Worker) u).searchCars(db);
+                                break;
                             case 2:
-                                //((Worker) u).searchOrders();
+                                ((Worker) u).searchOrders(db);
+                                break;
                             case 3:
-                                //((Worker) u).searchUser();
+                                ((Worker) u).searchUser(db);
+                                break;
                             case 4:
                                 //((Worker) u).pickCar();
                             case 5:

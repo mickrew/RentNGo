@@ -1,5 +1,7 @@
 package main.java;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Date;
@@ -44,68 +46,80 @@ public class Worker extends UnregisteredUser{
         System.out.println("5) Delivery Car");
     }
 
-/*
-    public static Car searchCars(MongoDBConnection db){
+
+    public static void searchCars(MongoDBConnection db){
         System.out.println("Select the parameter by which you want to search cars. ");
         Scanner sc = new Scanner(System.in);
         System.out.println("0) Exit");
-        System.out.println("1) Search by carplate");
-        System.out.println("2) Search by brand");
-        int i = 0;
-        i = sc.nextInt();
-        Car c = new Car();
+        System.out.println("1) Search by Carplate");
+        System.out.println("2) Search by Brand and Vehicle");
+        int choice = Integer.valueOf(sc.nextLine());
+        Car c;
 
-        if (i==0){
+        if (choice==0){
             System.out.println("Exit");
-            return null;
+            return;
+        }else if (choice==1){
+            System.out.print("Insert carplate: ");
+            String plate = sc.nextLine();
+            c = db.findCar(plate);
+
+            return;
+        } else if (choice==2){
+            System.out.print("Insert Brand: ");
+            String brand = sc.nextLine();
+            System.out.print("Insert Vehicle: ");
+            String vehicle = sc.nextLine();
+            c = db.findCarByBrand(brand, vehicle);
+            return;
         }
-        if (i==1){
-            System.out.println("Insert the carplate: ");
-            String carplate = null;
-            carplate = sc.nextLine();
-            c = db.findCar(carplate);
-        }
-        return c;
-    }*/
-/*
-    public static User searchUser(MongoDBConnection db){
+    }
+
+    public static void searchUser(MongoDBConnection db){
         System.out.println("Insert user-email: ");
         Scanner sc = new Scanner(System.in);
-        String email = null;
+        String email;
         email = sc.nextLine();
         User u = new User();
         u = db.findUser(email);
-        return u;
+        u.printUser();
     }
 
-    public static Order searchOrder(MongoDBConnection db){
-      /*  System.out.println("Insert user email: ");
+    public static void searchOrders(MongoDBConnection db) throws ParseException {
         Scanner sc = new Scanner(System.in);
-        String email = null;
-        email = sc.nextLine();
         Order or = new Order();
-        or = db.findOrder(email);
 
         System.out.println("Select the parameter by which you want to search orders. ");
-        Scanner sc = new Scanner(System.in);
         System.out.println("0) Exit");
         System.out.println("1) Search by email");
-        //System.out.println("3) Search by DeliveryDate");
-        int i = 0;
-        i = sc.nextInt();
-        Order or = new Order();
+        System.out.println("2) Search by PickOffice");
+        int choice = Integer.valueOf(sc.nextLine());
 
-        if (i==0){
+        if (choice==0){
             System.out.println("Exit");
-            return null;
-        } else if (i==1){
-            System.out.println("Insert user email: ");
-            String email = null;
-            email = sc.nextLine();
-            or = db.findOrder(email);
+            return;
+        } else if (choice==1){
+            System.out.print("Insert email of user of which you want to search orders: ");
+            String email = sc.nextLine();
+            //or = db.findOrder(email);
+            db.showListOrders(email);
+            return;
+        } else if (choice == 2){
+            System.out.print("Insert pick office: ");
+            String pickOffice = sc.nextLine();
+            System.out.println("Insert range of dates.");
+            System.out.print("Insert first date: ");
+            SimpleDateFormat  formatter=new SimpleDateFormat("dd/MM/yyyy");
+            Date d = formatter.parse(sc.nextLine());
+
+            System.out.print("Insert second date: ");
+            Date d = formatter.parse(sc.nextLine());
+            db.showListOrdersByOffice(pickOffice);
 
         }
-        return or;
+        //return or;
+        //return null;
     }
-*/
+
+
 }
