@@ -105,19 +105,22 @@ public class Order {
         this.pickOffice = pickOffice;
     }
 
-    public void chooseParameters(ArrayList<Office> offices){
+    public boolean chooseParameters(ArrayList<Office> offices){
         Scanner sc = new Scanner(System.in);
         System.out.print("Insert the date of pick. ( DD/MM/YYYY ): ");
         Date d= new Date();
 
         String dateString = sc.nextLine();
-        //System.out.println(dateString);
-
         DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
         try {
             d = formatter.parse(dateString);
         } catch (ParseException p){
-            System.out.println("Error");
+            System.out.println("Error. Wrong Date");
+            return false;
+        }
+        if(d.getTime() < (new Date()).getTime()){
+            System.out.println("Wrong date.");
+            return false;
         }
         setPickDate(d);
 
@@ -127,7 +130,16 @@ public class Order {
             System.out.print(i++ + ") ");
             o.printOffice();
         }
-        i = Integer.valueOf(sc.nextLine());
+        try {
+            i = Integer.valueOf(sc.nextLine());
+        } catch (Exception p){
+            System.out.println("Error. Didn't insert an integer");
+            return false;
+        }
+        if(i >= offices.size() || i<0){
+            System.out.println("Index out of range");
+            return false;
+        }
         setpickOffice(offices.get(i).getName());
 
         System.out.print("Insert the date of delivery. ( DD/MM/YYYY ): ");
@@ -139,7 +151,12 @@ public class Order {
         try {
             d2 = formatter.parse(dateString2);
         } catch (ParseException p){
-            System.out.println("Error");
+            System.out.println("Error. Wrong Date");
+            return false;
+        }
+        if(d2.getTime() <= d.getTime()){
+            System.out.println("Wrong Dates");
+            return false;
         }
         setDeliveryDate(d2);
 
@@ -149,8 +166,19 @@ public class Order {
             System.out.print(i++ + ") ");
             o.printOffice();
         }
-        i = Integer.valueOf(sc.nextLine());
+
+        try {
+            i = Integer.valueOf(sc.nextLine());
+        } catch (Exception p){
+            System.out.println("Error. Didn't insert an integer");
+            return false;
+        }
+        if(i >= offices.size() || i<0){
+            System.out.println("Index out of range");
+            return false;
+        }
         setDeliveryOffice(offices.get(i).getName());
+        return true;
     }
 
     public void printOrder(){

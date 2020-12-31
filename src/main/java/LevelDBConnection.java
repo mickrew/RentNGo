@@ -6,6 +6,8 @@ import org.iq80.leveldb.Options;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static org.iq80.leveldb.impl.Iq80DBFactory.*;
@@ -52,7 +54,7 @@ public class LevelDBConnection {
         String s = getValue(key);
         if(s==null){
             System.out.println("Cart is empty");
-            return new ArrayList<>();
+            return null;
         }
         Iterator<String> c = Arrays.stream(s.split("<<==>>")).iterator(); // es. AAA11AA,Brand,Engine,Power;BBB11BB;..
         ArrayList<Car> cars = new ArrayList<>();
@@ -115,7 +117,7 @@ public class LevelDBConnection {
         return cars;
     }
 
-    public void searchCar(String getpickOffice,String deliveryOffice, Date pickDate, Date deliveryDate, ArrayList<Car> cars, String email) {
+    public void searchCar(String getpickOffice,String deliveryOffice, Date pickDate, Date deliveryDate, ArrayList<Car> cars, User u) {
         System.out.println("Choose the best cars");
         int i = 0;
         int choice = 0;
@@ -123,14 +125,12 @@ public class LevelDBConnection {
         Scanner sc =new Scanner(System.in);
         Long dPick = pickDate.getTime();
         Long dDelivery = deliveryDate.getTime();
-        String key;
+        String key = u.getEmail() + ":cart";
         String value = "";
+        String carsInCart = getValue(key);
         int j = 0;
         while(!cars.isEmpty()){
-            //check Car availability
             Car c = cars.get(i);
-            //key= c.getPlate() + ":availability";
-            //value = getValue(key);
             key= c.getPlate() + ":availability";
             value = getValue(key);
             if(value!=null){
@@ -153,11 +153,17 @@ public class LevelDBConnection {
                 cars.get(i).printCar();
                 if ((i + 1) % 10 == 0) {
                     do {
-                        System.out.println("Which cars do you want to add on the cart? (Press -2 to exit, -1 to continue)");
-                        choice = sc.nextInt();
+                        System.out.println("Whick cars do you want to add on the cart? (Press -2 to exit, -1 to continue)");
+                        try {
+                            choice = Integer.valueOf(sc.nextLine());
+                        } catch(Exception e){
+                            System.out.println("Didn't insert and integer");
+                            choice = -2;
+                        }
                         if (choice > (i - 10) && choice < i) {
                             c = cars.get(choice);
-                            addCarInCart(email, c.getPlate(), c.getBrand(), c.getEngine(), c.getPower(), c.getVehicle());
+                            if(carsInCart==null || !carsInCart.contains(c.getPlate()))
+                                addCarInCart(u.getEmail(), c.getPlate(), c.getBrand(), c.getEngine(), c.getPower(), c.getVehicle());
                         }
                     } while (choice != -1 && choice != -2);
                 }
@@ -170,9 +176,16 @@ public class LevelDBConnection {
             j=0;
             //
         }
-        key= email + ":order";
+        key= u.getEmail() + ":order";
         value = getpickOffice + "~" + pickDate.getTime() + "~" + deliveryDate.getTime() + "~" + deliveryOffice;
         putValue(key, value);
+        DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+        Date d = new Date();
+        if((u.getDateOfBirth().getYear() + 21) >  d.getYear() ){ // if he has less than 20 years
+            addAccessories(u.getEmail(),"Young Driver 19/20",19, "day" );
+        } else if((u.getDateOfBirth().getYear() + 25) >  d.getYear()){
+            addAccessories(u.getEmail(),"Young Driver 21/24",6, "day" );
+        }
     }
 
     public Order payment(String email, Car car) {
@@ -308,9 +321,13 @@ public class LevelDBConnection {
         System.out.println(", Accessories: "+value);
         key= email + ":accessoriesPriceDay";
         value = getValue(key);
+        if(value == null)
+            value= "0.0";
         System.out.print("price accessories per day: "+ value +"€, ");
         key= email + ":accessoriesPriceOneTime";
         value = getValue(key);
+        if(value == null)
+            value ="0.0";
         System.out.println("price accessories one time: "+ value + "€");
 
 
@@ -319,26 +336,28 @@ public class LevelDBConnection {
     public void deleteAccessories(String email, String nameService, Double price, String type) {
         String key = email + ":accessories";
         String value = getValue(key);
-        if(value.contains(nameService)){
-            String newValue ="";
-            Iterator<String> c = Arrays.stream(value.split(",")).iterator();
-            while(c.hasNext()){
-                value = c.next();
-                if(!value.contains(nameService)){
-                    newValue += value + ",";
+        if(value!=null) {
+            if (value.contains(nameService)) {
+                String newValue = "";
+                Iterator<String> c = Arrays.stream(value.split(",")).iterator();
+                while (c.hasNext()) {
+                    value = c.next();
+                    if (!value.contains(nameService)) {
+                        newValue += value + ",";
+                    }
                 }
+                putValue(key, newValue);
+                String accessories = "";
+                if (type.equals("day")) {
+                    accessories = ":accessoriesPriceDay";
+                } else {
+                    accessories = ":accessoriesPriceOneTime";
+                }
+                key = email + accessories;
+                Double cost = Double.valueOf(getValue(key));
+                cost = cost - price;
+                putValue(key, String.valueOf(cost));
             }
-            putValue(key, newValue);
-            String accessories = "";
-            if(type.equals("day")){
-                accessories =":accessoriesPriceDay";
-            } else {
-                accessories =":accessoriesPriceOneTime";
-            }
-            key =email + accessories;
-            Double cost = Double.valueOf(getValue(key));
-            cost = cost - price;
-            putValue(key, String.valueOf(cost));
         }
     }
 

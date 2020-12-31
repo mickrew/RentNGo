@@ -51,7 +51,9 @@ public class User extends UnregisteredUser{
 
         public Order createOrder(ArrayList<Office> offices){
             Order o =new Order();
-            o.chooseParameters(offices);
+            if(o.chooseParameters(offices)== false){
+                return null;
+            }
             return o;
         }
 
