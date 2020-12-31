@@ -63,20 +63,17 @@ public class Worker extends UnregisteredUser{
             System.out.print("Insert carplate: ");
             String plate = sc.nextLine();
             c = db.findCar(plate);
-
-            return;
         } else if (choice==2){
             System.out.print("Insert Brand: ");
             String brand = sc.nextLine();
             System.out.print("Insert Vehicle: ");
             String vehicle = sc.nextLine();
             c = db.findCarByBrand(brand, vehicle);
-            return;
         }
     }
 
     public static void searchUser(MongoDBConnection db){
-        System.out.println("Insert user-email: ");
+        System.out.print("Insert user-email: ");
         Scanner sc = new Scanner(System.in);
         String email;
         email = sc.nextLine();
@@ -92,7 +89,12 @@ public class Worker extends UnregisteredUser{
         System.out.println("Select the parameter by which you want to search orders. ");
         System.out.println("0) Exit");
         System.out.println("1) Search by email");
-        System.out.println("2) Search by PickOffice");
+        System.out.println("2) Search by carplate");
+        System.out.println("3) Search by PickOffice and dates");
+        String pickOffice = null;
+        String carplate = null;
+        String date1 = null;
+        String date2 = null;
         int choice = Integer.valueOf(sc.nextLine());
 
         if (choice==0){
@@ -101,24 +103,25 @@ public class Worker extends UnregisteredUser{
         } else if (choice==1){
             System.out.print("Insert email of user of which you want to search orders: ");
             String email = sc.nextLine();
-            //or = db.findOrder(email);
             db.showListOrders(email);
-            return;
         } else if (choice == 2){
+            System.out.print("Insert carplate: ");
+            carplate = sc.nextLine();
+            db.showListOrdersByParameters(carplate, pickOffice, date1, date2);
+        } else if (choice == 3){
             System.out.print("Insert pick office: ");
-            String pickOffice = sc.nextLine();
+            pickOffice = sc.nextLine();
             System.out.println("Insert range of dates.");
             System.out.print("Insert first date: ");
-            SimpleDateFormat  formatter=new SimpleDateFormat("dd/MM/yyyy");
-            Date d = formatter.parse(sc.nextLine());
-
+            SimpleDateFormat  formatter = new SimpleDateFormat("dd/MM/yyyy");
+            Date d = (Date)formatter.parse(sc.nextLine());
+            date1 = String.valueOf(d.getTime());
             System.out.print("Insert second date: ");
-            Date d = formatter.parse(sc.nextLine());
-            db.showListOrdersByOffice(pickOffice);
-
+            Date d2 = (Date)formatter.parse(sc.nextLine());
+            date2 = String.valueOf(d2.getTime());
+            db.showListOrdersByParameters(carplate, pickOffice, date1, date2);
         }
-        //return or;
-        //return null;
+
     }
 
 

@@ -2,6 +2,7 @@ package main.java;
 
 import com.mongodb.client.*;
 
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -396,31 +397,7 @@ public class MongoDBConnection
                 .append("ListAccessories", o.getAccessories());
         myColl.insertOne(order);
     }
-/*
-    public Order findOrder(String email){
-        MongoCollection<Document> myColl = db.getCollection("orders");
-        MongoCursor<Document> cursor  = myColl.find(eq("Email", email)).iterator();
-        Order o;
 
-        if(!cursor.hasNext()) {
-            System.out.println("There are no orders");
-            return null;
-        }
-        else {
-            Document d = cursor.next();
-            o = getOrderFromDocument(d);
-        }
-
-        o.printOrder();
-        System.out.println();
-
-        return o;
-    }
-
-    public Order getOrderFromDocument(Document d){
-        Order o = new Order(d.getString("Car"), d.getString("User"), d.getDouble("priceCar"), d.getDate("pickDate"), d.getString("pickOffice"), d.getDate("deliveryDate"), d.getString("deliveryOffice"), d.getDouble("priceAccessories"), d.getString("accessories"));
-        return o;
-    }*/
 
     public Car findCarByBrand(String brand, String vehicle){
         MongoCollection<Document> myColl = db.getCollection("cars");
@@ -459,6 +436,7 @@ public class MongoDBConnection
 
         return c;
     }
+
     public void deleteCar(String plate) {
         MongoCollection<Document> myColl = db.getCollection("cars");
         MongoCursor<Document> cursor  = myColl.find(eq("CarPlate", plate)).iterator();
@@ -589,33 +567,50 @@ public class MongoDBConnection
 
     }
 
-    public void showListOrdersByParameter(String parameter) {
-        /*
-        switch (parameter){
-            case
-        }*/
-
-        MongoCollection<Document> myColl = db.getCollection("orders");
-        MongoCursor<Document> cursor = myColl.find(eq("StartOffice", pickOffice)).iterator();
-        int j=0;
-        while(cursor.hasNext()){
-            Document d = cursor.next();
-            System.out.print(j + ") ");
-            System.out.print("CarPlate: " + d.getString("CarPlate") + " ");
-            System.out.print("CarPrice: " + d.getString("CarPrice") + " ");
-            Date datPick =new Date(Long.valueOf(d.getString("PickDate")));
-            System.out.print("DatePick: " + datPick.toString() + " ");
-            Date datDelivery =new Date(Long.valueOf(d.getString("DeliveryDate")));
-            System.out.print("DateDelivery: " + datDelivery.toString() + " ");
-            System.out.print("StartOffice: " + d.getString("StartOffice") + " ");
-            System.out.print("EndOffice: " + d.getString("EndOffice") + " ");
-            System.out.print("PriceAccessories: " + d.getString("PriceAccessories") + " ");
-            System.out.print("ListAccessories: " + d.getString("ListAccessories") + " ");
-            System.out.println();
-            j++;
+    public void showListOrdersByParameters(String carplate, String pickOffice, String pickDate, String deliveryDate) {
+        if (carplate != null){
+            MongoCollection<Document> myColl = db.getCollection("orders");
+            MongoCursor<Document> cursor = myColl.find(eq("CarPlate", carplate)).iterator();
+            int j=0;
+            while(cursor.hasNext()){
+                Document d = cursor.next();
+                System.out.print(j + ") ");
+                System.out.print("CarPlate: " + d.getString("CarPlate") + " ");
+                System.out.print("CarPrice: " + d.getString("CarPrice") + " ");
+                Date datPick =new Date(Long.valueOf(d.getString("PickDate")));
+                System.out.print("DatePick: " + datPick.toString() + " ");
+                Date datDelivery =new Date(Long.valueOf(d.getString("DeliveryDate")));
+                System.out.print("DateDelivery: " + datDelivery.toString() + " ");
+                System.out.print("StartOffice: " + d.getString("StartOffice") + " ");
+                System.out.print("EndOffice: " + d.getString("EndOffice") + " ");
+                System.out.print("PriceAccessories: " + d.getString("PriceAccessories") + " ");
+                System.out.print("ListAccessories: " + d.getString("ListAccessories") + " ");
+                System.out.println();
+                j++;
+            }
+        } else {
+            MongoCollection<Document> myColl = db.getCollection("orders");
+            MongoCursor<Document> cursor = myColl.find(and(eq("StartOffice", pickOffice), eq("PickDate", pickDate), eq("DeliveryDate", deliveryDate))).iterator();
+            int j = 0;
+            while (cursor.hasNext()) {
+                Document d = cursor.next();
+                System.out.print(j + ") ");
+                System.out.print("CarPlate: " + d.getString("CarPlate") + " ");
+                System.out.print("CarPrice: " + d.getString("CarPrice") + " ");
+                Date datPick = new Date(Long.valueOf(d.getString("PickDate")));
+                System.out.print("DatePick: " + datPick.toString() + " ");
+                Date datDelivery = new Date(Long.valueOf(d.getString("DeliveryDate")));
+                System.out.print("DateDelivery: " + datDelivery.toString() + " ");
+                System.out.print("StartOffice: " + d.getString("StartOffice") + " ");
+                System.out.print("EndOffice: " + d.getString("EndOffice") + " ");
+                System.out.print("PriceAccessories: " + d.getString("PriceAccessories") + " ");
+                System.out.print("ListAccessories: " + d.getString("ListAccessories") + " ");
+                System.out.println();
+                j++;
+            }
         }
-
     }
+
 
     public ArrayList<Service> getServices() {
         return services;
