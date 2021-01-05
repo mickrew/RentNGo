@@ -18,6 +18,8 @@ public class Order {
     String accessories ;
     Double priceCar;
     Double priceAccessories;
+    int idOfficePick;
+    int idOfficeDelivery;
     
     public Order() {
         this.car=car;
@@ -118,14 +120,14 @@ public class Order {
             System.out.println("Error. Wrong Date");
             return false;
         }
-        if(d.getTime() < (new Date()).getTime()){
+        if(d.getTime() <= (new Date()).getTime()){
             System.out.println("Wrong date.");
             return false;
         }
         setPickDate(d);
 
         System.out.println("Insert the pick Office");
-        int i = 0;
+        int i = 1;
         for(Office o : offices){
             System.out.print(i++ + ") ");
             o.printOffice();
@@ -136,11 +138,12 @@ public class Order {
             System.out.println("Error. Didn't insert an integer");
             return false;
         }
-        if(i >= offices.size() || i<0){
+        idOfficePick = i;
+        if(i > offices.size() || i<1){
             System.out.println("Index out of range");
             return false;
         }
-        setpickOffice(offices.get(i).getName());
+        setpickOffice(offices.get(i-1).getName());
 
         System.out.print("Insert the date of delivery. ( DD/MM/YYYY ): ");
         Date d2= new Date();
@@ -161,7 +164,7 @@ public class Order {
         setDeliveryDate(d2);
 
         System.out.println("Insert the delivery Office");
-        i = 0;
+        i = 1;
         for(Office o : offices){
             System.out.print(i++ + ") ");
             o.printOffice();
@@ -173,11 +176,12 @@ public class Order {
             System.out.println("Error. Didn't insert an integer");
             return false;
         }
-        if(i >= offices.size() || i<0){
+        if(i > offices.size() || i<1){
             System.out.println("Index out of range");
             return false;
         }
-        setDeliveryOffice(offices.get(i).getName());
+        idOfficeDelivery = i;
+        setDeliveryOffice(offices.get(i-1).getName());
         return true;
     }
 
@@ -193,4 +197,11 @@ public class Order {
         System.out.println("List accessories: " + "\t" + accessories.toString());
     }
 
+    public int getOfficePickPosition() {
+        return idOfficePick;
+    }
+
+    public int getOfficeDeliveryPosition() {
+        return idOfficeDelivery;
+    }
 }

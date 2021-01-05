@@ -29,7 +29,7 @@ public class RentNGo {
     }
 
     public static void main(String args[]) throws ParseException {
-        db = new MongoDBConnection("CarRental");
+        db = new MongoDBConnection("RentNGO");
         ldb = new LevelDBConnection();
         ldb.openDB();
         //        User(String surname, String name, String email, String password, Date dateOfBirth){
@@ -88,7 +88,7 @@ public class RentNGo {
                                      break;
                                 }
                                 //CONTROLLA SPAZIO SU CARS
-                                ldb.searchCar(o.getpickOffice(),o.getDeliveryOffice(), o.getPickDate(), o.getDeliveryDate(), db.getListOfCars(), (User)u);
+                                ldb.searchCar(o.getpickOffice(),o.getDeliveryOffice(), o.getPickDate(), o.getDeliveryDate(), db.getListOfCars(o.getOfficePickPosition()), (User)u);
                                 break;
                             case 2:
                                 //((User) u).showOrders();
@@ -128,8 +128,9 @@ public class RentNGo {
                             case 4:
                                 db.deleteUser(u.getEmail());
                                 ldb.deleteUserCart(u.getEmail());
-                                System.out.println("User deleted successfully");
+                                u = null;
                                 i=0;
+                                j=0;
                                 break;
                             case 5:
                                 ArrayList<Service> services=Service.clientServices(db.getServices());

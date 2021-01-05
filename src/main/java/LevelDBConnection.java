@@ -111,10 +111,16 @@ public class LevelDBConnection {
         return false;
     }
 
+
     public ArrayList<Car> getNotAvailableCars(Date pick, String officePick, Date delivery, String type){
         ArrayList<Car> cars = new ArrayList<>();
         //Cars that are available in that period for a specif office
         return cars;
+    }
+
+    public void deleteCars(String email){
+        String key = email + ":cart";
+        deleteValue(key);
     }
 
     public void searchCar(String getpickOffice,String deliveryOffice, Date pickDate, Date deliveryDate, ArrayList<Car> cars, User u) {
@@ -125,8 +131,20 @@ public class LevelDBConnection {
         Scanner sc =new Scanner(System.in);
         Long dPick = pickDate.getTime();
         Long dDelivery = deliveryDate.getTime();
-        String key = u.getEmail() + ":cart";
-        String value = "";
+
+        String key= u.getEmail() + ":order";
+        String value = getValue(key);
+        if(value!=null){
+           Iterator<String> c = Arrays.stream(value.split("~")).iterator();
+           if(!getpickOffice.equals(c.next()))
+               deleteCars(u.getEmail());
+        }
+
+        value = getpickOffice + "~" + pickDate.getTime() + "~" + deliveryDate.getTime() + "~" + deliveryOffice;
+        putValue(key, value);
+
+        key = u.getEmail() + ":cart";
+        value = "";
         String carsInCart = getValue(key);
         int j = 0;
         while(!cars.isEmpty()){
@@ -176,15 +194,16 @@ public class LevelDBConnection {
             j=0;
             //
         }
-        key= u.getEmail() + ":order";
-        value = getpickOffice + "~" + pickDate.getTime() + "~" + deliveryDate.getTime() + "~" + deliveryOffice;
-        putValue(key, value);
         DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
         Date d = new Date();
+        key= u.getEmail() + ":accessories";
+        value = getValue(key);
         if((u.getDateOfBirth().getYear() + 21) >  d.getYear() ){ // if he has less than 20 years
-            addAccessories(u.getEmail(),"Young Driver 19/20",19, "day" );
+            if(value==null || !value.contains("Young Driver 19/20"))
+                addAccessories(u.getEmail(),"Young Driver 19/20",19, "day" );
         } else if((u.getDateOfBirth().getYear() + 25) >  d.getYear()){
-            addAccessories(u.getEmail(),"Young Driver 21/24",6, "day" );
+            if(value==null || !value.contains("Young Driver 21/24"))
+                addAccessories(u.getEmail(),"Young Driver 21/24",6, "day" );
         }
     }
 
