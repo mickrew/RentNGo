@@ -32,8 +32,10 @@ public class MongoDBConnection
     private ArrayList<Service> services = new ArrayList<Service>();
 
     public MongoDBConnection(String database){
-        mongoClient = MongoClients.create();
-        db = mongoClient.getDatabase("local");
+        //mongoClient = MongoClients.create();
+         mongoClient = MongoClients.create(
+                "mongodb://172.16.3.134:27022, 172.16.3.135:27022, 172.16.3.137:27022/");
+        db = mongoClient.getDatabase("RentNGO");
         Consumer<Document> printFormattedDocuments = new Consumer<Document>() {
             @Override
             public void accept(Document document) {
@@ -59,7 +61,7 @@ public class MongoDBConnection
             Document d = cursor.next();
             Service s = new Service();
             s.setMultiplicator(d.getString("MULTIPLICATOR"));
-            s.setPrice(Double.valueOf(d.getString(" PRICE VAT INCLUDED ")));
+            s.setPrice(Double.valueOf(d.getString("PRICE VAT INCLUDED ")));
             s.setNameService(d.getString("SERVICES"));
             services.add(s);
         }
@@ -487,15 +489,16 @@ public class MongoDBConnection
                 .forEach(printFormattedDocuments);
     }
 
-    public ArrayList<Car> getListOfCars() {
+    public ArrayList<Car> getListOfCars(int office) {
         MongoCollection<Document> myColl = db.getCollection("cars");
-        MongoCursor<Document> cursor = myColl.find().iterator();
+        MongoCursor<Document> cursor = myColl.find(eq("Office", String.valueOf(office))).iterator();
         ArrayList<Car> cars = new ArrayList<>();
         while(cursor.hasNext()){
             Document d = cursor.next();
             Car c = getCarFromDocument(d);
             cars.add(c);
         }
+        System.out.println(cars.size());
         return cars;
     }
 
@@ -512,7 +515,7 @@ public class MongoDBConnection
     }
 
     public Car getCarFromDocument(Document d){
-        Car c = new Car(d.getString(" CarPlate"), d.getString("Brand"), d.getString("Vehicle"),
+        Car c = new Car(d.getString("CarPlate"), d.getString("Brand"), d.getString("Vehicle"),
                 d.getString("Engine"), d.getString("Average fuel consumption (l/100 km)"), d.getString("CO2 (g/km)"),
                 d.getString("Weight(3p/5p) kg"), d.getString("GearBox type"), d.getString("Tyre"),
                 d.getString("Traction type"), d.getString("Power (hp - kW /rpm)"));
