@@ -94,11 +94,6 @@ public class LevelDBConnection {
         return cars;
     }
 
-    public void elementInDatabase(){
-       String key = "Cart:cars";
-       String value = getValue(key);
-       System.out.println("The value is: " + value);
-    }
 
     public boolean addCarInCart(String email, String plate, String brand, String engine, String power, String vehicle){
         String key = email + ":cart"; // KEY:= andrea@live.it:cart   VALUE:= AAA11AA~Renault~Megane 2 (2003)~ 1.4L 100 hp~98-72/6000<<==>>BBB11BB~ ...
@@ -111,12 +106,6 @@ public class LevelDBConnection {
         return false;
     }
 
-
-    public ArrayList<Car> getNotAvailableCars(Date pick, String officePick, Date delivery, String type){
-        ArrayList<Car> cars = new ArrayList<>();
-        //Cars that are available in that period for a specif office
-        return cars;
-    }
 
     public void deleteCars(String email){
         String key = email + ":cart";
@@ -159,7 +148,6 @@ public class LevelDBConnection {
                     long dPickCart = Long.valueOf(s.next());
                     long dDeliveryCart = Long.valueOf(s.next());
                     if ((dPick >= dDeliveryCart && dDelivery >= dDeliveryCart)|| (dPick<= dPickCart && dDelivery <= dPickCart)){
-                        System.out.println("Ok");
                     } else{
                         cars.remove(i);
                         j = 1;
@@ -171,7 +159,7 @@ public class LevelDBConnection {
                 cars.get(i).printCar();
                 if ((i + 1) % 10 == 0) {
                     do {
-                        System.out.println("Whick cars do you want to add on the cart? (Press -2 to exit, -1 to continue)");
+                        System.out.println("Which cars do you want to add on the cart? (Press -2 to exit, -1 to continue)");
                         try {
                             choice = Integer.valueOf(sc.nextLine());
                         } catch(Exception e){
@@ -250,7 +238,7 @@ public class LevelDBConnection {
             }
             o.setPriceAccessories(cost);
         }
-        o.setPriceCar(Math.ceil(car.calcolatePrice(car)));
+        o.setPriceCar(Math.ceil(car.calcolatePrice()));
 
         key= car.getPlate() + ":availability";
         value = getValue(key);
@@ -379,5 +367,28 @@ public class LevelDBConnection {
             }
         }
     }
+
+    //"AAA01AA:availability  VALUE: 10000000000,10000002222~20000000000,20000002222"
+
+    public void updateLDB(ArrayList<Order> orders) {
+        if(orders.isEmpty())
+            return ;
+        Date dPick = new Date();
+        Date dDelivery = new Date();
+        for (Order order : orders) {
+            String key = order.getCar() + ":availability";
+            String value = getValue(key);
+            dPick = order.getPickDate();
+            dDelivery = order.getDeliveryDate();
+            if (value != null) {
+                value = value + dPick.getTime() + "," + dDelivery.getTime() + "~";
+                putValue(key, value);
+            } else {
+                value = dPick.getTime() + "," + dDelivery.getTime() + "~";
+                putValue(key, value);
+            }
+        }
+    }
+
 
 }

@@ -154,14 +154,24 @@ public class Car {
             System.out.println(out);
         }
 
-    public Double calcolatePrice(Car chosenCar) {
-        List<String> power = Arrays.asList(chosenCar.getPower().split("/"));
-        List<String> power1 = Arrays.asList(power.get(0).split("-"));
-
-        Double kW = Double.valueOf(power1.get(1));
+    public Double calcolatePrice() {
+        Double kW = getKw(null);
         Double multiplicatoPrice = 0.4;
         Double priceCar = kW.doubleValue() * multiplicatoPrice;
         return priceCar;
 
+    }
+
+    public Double getKw(MongoDBConnection db){
+        List<String> power = Arrays.asList(this.getPower().split("/"));
+        List<String> power1 = Arrays.asList(power.get(0).split("-"));
+        Double kW = 0.0;
+        try {
+             kW = Double.valueOf(power1.get(1));
+        } catch (Exception e){
+            System.out.println("Plate: " + plate);
+
+        }
+        return kW;
     }
 }

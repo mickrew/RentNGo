@@ -120,7 +120,7 @@ public class Order {
             System.out.println("Error. Wrong Date");
             return false;
         }
-        if(d.getTime() <= (new Date()).getTime()){
+        if(d.getTime() < (new Date()).getTime() - 60* 60 * 1000 * 24){
             System.out.println("Wrong date.");
             return false;
         }
@@ -182,6 +182,8 @@ public class Order {
         }
         idOfficeDelivery = i;
         setDeliveryOffice(offices.get(i-1).getName());
+
+
         return true;
     }
 

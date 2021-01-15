@@ -32,6 +32,7 @@ public class RentNGo {
         db = new MongoDBConnection("RentNGO");
         ldb = new LevelDBConnection();
         ldb.openDB();
+        ldb.updateLDB(db.getListOfRecentOrders());
         //        User(String surname, String name, String email, String password, Date dateOfBirth){
        /* Date d = new Date();
         DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
@@ -87,8 +88,21 @@ public class RentNGo {
                                 if(o == null){
                                      break;
                                 }
+                                int category = 0;
+                                System.out.println("Choose the class: (if different from 1,2,3 --> ALL CLASSES)");
+                                System.out.println("1) Class  (55-75kw)");
+                                System.out.println("2) Class  (76-120kw)");
+                                System.out.println("3) Class  (121-over)");
+                                try {
+                                    category = Integer.valueOf(sc.nextLine());
+                                }
+                                catch(Exception e){
+                                    category = 4;
+                                }
+                                // get the class (The cars are divided in classes by power
+
                                 //CONTROLLA SPAZIO SU CARS
-                                ldb.searchCar(o.getpickOffice(),o.getDeliveryOffice(), o.getPickDate(), o.getDeliveryDate(), db.getListOfCars(o.getOfficePickPosition()), (User)u);
+                                ldb.searchCar(o.getpickOffice(),o.getDeliveryOffice(), o.getPickDate(), o.getDeliveryDate(), db.getListOfCars(o.getOfficePickPosition(), category), (User)u);
                                 break;
                             case 2:
                                 //((User) u).showOrders();
@@ -108,7 +122,7 @@ public class RentNGo {
                                 if(cars != null){
                                     for(Car c: cars){
                                         c.printCar();
-                                        System.out.println("The car price per day is: "+ Math.ceil(c.calcolatePrice(c)) + "€");
+                                        System.out.println("The car price per day is: "+ Math.ceil(c.calcolatePrice()) + "€");
                                     }
                                     ldb.showOrderInfo(u.getEmail());
 

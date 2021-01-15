@@ -13,6 +13,8 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.json.JsonWriterSettings;
 
+import javax.swing.event.DocumentEvent;
+
 import static com.mongodb.client.model.Projections.*;
 import static com.mongodb.client.model.Updates.*;
 import static com.mongodb.client.model.Filters.*;
@@ -392,9 +394,9 @@ public class MongoDBConnection
                 .append("Email", o.getUser())
                 .append("CarPrice",o.getPriceCar().toString())
                 .append("StartOffice", o.getpickOffice())
-                .append("PickDate", String.valueOf(o.getPickDate().getTime()))
+                .append("PickDate", o.getPickDate().getTime())
                 .append("EndOffice", o.getDeliveryOffice())
-                .append("DeliveryDate", String.valueOf(o.getDeliveryDate().getTime()))
+                .append("DeliveryDate", o.getDeliveryDate().getTime())
                 .append("PriceAccessories", o.getPriceAccessories().toString())
                 .append("ListAccessories", o.getAccessories());
         myColl.insertOne(order);
@@ -489,14 +491,32 @@ public class MongoDBConnection
                 .forEach(printFormattedDocuments);
     }
 
-    public ArrayList<Car> getListOfCars(int office) {
+    public ArrayList<Car> getListOfCars(int office, int category) {
         MongoCollection<Document> myColl = db.getCollection("cars");
         MongoCursor<Document> cursor = myColl.find(eq("Office", String.valueOf(office))).iterator();
         ArrayList<Car> cars = new ArrayList<>();
         while(cursor.hasNext()){
             Document d = cursor.next();
             Car c = getCarFromDocument(d);
-            cars.add(c);
+            Double kw = c.getKw(this);
+            switch (category){
+                case 1:
+                    if(kw < 75.0)
+                        cars.add(c);
+                    break;
+                case 2:
+                    if(kw >75.0 && kw <= 120.0)
+                        cars.add(c);
+                    break;
+                case 3:
+                    if(kw >120.0)
+                        cars.add(c);
+                    break;
+
+                default:
+                    cars.add(c);
+            }
+
         }
         System.out.println(cars.size());
         return cars;
@@ -556,9 +576,9 @@ public class MongoDBConnection
             System.out.print(i + ") ");
             System.out.print("CarPlate: " + d.getString("CarPlate") + " ");
             System.out.print("CarPrice: " + d.getString("CarPrice") + " ");
-            Date datPick =new Date(Long.valueOf(d.getString("PickDate")));
+            Date datPick =new Date(Long.valueOf(d.getLong("PickDate")));
             System.out.print("DatePick: " + datPick.toString() + " ");
-            Date datDelivery =new Date(Long.valueOf(d.getString("DeliveryDate")));
+            Date datDelivery =new Date(Long.valueOf(d.getLong("DeliveryDate")));
             System.out.print("DateDelivery: " + datDelivery.toString() + " ");
             System.out.print("StartOffice: " + d.getString("StartOffice") + " ");
             System.out.print("EndOffice: " + d.getString("EndOffice") + " ");
@@ -580,9 +600,9 @@ public class MongoDBConnection
                 System.out.print(j + ") ");
                 System.out.print("CarPlate: " + d.getString("CarPlate") + " ");
                 System.out.print("CarPrice: " + d.getString("CarPrice") + " ");
-                Date datPick =new Date(Long.valueOf(d.getString("PickDate")));
+                Date datPick =new Date(Long.valueOf(d.getLong("PickDate")));
                 System.out.print("DatePick: " + datPick.toString() + " ");
-                Date datDelivery =new Date(Long.valueOf(d.getString("DeliveryDate")));
+                Date datDelivery =new Date(Long.valueOf(d.getLong("DeliveryDate")));
                 System.out.print("DateDelivery: " + datDelivery.toString() + " ");
                 System.out.print("StartOffice: " + d.getString("StartOffice") + " ");
                 System.out.print("EndOffice: " + d.getString("EndOffice") + " ");
@@ -600,9 +620,9 @@ public class MongoDBConnection
                 System.out.print(j + ") ");
                 System.out.print("CarPlate: " + d.getString("CarPlate") + " ");
                 System.out.print("CarPrice: " + d.getString("CarPrice") + " ");
-                Date datPick = new Date(Long.valueOf(d.getString("PickDate")));
+                Date datPick = new Date(Long.valueOf(d.getLong("PickDate")));
                 System.out.print("DatePick: " + datPick.toString() + " ");
-                Date datDelivery = new Date(Long.valueOf(d.getString("DeliveryDate")));
+                Date datDelivery = new Date(Long.valueOf(d.getLong("DeliveryDate")));
                 System.out.print("DateDelivery: " + datDelivery.toString() + " ");
                 System.out.print("StartOffice: " + d.getString("StartOffice") + " ");
                 System.out.print("EndOffice: " + d.getString("EndOffice") + " ");
@@ -617,6 +637,24 @@ public class MongoDBConnection
 
     public ArrayList<Service> getServices() {
         return services;
+    }
+
+    public ArrayList<Order> getListOfRecentOrders() {
+        MongoCollection<Document> myColl = db.getCollection("orders");
+        Date d =new Date();
+        MongoCursor<Document> cursor = myColl.find(gt("DeliveryDate", d.getTime())).iterator();
+        ArrayList<Order> orders = new ArrayList<>();
+        while(cursor.hasNext()){
+            Order o =new Order();
+            Document doc = cursor.next();
+            o.setCar(doc.getString("CarPlate"));
+            Date dPick = new Date(Long.valueOf(doc.getLong("PickDate")));
+            o.setPickDate(dPick);
+            Date dDelivery = new Date(Long.valueOf(doc.getLong("DeliveryDate")));
+            o.setDeliveryDate(dDelivery);
+            orders.add(o);
+        }
+        return orders;
     }
 /*
     public User logIn(ArrayList<String> parameters){
