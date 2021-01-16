@@ -32,7 +32,7 @@ public class RentNGo {
         db = new MongoDBConnection("RentNGO");
         ldb = new LevelDBConnection();
         ldb.openDB();
-        ldb.updateLDB(db.getListOfRecentOrders());
+        //ldb.updateLDB(db.getListOfRecentOrders());
         //        User(String surname, String name, String email, String password, Date dateOfBirth){
        /* Date d = new Date();
         DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
@@ -147,7 +147,8 @@ public class RentNGo {
                                 j=0;
                                 break;
                             case 5:
-                                ArrayList<Service> services=Service.clientServices(db.getServices());
+                                ArrayList<Service> services= new ArrayList<>();
+                                services = db.getServices();//Service.clientServices(db.getServices());
                                 System.out.println("Do you want to delete(D) or add(A)?");
                                 String ad =sc.nextLine();
                                 int choice =0;
@@ -177,7 +178,11 @@ public class RentNGo {
                     int j = 1;
                     while (j != 0) {
                         ((Worker) u).showMenu();
-                        j = sc.nextInt();
+                        try{
+                            j = Integer.valueOf(sc.nextLine());
+                        } catch(Exception e){
+                            j=6;
+                        }
                         switch (j) {
                             case 0:
                                 break;
@@ -192,8 +197,20 @@ public class RentNGo {
                                 break;
                             case 4:
                                 //((Worker) u).pickCar();
+                                System.out.println("Insert the plate:");
+                                String plate = sc.nextLine();
+                                System.out.println("Insert the Email:");
+                                String email = sc.nextLine();
+                                db.changeStatusOrder(plate, email,"PickDate", new Date(), "Picked");
+                                break;
                             case 5:
                                 //((Worker) u).deliveryCar();
+                                System.out.println("Insert the plate:");
+                                plate = sc.nextLine();
+                                System.out.println("Insert the Email:");
+                                email = sc.nextLine();
+                                db.changeStatusOrder(plate, email, "DeliveryDate",new Date(), "Completed");
+                                break;
                             default:
                                 System.out.println("Try again.");
                         }

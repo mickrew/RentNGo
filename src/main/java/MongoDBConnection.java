@@ -13,6 +13,7 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.json.JsonWriterSettings;
 
+import javax.print.Doc;
 import javax.swing.event.DocumentEvent;
 
 import static com.mongodb.client.model.Projections.*;
@@ -32,6 +33,7 @@ public class MongoDBConnection
     private MongoDatabase db;
     private ArrayList<Office> offices = new ArrayList<Office>();
     private ArrayList<Service> services = new ArrayList<Service>();
+    private ArrayList<Service> servicesWorker = new ArrayList<Service>();
 
     public MongoDBConnection(String database){
         //mongoClient = MongoClients.create();
@@ -59,15 +61,56 @@ public class MongoDBConnection
 
         myColl = db.getCollection("services");
         cursor  = myColl.find().iterator();
+        int i=0;
         while(cursor.hasNext()){
             Document d = cursor.next();
             Service s = new Service();
             s.setMultiplicator(d.getString("MULTIPLICATOR"));
             s.setPrice(Double.valueOf(d.getString("PRICE VAT INCLUDED ")));
             s.setNameService(d.getString("SERVICES"));
-            services.add(s);
+            switch (i){
+                case 13:
+                    servicesWorker.add(s);
+                    break;
+                case 15:
+                    servicesWorker.add(s);
+                    break;
+                case 16:
+                    servicesWorker.add(s);
+                    break;
+                case 17:
+                    servicesWorker.add(s);
+                    break;
+                case 18:
+                    servicesWorker.add(s);
+                    break;
+                case 20:
+                    servicesWorker.add(s);
+                    break;
+                case 21:
+                    servicesWorker.add(s);
+                    break;
+                case 22:
+                    servicesWorker.add(s);
+                    break;
+                case 23:
+                    servicesWorker.add(s);
+                    break;
+                case 24:
+                    servicesWorker.add(s);
+                    break;
+                default:
+                    if(i !=0 && i!=1)
+                        services.add(s);
+            }
+            i++;
+            //services.add(s);
         }
 
+    }
+
+    public ArrayList<Service> getServicesWorker(){
+        return servicesWorker;
     }
     /*
     public static void main(String[] args) {
@@ -278,7 +321,7 @@ public class MongoDBConnection
         Date date1=new SimpleDateFormat("dd/MM/yyyy").parse(d.getString("DateOfBirth"));
         Date date2=new SimpleDateFormat("dd/MM/yyyy").parse(d.getString("Date of hiring"));
 
-        Worker w = new Worker(d.getString("Surname"), d.getString("Name"),d.getString("Email"), d.getString("Password"), date1, d.getInteger("Salary"),date2);
+        Worker w = new Worker(d.getString("Surname"), d.getString("Name"),d.getString("Email"), d.getString("Password"), date1, Integer.valueOf(d.getString("Salary")),date2);
         return w;
     }
 
@@ -287,7 +330,7 @@ public class MongoDBConnection
         Date date1=new SimpleDateFormat("dd/MM/yyyy").parse(d.getString("DateOfBirth"));
         Date date2=new SimpleDateFormat("dd/MM/yyyy").parse(d.getString("Date of hiring"));
         Date date3=new SimpleDateFormat("dd/MM/yyyy").parse(d.getString("Date WtoA"));
-        Admin a = new Admin(d.getString("Surname"), d.getString("Name"),d.getString("Email"), d.getString("Password"), date1, d.getInteger("Salary"), date2, date3);
+        Admin a = new Admin(d.getString("Surname"), d.getString("Name"),d.getString("Email"), d.getString("Password"), date1, Integer.valueOf(d.getString("Salary")), date2, date3);
         return a;
     }
 
@@ -398,7 +441,8 @@ public class MongoDBConnection
                 .append("EndOffice", o.getDeliveryOffice())
                 .append("DeliveryDate", o.getDeliveryDate().getTime())
                 .append("PriceAccessories", o.getPriceAccessories().toString())
-                .append("ListAccessories", o.getAccessories());
+                .append("ListAccessories", o.getAccessories())
+                .append("Status", "Booked");
         myColl.insertOne(order);
     }
 
@@ -590,6 +634,13 @@ public class MongoDBConnection
 
     }
 
+    public void changeStatusOrder(String carPlate, String email, String field, Date d, String status){
+        MongoCollection<Document> myColl = db.getCollection("orders");
+        myColl.updateOne(
+                    (and(eq("CarPlate", carPlate), lt(field, d.getTime()+30*1000*60*60), gt(field, d.getTime()-30*1000*60*60), eq("Email", email)))
+                    , set("Status", status));
+    }
+
     public void showListOrdersByParameters(String carplate, String pickOffice, String pickDate, String deliveryDate) {
         if (carplate != null){
             MongoCollection<Document> myColl = db.getCollection("orders");
@@ -656,6 +707,8 @@ public class MongoDBConnection
         }
         return orders;
     }
+
+
 /*
     public User logIn(ArrayList<String> parameters){
         String email = parameters.get(0);
