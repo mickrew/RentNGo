@@ -201,7 +201,7 @@ public class RentNGo {
                                 String plate = sc.nextLine();
                                 System.out.println("Insert the Email:");
                                 String email = sc.nextLine();
-                                db.changeStatusOrder(plate, email,"PickDate", new Date(), "Picked");
+                                db.changeStatusOrder(plate, email,"PickDate", new Date(), "Picked", "", 0.0);
                                 break;
                             case 5:
                                 //((Worker) u).deliveryCar();
@@ -209,7 +209,29 @@ public class RentNGo {
                                 plate = sc.nextLine();
                                 System.out.println("Insert the Email:");
                                 email = sc.nextLine();
-                                db.changeStatusOrder(plate, email, "DeliveryDate",new Date(), "Completed");
+                                String damage = "";
+                                double damgeCost= 0.0;
+                                int p=0;
+                                ArrayList<Service> services = db.getServicesWorker();
+
+                                do {
+                                    for(Service s: services){
+                                        System.out.print(p+") ");
+                                        s.printService();
+                                    }
+                                    System.out.println("Select one (Press -1 to exit)");
+                                    try{
+                                        p=Integer.valueOf(sc.nextLine());
+                                    } catch (Exception e){
+                                        p=-1;
+                                    }
+                                    if(i>=0 && i<services.size()){
+                                        damage += services.get(p).getName();
+                                        damgeCost += services.get(p).getPrice();
+                                    }
+                                }while(p!=-1);
+
+                                db.changeStatusOrder(plate, email, "DeliveryDate",new Date(), "Completed", damage, damgeCost);
                                 break;
                             default:
                                 System.out.println("Try again.");

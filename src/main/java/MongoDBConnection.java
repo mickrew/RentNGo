@@ -634,11 +634,25 @@ public class MongoDBConnection
 
     }
 
-    public void changeStatusOrder(String carPlate, String email, String field, Date d, String status){
+    public void changeStatusOrder(String carPlate, String email, String field, Date d, String status, String damage, double damageCost){
         MongoCollection<Document> myColl = db.getCollection("orders");
-        myColl.updateOne(
-                    (and(eq("CarPlate", carPlate), lt(field, d.getTime()+30*1000*60*60), gt(field, d.getTime()-30*1000*60*60), eq("Email", email)))
+        MongoCursor<Document> cursor = myColl.find(and(eq("CarPlate", carPlate), lt(field, d.getTime()+30*1000*60*60), gt(field, d.getTime()-30*1000*60*60), eq("Email", email))).iterator();
+        if(cursor.hasNext()) {
+            myColl.updateOne(
+                    (and(eq("CarPlate", carPlate), lt(field, d.getTime() + 30 * 1000 * 60 * 60), gt(field, d.getTime() - 30 * 1000 * 60 * 60), eq("Email", email)))
                     , set("Status", status));
+            if(!damage.equals("")) {
+                Document doc = cursor.next();
+                String damageU = doc.getString("ListAccessories") + damage;
+                Double damageCostU = Double.valueOf(doc.getString("PriceAccessories")) + damageCost;
+                myColl.updateOne(
+                        (and(eq("CarPlate", carPlate), lt(field, d.getTime() + 30 * 1000 * 60 * 60), gt(field, d.getTime() - 30 * 1000 * 60 * 60), eq("Email", email)))
+                        , set("ListAccessories", damageU));
+                myColl.updateOne(
+                        (and(eq("CarPlate", carPlate), lt(field, d.getTime() + 30 * 1000 * 60 * 60), gt(field, d.getTime() - 30 * 1000 * 60 * 60), eq("Email", email)))
+                        , set("PriceAccessories", damageCost));
+            }
+        }
     }
 
     public void showListOrdersByParameters(String carplate, String pickOffice, String pickDate, String deliveryDate) {
