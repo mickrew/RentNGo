@@ -210,6 +210,7 @@ public class RentNGo {
                                 System.out.println("Insert the Email:");
                                 email = sc.nextLine();
                                 String damage = "";
+
                                 double damgeCost= 0.0;
                                 int p=0;
                                 ArrayList<Service> services = db.getServicesWorker();
