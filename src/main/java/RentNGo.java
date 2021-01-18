@@ -32,9 +32,19 @@ public class RentNGo {
         db = new MongoDBConnection("RentNGO");
         ldb = new LevelDBConnection();
         ldb.openDB();
-        //db.deleteOrders();
-        Date date1 =new SimpleDateFormat("dd/MM/yyyy").parse("01/01/2016");
-        db.getMostUsedCarsPerOffice("Malpensa", date1.getTime());
+
+        //QUERY 1
+        //Date date1 =new SimpleDateFormat("dd/MM/yyyy").parse("01/01/2016");
+        //db.getMostUsedCarsPerOffice("Malpensa", date1.getTime());
+
+        //QUERY 2
+        //db.getMostEcoFrendlyOffice();
+
+        //QUERY 4
+        Date currentDate =new SimpleDateFormat("dd/MM/yyyy").parse("01/01/2020");
+        Date lastYearDate =new SimpleDateFormat("dd/MM/yyyy").parse("01/01/2019");
+        db.query4(currentDate.getTime(), lastYearDate.getTime());
+
         //ldb.updateLDB(db.getListOfRecentOrders());
         //        User(String surname, String name, String email, String password, Date dateOfBirth){
        /* Date d = new Date();
@@ -168,8 +178,6 @@ public class RentNGo {
                                             ldb.addAccessories(u.getEmail(), services.get(choice).getNameService(), services.get(choice).getPrice(), services.get(choice).getMultiplicator());
                                         else if(ad.equals("D"))
                                             ldb.deleteAccessories(u.getEmail(), services.get(choice).getNameService(), services.get(choice).getPrice(), services.get(choice).getMultiplicator());
-                                    } else {
-                                        System.out.println("Error. Try again");
                                     }
                                 }
                                 break;
@@ -212,16 +220,33 @@ public class RentNGo {
                                 plate = sc.nextLine();
                                 System.out.println("Insert the Email:");
                                 email = sc.nextLine();
-                                String damage = "";
+                                System.out.println("Insert the delivery date:");
+                                Date d = new Date();
+                                Date d2 = new Date();
+                                String dateString = sc.nextLine();
+                                DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+                                try {
+                                    d = formatter.parse(dateString);
+                                } catch (ParseException p){
+                                    System.out.println("Error. Wrong Date");
+                                    break;
+                                }
 
-                                double damgeCost= 0.0;
+                                String damage = "";
+                                Double taxDelay = 50.0;
+                                Double damageCost;
+                                if(d2.getTime() > d.getTime())
+                                    damageCost = ((d2.getTime() - d.getTime())*taxDelay)/(1000*60*60*24);
+                                else
+                                    damageCost = 0.0;
+
                                 int p=0;
                                 ArrayList<Service> services = db.getServicesWorker();
-
                                 do {
                                     for(Service s: services){
                                         System.out.print(p+") ");
                                         s.printService();
+                                        p++;
                                     }
                                     System.out.println("Select one (Press -1 to exit)");
                                     try{
@@ -229,13 +254,15 @@ public class RentNGo {
                                     } catch (Exception e){
                                         p=-1;
                                     }
-                                    if(i>=0 && i<services.size()){
-                                        damage += services.get(p).getName();
-                                        damgeCost += services.get(p).getPrice();
+                                    if(p>=0 && p<services.size()){
+                                        if(!damage.contains(services.get(p).getNameService())) {
+                                            damage += services.get(p).getName() + ", ";
+                                            damageCost += services.get(p).getPrice();
+                                        }
                                     }
                                 }while(p!=-1);
 
-                                db.changeStatusOrder(plate, email, "DeliveryDate",new Date(), "Completed", damage, damgeCost);
+                                db.changeStatusOrder(plate, email, "DeliveryDate",d, "Completed", damage, damageCost);
                                 break;
                             default:
                                 System.out.println("Try again.");

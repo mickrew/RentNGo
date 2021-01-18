@@ -286,6 +286,8 @@ public class LevelDBConnection {
     public void addAccessories(String email, String service, double price, String type) {
         String key = email + ":accessories";
         String value = getValue(key);
+        if(value!=null && value.contains(service))
+            return;
         if(value!=null){
             value += service + ",";
         } else {

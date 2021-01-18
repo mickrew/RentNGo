@@ -2,6 +2,7 @@ package main.java;
 
 import com.mongodb.client.*;
 
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -69,39 +70,39 @@ public class MongoDBConnection
             s.setMultiplicator(d.getString("MULTIPLICATOR"));
             s.setPrice(Double.valueOf(d.getString("PRICE VAT INCLUDED ")));
             s.setNameService(d.getString("SERVICES"));
-            switch (i){
-                case 13:
+            switch (s.getNameService()){
+                case "Deductible for insolvency or passive claim / car accident":
                     servicesWorker.add(s);
                     break;
-                case 15:
+                case "Administrative expenses for fines/tolls/parking":
                     servicesWorker.add(s);
                     break;
-                case 16:
+                case "Special vehicle clean":
                     servicesWorker.add(s);
                     break;
-                case 17:
+                case "Nav system loss":
                     servicesWorker.add(s);
                     break;
-                case 18:
+                case "Refective Jacket Loss":
                     servicesWorker.add(s);
                     break;
-                case 20:
+                case "Administrative expenses for damages":
                     servicesWorker.add(s);
                     break;
-                case 21:
+                case "Plate loss":
                     servicesWorker.add(s);
                     break;
-                case 22:
+                case "Keys Loss":
                     servicesWorker.add(s);
                     break;
-                case 23:
+                case "Car documents loss":
                     servicesWorker.add(s);
                     break;
-                case 24:
+                case "Truck Service":
                     servicesWorker.add(s);
                     break;
                 default:
-                    if(i !=0 && i!=1)
+                    if(!s.getNameService().equals("Young Driver 19/20") && !s.getNameService().equals("Young Driver 21/24"))
                         services.add(s);
             }
             i++;
@@ -109,6 +110,8 @@ public class MongoDBConnection
         }
 
     }
+
+    // String
 
     public ArrayList<Service> getServicesWorker(){
         return servicesWorker;
@@ -436,12 +439,12 @@ public class MongoDBConnection
         MongoCollection<Document> myColl = db.getCollection("orders");
         Document order = new Document("CarPlate", o.getCar())
                 .append("Email", o.getUser())
-                .append("CarPrice",o.getPriceCar().toString())
+                .append("CarPrice",o.getPriceCar())
                 .append("StartOffice", o.getpickOffice())
                 .append("PickDate", o.getPickDate().getTime())
                 .append("EndOffice", o.getDeliveryOffice())
                 .append("DeliveryDate", o.getDeliveryDate().getTime())
-                .append("PriceAccessories", o.getPriceAccessories().toString())
+                .append("PriceAccessories", o.getPriceAccessories())
                 .append("ListAccessories", o.getAccessories())
                 .append("Status", "Booked");
         myColl.insertOne(order);
@@ -526,7 +529,7 @@ public class MongoDBConnection
                 .append("Engine", c.getEngine())
                 .append("Power (hp - kW /rpm)", c.getPower())
                 .append("Average fuel consumption (l/100 km)", c.getAvgFuelCons())
-                .append("CO2 (g/km)", c.getCo2())
+                .append("CO2 (g/km)", Double.valueOf(c.getCo2()))
                 .append("Weight(3p/5p) kg", c.getWeight())
                 .append("GearBox type", c.getGearBoxType())
                 .append("Tyre", c.getTyre())
@@ -592,7 +595,7 @@ public class MongoDBConnection
 
     public Car getCarFromDocument(Document d){
         Car c = new Car(d.getString("CarPlate"), d.getString("Brand"), d.getString("Vehicle"),
-                d.getString("Engine"), d.getString("Average fuel consumption (l/100 km)"), d.getString("CO2 (g/km)"),
+                d.getString("Engine"), d.getString("Average fuel consumption (l/100 km)"), d.getDouble("CO2 (g/km)").toString(),
                 d.getString("Weight(3p/5p) kg"), d.getString("GearBox type"), d.getString("Tyre"),
                 d.getString("Traction type"), d.getString("Power (hp - kW /rpm)"));
         return c;
@@ -631,14 +634,14 @@ public class MongoDBConnection
             Document d = cursor.next();
             System.out.print(i + ") ");
             System.out.print("CarPlate: " + d.getString("CarPlate") + " ");
-            System.out.print("CarPrice: " + d.getString("CarPrice") + " ");
+            System.out.print("CarPrice: " + d.getDouble("CarPrice") + " ");
             Date datPick =new Date(Long.valueOf(d.getLong("PickDate")));
             System.out.print("DatePick: " + datPick.toString() + " ");
             Date datDelivery =new Date(Long.valueOf(d.getLong("DeliveryDate")));
             System.out.print("DateDelivery: " + datDelivery.toString() + " ");
             System.out.print("StartOffice: " + d.getString("StartOffice") + " ");
             System.out.print("EndOffice: " + d.getString("EndOffice") + " ");
-            System.out.print("PriceAccessories: " + d.getString("PriceAccessories") + " ");
+            System.out.print("PriceAccessories: " + d.getDouble("PriceAccessories") + " ");
             System.out.print("ListAccessories: " + d.getString("ListAccessories") + " ");
             System.out.println();
             i++;
@@ -662,36 +665,77 @@ public class MongoDBConnection
         Bson limit = limit(3);
         myColl.aggregate(Arrays.asList(match1, match, group, sort, limit, project))
                .forEach(printFormattedDocuments);
-        /*
-        MongoCollection<Document> myColl = db.getCollection("orders");
-        //Bson group =  new Document("$group", new Document("_id", new Document("CarPlate", "StartOffice"))
-        //       .append("count", new Document("$sum", 1L)));
-
-        Bson project = project(fields(include("count", "Office")));
-        Bson sort = sort(descending("_id"));
-
-        myColl.aggregate(Arrays.asList(group)).forEach(printFormattedDocuments);
-
-        Bson limit = limit(3); */
-
 
     }
+
+
+
+    public void getMostEcoFrendlyOffice(){ //BETTER LOWER ECO FRENDLY
+        Consumer<Document> printFormattedDocuments = new Consumer<Document>() {
+            @Override
+            public void accept(Document document) {
+                System.out.println(document.toJson(JsonWriterSettings.builder().indent(true).build()));
+            }
+        };
+        MongoCollection<Document> myColl = db.getCollection("cars");
+        Bson sort = sort(descending(Arrays.asList("count")));
+        Bson group = group("Office", avg("AvgCO2", "$CO2"));
+        Bson project = project(fields(include("_id", "AvgC02")));
+        Bson limit = limit(1);
+        myColl.aggregate(Arrays.asList(group, sort, limit, project))
+                .forEach(printFormattedDocuments);
+    }
+
+    public void query3(){
+
+    }
+
+
+    public void query4(long currentDate, long lastYearDate){
+        Consumer<Document> printFormattedDocuments = new Consumer<Document>() {
+            @Override
+            public void accept(Document document) {
+                System.out.println(document.toJson(JsonWriterSettings.builder().indent(true).build()));
+            }
+        };
+        Bson group = group("$Email", sum("countCurrent", 1));
+        Bson group2 = group("$Email", sum("countPrev", 1));
+        Bson matchCurrent = match(gt("PickDate", currentDate));
+        Bson matchPrev = match(and(gt("PickDate", lastYearDate), lt("PickDate", currentDate)));
+
+        db.createView("currentYear", "orders"
+                , Arrays.asList(matchCurrent, group));
+        db.createView("prevYear", "orders"
+                , Arrays.asList(matchPrev, group2));
+        Bson lookup = new Document("$lookup",
+                new Document("from", "prevYear")
+                        .append("localField", "_id")
+                        .append("foreignField", "_id")
+                        .append("as", "newColl"));
+
+        Bson finalMatch = match(gt("newColl.countCurrent", "newColl.countPrev"));
+        MongoCollection<Document> myColl = db.getCollection("currentYear");
+        myColl.aggregate(Arrays.asList(lookup, finalMatch))
+                .forEach(printFormattedDocuments);
+
+    }
+
     public void changeStatusOrder(String carPlate, String email, String field, Date d, String status, String damage, double damageCost){
         MongoCollection<Document> myColl = db.getCollection("orders");
         MongoCursor<Document> cursor = myColl.find(and(eq("CarPlate", carPlate), lt(field, d.getTime()+30*1000*60*60), gt(field, d.getTime()-30*1000*60*60), eq("Email", email))).iterator();
         if(cursor.hasNext()) {
             myColl.updateOne(
-                    (and(eq("CarPlate", carPlate), lt(field, d.getTime() + 30 * 1000 * 60 * 60), gt(field, d.getTime() - 30 * 1000 * 60 * 60), eq("Email", email)))
+                    (and(eq("CarPlate", carPlate), lt(field, d.getTime() + 12 * 1000 * 60 * 60), gt(field, d.getTime() - 12 * 1000 * 60 * 60), eq("Email", email)))
                     , set("Status", status));
             if(!damage.equals("")) {
                 Document doc = cursor.next();
                 String damageU = doc.getString("ListAccessories") + damage;
-                Double damageCostU = Double.valueOf(doc.getString("PriceAccessories")) + damageCost;
+                Double damageCostU = doc.getDouble("PriceAccessories") + damageCost;
                 myColl.updateOne(
-                        (and(eq("CarPlate", carPlate), lt(field, d.getTime() + 30 * 1000 * 60 * 60), gt(field, d.getTime() - 30 * 1000 * 60 * 60), eq("Email", email)))
+                        (and(eq("CarPlate", carPlate), lt(field, d.getTime() + 12 * 1000 * 60 * 60), gt(field, d.getTime() - 12 * 1000 * 60 * 60), eq("Email", email)))
                         , set("ListAccessories", damageU));
                 myColl.updateOne(
-                        (and(eq("CarPlate", carPlate), lt(field, d.getTime() + 30 * 1000 * 60 * 60), gt(field, d.getTime() - 30 * 1000 * 60 * 60), eq("Email", email)))
+                        (and(eq("CarPlate", carPlate), lt(field, d.getTime() + 12 * 1000 * 60 * 60), gt(field, d.getTime() - 12 * 1000 * 60 * 60), eq("Email", email)))
                         , set("PriceAccessories", damageCost));
             }
         }
@@ -706,14 +750,14 @@ public class MongoDBConnection
                 Document d = cursor.next();
                 System.out.print(j + ") ");
                 System.out.print("CarPlate: " + d.getString("CarPlate") + " ");
-                System.out.print("CarPrice: " + d.getString("CarPrice") + " ");
+                System.out.print("CarPrice: " + d.getDouble("CarPrice") + " ");
                 Date datPick =new Date(Long.valueOf(d.getLong("PickDate")));
                 System.out.print("DatePick: " + datPick.toString() + " ");
                 Date datDelivery =new Date(Long.valueOf(d.getLong("DeliveryDate")));
                 System.out.print("DateDelivery: " + datDelivery.toString() + " ");
                 System.out.print("StartOffice: " + d.getString("StartOffice") + " ");
                 System.out.print("EndOffice: " + d.getString("EndOffice") + " ");
-                System.out.print("PriceAccessories: " + d.getString("PriceAccessories") + " ");
+                System.out.print("PriceAccessories: " + d.getDouble("PriceAccessories") + " ");
                 System.out.print("ListAccessories: " + d.getString("ListAccessories") + " ");
                 System.out.println();
                 j++;
@@ -726,14 +770,14 @@ public class MongoDBConnection
                 Document d = cursor.next();
                 System.out.print(j + ") ");
                 System.out.print("CarPlate: " + d.getString("CarPlate") + " ");
-                System.out.print("CarPrice: " + d.getString("CarPrice") + " ");
+                System.out.print("CarPrice: " + d.getDouble("CarPrice") + " ");
                 Date datPick = new Date(Long.valueOf(d.getLong("PickDate")));
                 System.out.print("DatePick: " + datPick.toString() + " ");
                 Date datDelivery = new Date(Long.valueOf(d.getLong("DeliveryDate")));
                 System.out.print("DateDelivery: " + datDelivery.toString() + " ");
                 System.out.print("StartOffice: " + d.getString("StartOffice") + " ");
                 System.out.print("EndOffice: " + d.getString("EndOffice") + " ");
-                System.out.print("PriceAccessories: " + d.getString("PriceAccessories") + " ");
+                System.out.print("PriceAccessories: " + d.getDouble("PriceAccessories") + " ");
                 System.out.print("ListAccessories: " + d.getString("ListAccessories") + " ");
                 System.out.println();
                 j++;
