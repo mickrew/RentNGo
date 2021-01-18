@@ -32,6 +32,9 @@ public class RentNGo {
         db = new MongoDBConnection("RentNGO");
         ldb = new LevelDBConnection();
         ldb.openDB();
+        //db.deleteOrders();
+        Date date1 =new SimpleDateFormat("dd/MM/yyyy").parse("01/01/2016");
+        db.getMostUsedCarsPerOffice("Malpensa", date1.getTime());
         //ldb.updateLDB(db.getListOfRecentOrders());
         //        User(String surname, String name, String email, String password, Date dateOfBirth){
        /* Date d = new Date();

@@ -9,6 +9,7 @@ import java.util.*;
 
 import java.util.function.Consumer;
 
+import com.mongodb.client.model.Accumulators;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.json.JsonWriterSettings;
@@ -25,10 +26,10 @@ import static com.mongodb.client.model.Sorts.*;
 
 public class MongoDBConnection
 {
-    private static Consumer<Document> printDocuments() {
-        return doc -> System.out.println(doc.toJson());
-    }
-    Consumer<Document> printFormattedDocuments;
+    //private static Consumer<Document> printDocuments() {
+      //  return doc -> System.out.println(doc.toJson());
+    //}
+    //Consumer<Document> printFormattedDocuments;
     private MongoClient mongoClient;
     private MongoDatabase db;
     private ArrayList<Office> offices = new ArrayList<Office>();
@@ -499,6 +500,17 @@ public class MongoDBConnection
 
     }
 
+   /* public void deleteOrders(){
+        MongoCollection<Document> myColl = db.getCollection("orders");
+        MongoCursor<Document> cursor  = myColl.find().iterator();
+        while(cursor.hasNext()){
+            Document d = cursor.next();
+            if(d.getString("CarPlate").contains("@")){
+                myColl.deleteOne(eq("CarPlate", d.getString("CarPlate")));
+            }
+        }
+    } */
+
     public void insertNewCar(Car c) {
 
         MongoCollection<Document> myColl = db.getCollection("cars");
@@ -531,8 +543,8 @@ public class MongoDBConnection
         Bson b2 = group("$CarPlate", sum("nUsed", 1));
         Bson project = project(fields(include("CarPlate", "nUsed")));
         Bson b3 = limit(i);
-        myColl.aggregate(Arrays.asList(b2, project, b1, b3))
-                .forEach(printFormattedDocuments);
+        //myColl.aggregate(Arrays.asList(b2, project, b1, b3))
+         //       .forEach(printFormattedDocuments);
     }
 
     public ArrayList<Car> getListOfCars(int office, int category) {
@@ -634,6 +646,36 @@ public class MongoDBConnection
 
     }
 
+    public void getMostUsedCarsPerOffice(String startOffice, long date) {
+        Consumer<Document> printFormattedDocuments = new Consumer<Document>() {
+            @Override
+            public void accept(Document document) {
+                System.out.println(document.toJson(JsonWriterSettings.builder().indent(true).build()));
+            }
+        };
+        Bson match1 = match(gt("PickDate", date));
+        MongoCollection<Document> myColl = db.getCollection("orders");
+        Bson sort = sort(descending(Arrays.asList("count")));
+        Bson group = group("$CarPlate", sum("count", 1));
+        Bson match= match(eq("StartOffice", startOffice));
+        Bson project = project(fields(include("_id", "count")));
+        Bson limit = limit(3);
+        myColl.aggregate(Arrays.asList(match1, match, group, sort, limit, project))
+               .forEach(printFormattedDocuments);
+        /*
+        MongoCollection<Document> myColl = db.getCollection("orders");
+        //Bson group =  new Document("$group", new Document("_id", new Document("CarPlate", "StartOffice"))
+        //       .append("count", new Document("$sum", 1L)));
+
+        Bson project = project(fields(include("count", "Office")));
+        Bson sort = sort(descending("_id"));
+
+        myColl.aggregate(Arrays.asList(group)).forEach(printFormattedDocuments);
+
+        Bson limit = limit(3); */
+
+
+    }
     public void changeStatusOrder(String carPlate, String email, String field, Date d, String status, String damage, double damageCost){
         MongoCollection<Document> myColl = db.getCollection("orders");
         MongoCursor<Document> cursor = myColl.find(and(eq("CarPlate", carPlate), lt(field, d.getTime()+30*1000*60*60), gt(field, d.getTime()-30*1000*60*60), eq("Email", email))).iterator();
