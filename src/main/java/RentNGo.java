@@ -33,9 +33,13 @@ public class RentNGo {
         ldb = new LevelDBConnection();
         ldb.openDB();
         //db.deleteOrders();
-        Date date1 =new SimpleDateFormat("dd/MM/yyyy").parse("01/01/2016");
-        db.getMostUsedCarsPerOffice("Malpensa", date1.getTime());
+        Date date1 =new SimpleDateFormat("dd/MM/yyyy").parse("01/01/2019");
+        Date date2 =new SimpleDateFormat("dd/MM/yyyy").parse("01/01/2020");
+
+        //db.getMostUsedCarsPerOffice("Malpensa", date1.getTime());
+        //db.getLessEcoFriendlyOffice();
         //ldb.updateLDB(db.getListOfRecentOrders());
+        //db.query4(date2.getTime(), date1.getTime());
         //        User(String surname, String name, String email, String password, Date dateOfBirth){
        /* Date d = new Date();
         DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
@@ -150,7 +154,7 @@ public class RentNGo {
                                 j=0;
                                 break;
                             case 5:
-                                ArrayList<Service> services= new ArrayList<>();
+                                ArrayList<Service> services;
                                 services = db.getServices();//Service.clientServices(db.getServices());
                                 System.out.println("Do you want to delete(D) or add(A)?");
                                 String ad =sc.nextLine();
@@ -168,8 +172,6 @@ public class RentNGo {
                                             ldb.addAccessories(u.getEmail(), services.get(choice).getNameService(), services.get(choice).getPrice(), services.get(choice).getMultiplicator());
                                         else if(ad.equals("D"))
                                             ldb.deleteAccessories(u.getEmail(), services.get(choice).getNameService(), services.get(choice).getPrice(), services.get(choice).getMultiplicator());
-                                    } else {
-                                        System.out.println("Error. Try again");
                                     }
                                 }
                                 break;
