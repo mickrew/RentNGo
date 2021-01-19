@@ -38,13 +38,12 @@ public class RentNGo {
         //db.getMostUsedCarsPerOffice("Malpensa", date1.getTime());
 
         //QUERY 2
-        //db.getMostEcoFrendlyOffice();
+        //db.getLessEcoFriendlyOffice();
 
-        //QUERY 4
-        Date currentDate =new SimpleDateFormat("dd/MM/yyyy").parse("01/01/2020");
-        Date lastYearDate =new SimpleDateFormat("dd/MM/yyyy").parse("01/01/2019");
-        db.query4(currentDate.getTime(), lastYearDate.getTime());
-
+        //QUERY 3
+        //Date currentDate =new SimpleDateFormat("dd/MM/yyyy").parse("01/01/2020");
+        //Date lastYearDate =new SimpleDateFormat("dd/MM/yyyy").parse("01/01/2019");
+        //db.query4(currentDate.getTime(), lastYearDate.getTime());
         //ldb.updateLDB(db.getListOfRecentOrders());
         //        User(String surname, String name, String email, String password, Date dateOfBirth){
        /* Date d = new Date();

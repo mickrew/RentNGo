@@ -116,14 +116,14 @@ public class LevelDBConnection {
         System.out.println("Choose the best cars");
         int i = 0;
         int choice = 0;
-        ArrayList<Car> listCars = new ArrayList<Car>();
-        Scanner sc =new Scanner(System.in);
+
+        Scanner sc = new Scanner(System.in);
         Long dPick = pickDate.getTime();
         Long dDelivery = deliveryDate.getTime();
 
-        String key= u.getEmail() + ":order";
+        String key= u.getEmail() + ":order"; //set the orders information
         String value = getValue(key);
-        if(value!=null){
+        if(value!=null){  // checks if
            Iterator<String> c = Arrays.stream(value.split("~")).iterator();
            if(!getpickOffice.equals(c.next()))
                deleteCars(u.getEmail());

@@ -11,7 +11,10 @@ import java.util.*;
 import java.util.function.Consumer;
 
 import com.mongodb.client.model.Accumulators;
-import org.bson.Document;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.MergeOptions;
+import com.mongodb.client.model.UnwindOptions;
+import org.bson.*;
 import org.bson.conversions.Bson;
 import org.bson.json.JsonWriterSettings;
 
@@ -290,13 +293,11 @@ public class MongoDBConnection
         User u;
 
         if (!cursor.hasNext()) {
-            System.out.println("User not found");
             return null;
         } else {
             Document d = cursor.next();
             u = createUser(d);
         }
-
         //u.printUser();
 
         return u;
@@ -308,7 +309,6 @@ public class MongoDBConnection
         Worker w;
 
         if (!cursor.hasNext()) {
-            System.out.println("Worker not found");
             return null;
         } else {
             Document d = cursor.next();
@@ -344,7 +344,6 @@ public class MongoDBConnection
         Admin a;
 
         if (!cursor.hasNext()) {
-            System.out.println("Admin not found");
             return null;
         } else {
             Document d = cursor.next();
@@ -528,8 +527,8 @@ public class MongoDBConnection
                 .append("Vehicle", c.getVehicle())
                 .append("Engine", c.getEngine())
                 .append("Power (hp - kW /rpm)", c.getPower())
-                .append("Average fuel consumption (l/100 km)", c.getAvgFuelCons())
-                .append("CO2 (g/km)", Double.valueOf(c.getCo2()))
+                .append("AverageFuelConsumption(l/100km)", Double.valueOf(c.getAvgFuelCons()))
+                .append("CO2", Double.valueOf(c.getCo2()))
                 .append("Weight(3p/5p) kg", c.getWeight())
                 .append("GearBox type", c.getGearBoxType())
                 .append("Tyre", c.getTyre())
@@ -594,15 +593,23 @@ public class MongoDBConnection
     }
 
     public Car getCarFromDocument(Document d){
-        Car c = new Car(d.getString("CarPlate"), d.getString("Brand"), d.getString("Vehicle"),
-                d.getString("Engine"), d.getString("Average fuel consumption (l/100 km)"), d.getDouble("CO2 (g/km)").toString(),
-                d.getString("Weight(3p/5p) kg"), d.getString("GearBox type"), d.getString("Tyre"),
-                d.getString("Traction type"), d.getString("Power (hp - kW /rpm)"));
+        Car c = new Car(d.getString("CarPlate"), d.getString("Brand"),
+                d.getString("Vehicle"),
+                d.getString("Engine"),
+                String.valueOf(d.getDouble("AverageFuelConsumption")),
+                String.valueOf(d.getDouble("CO2")),
+                d.getString("Weight(3p/5p) kg"),
+                d.getString("GearBox type"),
+                d.getString("Tyre"),
+                d.getString("Traction type"),
+                d.getString("Power (hp - kW /rpm)"));
         return c;
     }
 
     public UnregisteredUser getUser(ArrayList<String> s) throws ParseException {
         //check if user
+        if(s == null)
+            return null;
         User us = findUser(s.get(0));
         if(us != null){
             if(s.get(1).equals(us.getPassword())) {
@@ -659,18 +666,17 @@ public class MongoDBConnection
         Bson match1 = match(gt("PickDate", date));
         MongoCollection<Document> myColl = db.getCollection("orders");
         Bson sort = sort(descending(Arrays.asList("count")));
-        Bson group = group("$CarPlate", sum("count", 1));
+        Bson group = group(Arrays.asList("$StartOffice", "$CarPlate"), sum("count", 1));
         Bson match= match(eq("StartOffice", startOffice));
         Bson project = project(fields(include("_id", "count")));
         Bson limit = limit(3);
-        myColl.aggregate(Arrays.asList(match1, match, group, sort, limit, project))
+        myColl.aggregate(Arrays.asList(match1, match,group, sort, limit))
                .forEach(printFormattedDocuments);
 
     }
 
 
-
-    public void getMostEcoFrendlyOffice(){ //BETTER LOWER ECO FRENDLY
+    public void getLessEcoFriendlyOffice(){ //BETTER LOWER ECO FRENDLY
         Consumer<Document> printFormattedDocuments = new Consumer<Document>() {
             @Override
             public void accept(Document document) {
@@ -678,17 +684,14 @@ public class MongoDBConnection
             }
         };
         MongoCollection<Document> myColl = db.getCollection("cars");
-        Bson sort = sort(descending(Arrays.asList("count")));
-        Bson group = group("Office", avg("AvgCO2", "$CO2"));
-        Bson project = project(fields(include("_id", "AvgC02")));
-        Bson limit = limit(1);
-        myColl.aggregate(Arrays.asList(group, sort, limit, project))
+        Bson sort = sort(ascending("_id"));
+        Bson group = group("$Office", avg("AvgCO2", "$CO2"));
+        //Bson project = project(fields(include( "AvgCO2")));
+        Bson limit = limit(3);
+        myColl.aggregate(Arrays.asList( group, sort, limit))
                 .forEach(printFormattedDocuments);
     }
 
-    public void query3(){
-
-    }
 
 
     public void query4(long currentDate, long lastYearDate){
@@ -703,21 +706,29 @@ public class MongoDBConnection
         Bson matchCurrent = match(gt("PickDate", currentDate));
         Bson matchPrev = match(and(gt("PickDate", lastYearDate), lt("PickDate", currentDate)));
 
-        db.createView("currentYear", "orders"
-                , Arrays.asList(matchCurrent, group));
-        db.createView("prevYear", "orders"
-                , Arrays.asList(matchPrev, group2));
-        Bson lookup = new Document("$lookup",
-                new Document("from", "prevYear")
-                        .append("localField", "_id")
-                        .append("foreignField", "_id")
-                        .append("as", "newColl"));
+        MongoCollection<Document> collection = db.getCollection("orders");
 
-        Bson finalMatch = match(gt("newColl.countCurrent", "newColl.countPrev"));
+        collection.aggregate(Arrays.asList(
+                matchCurrent,
+                group,
+                out("currentYear"))).toCollection();
+
+        collection.aggregate(Arrays.asList(
+                matchPrev,
+                group2,
+                out("prevYear"))).toCollection();
+
+        Bson merge = merge("prevYear");
+
         MongoCollection<Document> myColl = db.getCollection("currentYear");
-        myColl.aggregate(Arrays.asList(lookup, finalMatch))
-                .forEach(printFormattedDocuments);
-
+        MongoCursor<Document> cursor = myColl.aggregate(Arrays.asList( merge)).cursor();
+        while(cursor.hasNext()){
+            Document doc = cursor.next();
+            if(doc.getInteger("countPrev") != null && doc.getInteger("countCurrent")!=null && (doc.getInteger("countPrev") - doc.getInteger("countCurrent")) > 4){
+                System.out.println("User: "+ doc.getString("_id")
+                 + ", Current Year Rent: "+ doc.getInteger("countCurrent") + ", Last Year Rent: "+ doc.getInteger("countPrev"));
+            }
+        }
     }
 
     public void changeStatusOrder(String carPlate, String email, String field, Date d, String status, String damage, double damageCost){
