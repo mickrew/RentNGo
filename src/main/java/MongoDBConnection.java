@@ -92,6 +92,15 @@ public class MongoDBConnection
                 case "Administrative expenses for damages":
                     servicesWorker.add(s);
                     break;
+                case "One Way Same Area":
+                    servicesWorker.add(s);
+                    break;
+                case "One Way Mainland":
+                    servicesWorker.add(s);
+                    break;
+                case "One Way Mainland-Island":
+                    servicesWorker.add(s);
+                    break;
                 case "Plate loss":
                     servicesWorker.add(s);
                     break;
@@ -527,7 +536,7 @@ public class MongoDBConnection
                 .append("Vehicle", c.getVehicle())
                 .append("Engine", c.getEngine())
                 .append("Power (hp - kW /rpm)", c.getPower())
-                .append("AverageFuelConsumption(l/100km)", Double.valueOf(c.getAvgFuelCons()))
+                .append("AverageFuelConsumption", Double.valueOf(c.getAvgFuelCons()))
                 .append("CO2", Double.valueOf(c.getCo2()))
                 .append("Weight(3p/5p) kg", c.getWeight())
                 .append("GearBox type", c.getGearBoxType())
@@ -548,6 +557,18 @@ public class MongoDBConnection
         //myColl.aggregate(Arrays.asList(b2, project, b1, b3))
          //       .forEach(printFormattedDocuments);
     }
+
+    public void getCarsOutOfDate(Long currentDate){
+        MongoCollection<Document> myColl = db.getCollection("orders");
+        MongoCursor<Document> cursor = myColl.find(and(lt("DeliveryDate", currentDate),
+                                                        ne("Status", "Completed"))).iterator();
+        while(cursor.hasNext()){
+            Document d = cursor.next();
+            Date date = new Date(d.getLong("DeliveryDate"));
+            System.out.println("CarPlate: "+ d.getString("CarPlate") + " ,DateDelivery: "+ date + " ,Status: " + d.getString("Status"));
+        }
+    }
+
 
     public ArrayList<Car> getListOfCars(int office, int category) {
         MongoCollection<Document> myColl = db.getCollection("cars");

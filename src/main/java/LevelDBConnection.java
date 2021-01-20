@@ -125,8 +125,9 @@ public class LevelDBConnection {
         String value = getValue(key);
         if(value!=null){  // checks if
            Iterator<String> c = Arrays.stream(value.split("~")).iterator();
-           if(!getpickOffice.equals(c.next()))
+           if(!getpickOffice.equals(c.next())) {
                deleteCars(u.getEmail());
+           }
         }
 
         value = getpickOffice + "~" + pickDate.getTime() + "~" + deliveryDate.getTime() + "~" + deliveryOffice;
@@ -148,6 +149,7 @@ public class LevelDBConnection {
                     long dPickCart = Long.valueOf(s.next());
                     long dDeliveryCart = Long.valueOf(s.next());
                     if ((dPick >= dDeliveryCart && dDelivery >= dDeliveryCart)|| (dPick<= dPickCart && dDelivery <= dPickCart)){
+                        //OK
                     } else{
                         cars.remove(i);
                         j = 1;
@@ -188,12 +190,22 @@ public class LevelDBConnection {
         value = getValue(key);
         if((u.getDateOfBirth().getYear() + 21) >  d.getYear() ){ // if he has less than 20 years
             if(value==null || !value.contains("Young Driver 19/20"))
-                addAccessories(u.getEmail(),"Young Driver 19/20",19, "day" );
+                addAccessories(u.getEmail(),"Young Driver 19/20",19.0, "day" );
         } else if((u.getDateOfBirth().getYear() + 25) >  d.getYear()){
             if(value==null || !value.contains("Young Driver 21/24"))
-                addAccessories(u.getEmail(),"Young Driver 21/24",6, "day" );
+                addAccessories(u.getEmail(),"Young Driver 21/24",6.0, "day" );
+        }
+
+        if(!getpickOffice.equals(deliveryOffice)){
+            if(value==null || !value.contains("One Way Same Area"))
+                addAccessories(u.getEmail(),"One Way Same Area",75.0, "per rent" );
+        } else {
+            if(value!=null && value.contains("One Way Same Area")){
+                deleteAccessories(u.getEmail(), "One Way Same Area", 75.0, "per rent");
+            }
         }
     }
+
 
     public Order payment(String email, Car car) {
         Order o =new Order();

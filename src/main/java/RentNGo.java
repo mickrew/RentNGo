@@ -33,6 +33,8 @@ public class RentNGo {
         ldb = new LevelDBConnection();
         ldb.openDB();
 
+        Date date1 =new SimpleDateFormat("dd/MM/yyyy").parse("01/01/2020");
+        //db.getCarsOutOfDate(date1.getTime());
         //QUERY 1
         //Date date1 =new SimpleDateFormat("dd/MM/yyyy").parse("01/01/2016");
         //db.getMostUsedCarsPerOffice("Malpensa", date1.getTime());
