@@ -839,6 +839,8 @@ public class MongoDBConnection
         }
     }
 
+    
+
     public void changeStatusOrder(String carPlate, String email, String field, Date d, String status, String damage, double damageCost){
         MongoCollection<Document> myColl = db.getCollection("orders");
         MongoCursor<Document> cursor = myColl.find(and(eq("CarPlate", carPlate), lt(field, d.getTime()+30*1000*60*60), gt(field, d.getTime()-30*1000*60*60), eq("Email", email))).iterator();
@@ -860,7 +862,7 @@ public class MongoDBConnection
         }
     }
 
-    public void showListOrdersByParameters(String carplate, String pickOffice, String pickDate, String deliveryDate) {
+    public void showListOrdersByParameters(String carplate, String pickOffice, Long pickDate) {
         if (carplate != null){
             MongoCollection<Document> myColl = db.getCollection("orders");
             MongoCursor<Document> cursor = myColl.find(eq("CarPlate", carplate)).iterator();
@@ -883,7 +885,7 @@ public class MongoDBConnection
             }
         } else {
             MongoCollection<Document> myColl = db.getCollection("orders");
-            MongoCursor<Document> cursor = myColl.find(and(eq("StartOffice", pickOffice), eq("PickDate", pickDate), eq("DeliveryDate", deliveryDate))).iterator();
+            MongoCursor<Document> cursor = myColl.find(and(eq("StartOffice", pickOffice), gt("PickDate", (pickDate-1000*60*60*12)), lt("PickDate", (pickDate+1000*60*60*12)))).iterator();
             int j = 0;
             while (cursor.hasNext()) {
                 Document d = cursor.next();

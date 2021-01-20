@@ -118,19 +118,38 @@ public class Worker extends UnregisteredUser{
         } else if (choice == 2){
             System.out.print("Insert carplate: ");
             carplate = sc.nextLine();
-            db.showListOrdersByParameters(carplate, pickOffice, date1, date2);
+            db.showListOrdersByParameters(carplate, pickOffice, new Date().getTime());
         } else if (choice == 3){
             System.out.print("Insert pick office: ");
             pickOffice = sc.nextLine();
-            System.out.println("Insert range of dates.");
-            System.out.print("Insert first date: ");
+            System.out.print("Insert pick date: ");
             SimpleDateFormat  formatter = new SimpleDateFormat("dd/MM/yyyy");
-            Date d = (Date)formatter.parse(sc.nextLine());
-            date1 = String.valueOf(d.getTime());
-            System.out.print("Insert second date: ");
-            Date d2 = (Date)formatter.parse(sc.nextLine());
-            date2 = String.valueOf(d2.getTime());
-            db.showListOrdersByParameters(carplate, pickOffice, date1, date2);
+
+            Date d = new Date();
+            try {
+                d = formatter.parse(sc.nextLine());
+            }catch (ParseException p){
+                System.out.println("Error. Wrong Date");
+                return ;
+            }
+
+            //Date d2 = new Date();
+           // Date d = formatter.parse(sc.nextLine());
+            //date1 = String.valueOf(d.getTime());
+            //System.out.print("Insert second date: ");
+            //d2 = formatter.parse(sc.nextLine());
+            //date2 = String.valueOf(d2.getTime());
+            db.showListOrdersByParameters(carplate, pickOffice, d.getTime());
+/*
+
+            String dateString = sc.nextLine();
+            //DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+            try {
+                d = formatter.parse(sc.nextLine());
+            }catch (ParseException p){
+                System.out.println("Error. Wrong Date");
+                return false;
+            }*/
         }
 
     }
