@@ -101,7 +101,7 @@ public class Worker extends UnregisteredUser{
         System.out.println("0) Exit");
         System.out.println("1) Search by email");
         System.out.println("2) Search by carplate");
-        System.out.println("3) Search by PickOffice and dates");
+        System.out.println("3) Search by PickOffice and PickDate");
         String pickOffice = null;
         String carplate = null;
         String date1 = null;
