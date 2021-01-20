@@ -1,19 +1,19 @@
-package main.java;
+package main.java.actors;
 
-import com.mongodb.client.MongoDatabase;
+import main.java.connections.MongoDBConnection;
+import main.java.entities.Car;
+import main.java.entities.Office;
 
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Date;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
 import static com.mongodb.client.model.Filters.eq;
 
-public class Admin extends  UnregisteredUser{
+public class Admin extends UnregisteredUser {
     Date workertoAdmin =  new Date();
     int salary;
     Date hiringDate = new Date();

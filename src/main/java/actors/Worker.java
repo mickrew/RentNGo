@@ -1,14 +1,15 @@
-package main.java;
+package main.java.actors;
 
-import java.text.DateFormat;
+import main.java.entities.Car;
+import main.java.connections.MongoDBConnection;
+import main.java.entities.Order;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Date;
 import java.util.Scanner;
 
-public class Worker extends UnregisteredUser{
+public class Worker extends UnregisteredUser {
     int salary;
     Date hiringDate = new Date();
     int office;

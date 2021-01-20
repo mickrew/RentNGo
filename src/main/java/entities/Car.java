@@ -1,8 +1,9 @@
-package main.java;
+package main.java.entities;
+
+import main.java.connections.MongoDBConnection;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
 
 public class Car {
     private
@@ -22,8 +23,8 @@ public class Car {
         Car(){
         }
 
-        Car(String plate, String brand, String vehicle, String engine, String avgFuelCons, String co2, String weight
-        , String gearBoxType, String tyre, String tractionType, String power){
+        public Car(String plate, String brand, String vehicle, String engine, String avgFuelCons, String co2, String weight
+                , String gearBoxType, String tyre, String tractionType, String power){
             this.plate = plate;
             this.brand = brand;
             this.vehicle = vehicle;

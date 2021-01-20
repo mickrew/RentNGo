@@ -1,4 +1,6 @@
-package main.java;
+package main.java.entities;
+
+import main.java.entities.Car;
 
 import java.util.ArrayList;
 import java.util.List;

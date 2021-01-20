@@ -1,11 +1,12 @@
-package main.java;
+package main.java.entities;
+
+import main.java.entities.Office;
 
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Scanner;
 
 public class Order {

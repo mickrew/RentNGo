@@ -1,8 +1,7 @@
-package main.java;
+package main.java.connections;
 
 import com.mongodb.client.*;
 
-import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -10,13 +9,17 @@ import java.util.*;
 
 import java.util.function.Consumer;
 
-import com.mongodb.client.model.Accumulators;
+import main.java.actors.Admin;
+import main.java.actors.UnregisteredUser;
+import main.java.actors.User;
+import main.java.actors.Worker;
+import main.java.entities.Car;
+import main.java.entities.Office;
+import main.java.entities.Order;
+import main.java.entities.Service;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.json.JsonWriterSettings;
-
-import javax.print.Doc;
-import javax.swing.event.DocumentEvent;
 
 import static com.mongodb.client.model.Projections.*;
 import static com.mongodb.client.model.Updates.*;
