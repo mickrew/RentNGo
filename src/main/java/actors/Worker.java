@@ -100,9 +100,9 @@ public class Worker extends UnregisteredUser {
 
         System.out.println("Select the parameter by which you want to search orders. ");
         System.out.println("0) Exit");
-        System.out.println("1) Search by email");
-        System.out.println("2) Search by carplate");
-        System.out.println("3) Search by PickOffice and dates");
+        System.out.println("1) Search by Email");
+        System.out.println("2) Search by Carplate");
+        System.out.println("3) Search by PickOffice and PickDate");
         String pickOffice = null;
         String carplate = null;
         String date1 = null;
@@ -134,23 +134,8 @@ public class Worker extends UnregisteredUser {
                 return ;
             }
 
-            //Date d2 = new Date();
-           // Date d = formatter.parse(sc.nextLine());
-            //date1 = String.valueOf(d.getTime());
-            //System.out.print("Insert second date: ");
-            //d2 = formatter.parse(sc.nextLine());
-            //date2 = String.valueOf(d2.getTime());
             db.showListOrdersByParameters(carplate, pickOffice, d.getTime());
-/*
 
-            String dateString = sc.nextLine();
-            //DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
-            try {
-                d = formatter.parse(sc.nextLine());
-            }catch (ParseException p){
-                System.out.println("Error. Wrong Date");
-                return false;
-            }*/
         }
 
     }
