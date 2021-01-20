@@ -99,8 +99,8 @@ public class Worker extends UnregisteredUser{
 
         System.out.println("Select the parameter by which you want to search orders. ");
         System.out.println("0) Exit");
-        System.out.println("1) Search by email");
-        System.out.println("2) Search by carplate");
+        System.out.println("1) Search by Email");
+        System.out.println("2) Search by Carplate");
         System.out.println("3) Search by PickOffice and PickDate");
         String pickOffice = null;
         String carplate = null;
