@@ -1,5 +1,6 @@
 package main.java;
 
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -10,12 +11,13 @@ import java.util.Scanner;
 public class Worker extends UnregisteredUser{
     int salary;
     Date hiringDate = new Date();
+    int office;
 
     public Worker (){
         super();
     }
 
-    public Worker(String surname, String name, String email, String password, Date dateofbirth, int salary, Date hiringDate){
+    public Worker(String surname, String name, String email, String password, Date dateofbirth, int salary, Date hiringDate, int office){
         super(surname, name, email, password, dateofbirth);
         this.salary = salary;
         this.hiringDate = hiringDate;
@@ -33,8 +35,17 @@ public class Worker extends UnregisteredUser{
         return hiringDate;
     }
 
-    public void setHiringDate(Date hiringDate){
-        this.hiringDate = hiringDate;
+    public void setHiringDate(String hiringDate){
+        Date d = new Date(hiringDate);
+        this.hiringDate = d;
+    }
+
+    public int getOffice() {
+        return office;
+    }
+
+    public void setOffice(int office) {
+        this.office = office;
     }
 
     public void showMenu(){
@@ -123,6 +134,7 @@ public class Worker extends UnregisteredUser{
         }
 
     }
+
 
 
 }

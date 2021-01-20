@@ -2,6 +2,9 @@ package main.java;
 
 import com.mongodb.client.MongoDatabase;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Date;
@@ -105,6 +108,101 @@ public class Admin extends  UnregisteredUser{
         }
     }
 
+    public static void addRemoveWorker (MongoDBConnection db) throws ParseException {
+        Integer i=0;
+        System.out.println("1) Add Worker");
+        System.out.println("2) Remove Worker");
+        Scanner sc =new Scanner(System.in);
+        try{
+            i = Integer.valueOf(sc.nextLine());
+        }
+        catch(Exception e){
+            System.out.println("Error. Didn't insert an integer");
+
+        }
+
+        switch (i) {
+            case 1:
+                System.out.println("Insert the Email of Worker: ");
+                String emailWorker = sc.nextLine();
+                Worker w = db.findWorker(emailWorker);
+                if (w != null){
+                    System.out.println("Worker already exists!");
+                }
+                w = new Worker();
+                w.setEmail(emailWorker);
+                System.out.print("Insert the worker password: ");
+                assert w != null;
+                w.setPassword(sc.nextLine());
+
+                System.out.print("Insert the date of birth. ( DD/MM/YYYY ): ");
+                Date d= new Date();
+
+
+                String dateString = sc.nextLine();
+                //System.out.println(dateString);
+
+                DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+                String today = formatter.format(d);
+                try {
+                    d = formatter.parse(dateString);
+                } catch (Exception p){
+                    System.out.println("Error");
+                }
+                w.setDateofbirth(d);
+
+                System.out.print("Insert the salary: ");
+                w.setSalary(Integer.valueOf(sc.nextLine()));
+
+                w.setHiringDate(today);
+
+                db.insertWorker(w);
+                break;
+
+            case 2:
+                System.out.println("Insert the Email of Worker: ");
+                emailWorker = sc.nextLine();
+                w = db.findWorker(emailWorker);
+                if (w == null){
+                    System.out.println("Worker doesn't exists!");
+                }
+                db.deleteWorker(emailWorker);
+                break;
+        }
+
+    }
+    public void promoteWorker(MongoDBConnection db) throws ParseException {
+        Scanner sc =new Scanner(System.in);
+        System.out.println("Insert the Email of Worker: ");
+        String emailWorker = sc.nextLine();
+        Worker w = db.findWorker(emailWorker);
+        if (w == null){
+            System.out.println("Worker doesn't exists!");
+            return;
+        }
+        Admin a = db.findAdmin(emailWorker);
+        if (a != null){
+            System.out.println("Is already an Admin!");
+            return;
+        }
+        Date d = new Date();
+
+        System.out.println("Insert the new Salary: ");
+        Integer salary = Integer.valueOf(sc.nextLine());
+        a  = new Admin(w.getSurname(), w.getName(), emailWorker, w.getPassword(), w.getDateOfBirth(), salary, w.getHiringDate(), d);
+        db.insertAdmin(a);
+        db.deleteWorker(emailWorker);
+
+    }
+
+
+    public Date getWorkertoAdmin() {
+        return workertoAdmin;
+    }
+
+    public void setWorkertoAdmin(Date hiringDate){
+        this.hiringDate = hiringDate;
+    }
 
     public void insertNewCar(MongoDBConnection db){
         Scanner sc = new Scanner(System.in);
@@ -197,12 +295,108 @@ public class Admin extends  UnregisteredUser{
         this.hiringDate = hiringDate;
     }
 
+    public static void modifyWorker(MongoDBConnection db) throws ParseException {
+        Scanner sc =new Scanner(System.in);
+        System.out.println("Insert the Email of Worker: ");
+        String emailWorker = sc.nextLine();
+        Worker w = db.findWorker(emailWorker);
+        if (w == null){
+            System.out.println("Worker doesn't exists!");
+            return;
+        }
+        System.out.println("Which field do you want to modify ? ");
+        System.out.println("1) Salary");
+        System.out.println("2) Office"); //even delete or modify
+        sc =new Scanner(System.in);
+        Integer i=0;
+        try{
+            i = Integer.valueOf(sc.nextLine());
+        }
+        catch(Exception e){
+            System.out.println("Error. Didn't insert an integer");
+        }
+        switch (i){
+            case 1:
+                System.out.println("Insert the new salary: ");
+                Integer salary=0;
+                try{
+                    salary = Integer.valueOf(sc.nextLine());
+                }
+                catch(Exception e){
+                    System.out.println("Error. Didn't insert an integer");
+                }
+                db.updateWorkerSalary(salary, emailWorker);
+                break;
+            case 2:
+                System.out.println("Insert the new office: ");
+                String office = sc.nextLine();
+                Office o = db.findOfficeByName(office);
+                if (o == null){
+                    System.out.println("Office doesn't exists!");
+                    return;
+                }
+                Integer position = o.getPosition();
+                db.updateWorkerOffice(emailWorker, position);
+                break;
+        }
+    }
+
+    public void modifyCar(MongoDBConnection db){
+        Scanner sc =new Scanner(System.in);
+        System.out.println("Insert the carplate: ");
+        String carPlate = sc.nextLine();
+        Car c = db.findCar(carPlate);
+        if (c == null){
+            System.out.println("Car doesn't exists!");
+            return;
+        }
+        System.out.println("Insert the new office: ");
+        String office = sc.nextLine();
+        Office o = db.findOfficeByName(office.trim());
+        if (o == null){
+            System.out.println("Office doesn't exists!");
+            return;
+        }
+        db.updateCarOffice(carPlate, o.getPosition());
+
+    }
+
     public void showMenu(){
         System.out.println("0) Exit");
-        System.out.println("1) Add/Remove worker");
-        System.out.println("2) Add/Remove Cars"); //even delete or modify
-        System.out.println("3) Promote Worker to Admin");
-        System.out.println("4) Modify Worker"); //es. Salary
-        System.out.println("5) Modify Car");
+        System.out.println("1) Modify Car");
+        System.out.println("2) Add/Remove Cars");
+        System.out.println("3) Find Worker");
+        System.out.println("4) Add/Remove worker");
+        System.out.println("5) Promote Worker to Admin");
+        System.out.println("6) Modify Worker");
+        System.out.println("7) Remove user");
+         //es. Salary
+
+
+
+
+    }
+
+    public void findWorker(MongoDBConnection db) throws ParseException {
+        Scanner sc =new Scanner(System.in);
+        System.out.println("Insert the Email of Worker: ");
+        String emailWorker = sc.nextLine();
+        Worker w = db.findWorker(emailWorker);
+        if (w == null){
+            System.out.println("Worker doesn't exists!");
+            return;
+        }
+    }
+
+    public void removeUser(MongoDBConnection db) {
+        Scanner sc =new Scanner(System.in);
+        System.out.println("Insert the Email of User: ");
+        String emailUser = sc.nextLine();
+        User u = db.findUser(emailUser);
+        if (u == null){
+            System.out.println("User doesn't exists!");
+            return;
+        }
+        db.deleteUser(emailUser);
     }
 }

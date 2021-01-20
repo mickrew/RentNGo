@@ -9,14 +9,24 @@ public class Office {
     String id;
     String name;
     Integer capacity;
+    Integer position;
     List<Car> officeCars = new ArrayList<Car>();
 
-    public Office(String city, String region, String name, String id, Integer capacity){
+    public Office(String city, String region, String name, String id, Integer capacity, Integer position){
         this.city=city;
         this.region=region;
         this.name = name;
         this.id=id;
         this.capacity=capacity;
+        this.position = position;
+    }
+
+    public Integer getPosition() {
+        return position;
+    }
+
+    public void setPosition(Integer position) {
+        this.position = position;
     }
 
     public Office(){};

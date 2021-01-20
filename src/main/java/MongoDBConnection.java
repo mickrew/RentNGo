@@ -31,6 +31,15 @@ public class MongoDBConnection
       //  return doc -> System.out.println(doc.toJson());
     //}
     //Consumer<Document> printFormattedDocuments;
+
+    private static Consumer<Document> printDocuments() {
+        return doc -> System.out.println(doc.toJson());
+    }
+    private static Consumer<Document> printFormattedDocuments() {
+            return doc -> System.out.println(doc.toJson(JsonWriterSettings.builder().indent(true).build()));
+    }
+
+    //Consumer<Document> printFormattedDocuments;
     private MongoClient mongoClient;
     private MongoDatabase db;
     private ArrayList<Office> offices = new ArrayList<Office>();
@@ -320,13 +329,22 @@ public class MongoDBConnection
         return w;
     }
 
+
+
     private Worker createWorker(Document d) throws ParseException {
         //String surname, String name, String email, String password, Date dateOfBirth
         Date date1=new SimpleDateFormat("dd/MM/yyyy").parse(d.getString("DateOfBirth"));
         Date date2=new SimpleDateFormat("dd/MM/yyyy").parse(d.getString("Date of hiring"));
 
-        Worker w = new Worker(d.getString("Surname"), d.getString("Name"),d.getString("Email"), d.getString("Password"), date1, Integer.valueOf(d.getString("Salary")),date2);
+        Worker w = new Worker(d.getString("Surname"), d.getString("Name"),d.getString("Email"), d.getString("Password"), date1, Integer.valueOf(d.getString("Salary")),date2, Integer.valueOf(d.getString("Office")));
         return w;
+    }
+
+    public void deleteWorker(String email) {
+        MongoCollection<Document> myColl = db.getCollection("workers");
+        MongoCursor<Document> cursor  = myColl.find(eq("Email", email)).iterator();
+        myColl.deleteOne(eq("Email", email));
+        System.out.println("User deleted successfully");
     }
 
     private Admin createAdmin(Document d) throws ParseException {
@@ -355,12 +373,21 @@ public class MongoDBConnection
 
         return a;
     }
+
+    public void deleteAdmin(String email) {
+        MongoCollection<Document> myColl = db.getCollection("admins");
+        MongoCursor<Document> cursor  = myColl.find(eq("Email", email)).iterator();
+        myColl.deleteOne(eq("Email", email));
+        System.out.println("User deleted successfully");
+    }
+
     public void deleteUser(String email) {
         MongoCollection<Document> myColl = db.getCollection("users");
         MongoCursor<Document> cursor  = myColl.find(eq("Email", email)).iterator();
         myColl.deleteOne(eq("Email", email));
         System.out.println("User deleted successfully");
     }
+
 
     private User createUser(Document d) {
         ////////
@@ -378,6 +405,55 @@ public class MongoDBConnection
         return u;
     }
 
+    public boolean insertAdmin(Admin admin)  {
+        MongoCollection<Document> myColl = db.getCollection("admins");
+
+        //check email
+        MongoCursor<Document> cursor = myColl.find(eq("Email", admin.getEmail())).iterator();
+        if(cursor.hasNext()){
+            System.out.println("Worker already present in the database");
+            return false;
+        }
+        DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+
+        Document adminMongo = new Document("Name", admin.getName())
+                .append("Surname", admin.getSurname())
+                .append("Email", admin.getEmail())
+                .append("Password", admin.getPassword())
+                .append("DateOfBirth",formatter.format(admin.getDateOfBirth()))
+                .append("Salary", admin.getSalary())
+                .append("Date of hiring", formatter.format(admin.getHiringDate()))
+                .append("Date WtoA", formatter.format(admin.getWorkertoAdmin()));
+
+        myColl.insertOne(adminMongo);
+
+        return true;
+    }
+
+    public boolean insertWorker(Worker worker)  {
+        MongoCollection<Document> myColl = db.getCollection("workers");
+
+        //check email
+        MongoCursor<Document> cursor = myColl.find(eq("Email", worker.getEmail())).iterator();
+        if(cursor.hasNext()){
+            System.out.println("Worker already present in the database");
+            return false;
+        }
+        DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+
+        Document workerMongo = new Document("Name", worker.getName())
+                .append("Surname", worker.getSurname())
+                .append("Email", worker.getEmail())
+                .append("Password", worker.getPassword())
+                .append("DateOfBirth",formatter.format(worker.getDateOfBirth()))
+                .append("Salary", worker.getSalary())
+                .append("Date of hiring", formatter.format(worker.getHiringDate()));
+
+        myColl.insertOne(workerMongo);
+
+        return true;
+    }
+
     public boolean insertUser(User u)  {
         MongoCollection<Document> myColl = db.getCollection("users");
 
@@ -387,6 +463,7 @@ public class MongoDBConnection
             System.out.println("User already present in the database");
             return false;
         }
+        
         DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
 
         Document user = new Document("Name", u.getName())
@@ -546,8 +623,8 @@ public class MongoDBConnection
         Bson b2 = group("$CarPlate", sum("nUsed", 1));
         Bson project = project(fields(include("CarPlate", "nUsed")));
         Bson b3 = limit(i);
-        //myColl.aggregate(Arrays.asList(b2, project, b1, b3))
-         //       .forEach(printFormattedDocuments);
+        myColl.aggregate(Arrays.asList(b2, project, b1, b3))
+                .forEach(printFormattedDocuments());
     }
 
     public ArrayList<Car> getListOfCars(int office, int category) {
@@ -595,7 +672,7 @@ public class MongoDBConnection
 
     public Car getCarFromDocument(Document d){
         Car c = new Car(d.getString("CarPlate"), d.getString("Brand"), d.getString("Vehicle"),
-                d.getString("Engine"), d.getString("Average fuel consumption (l/100 km)"), d.getDouble("CO2 (g/km)").toString(),
+                d.getString("Engine"), d.getString("AverageFuelConsumption1"), d.getDouble("CO2").toString(),
                 d.getString("Weight(3p/5p) kg"), d.getString("GearBox type"), d.getString("Tyre"),
                 d.getString("Traction type"), d.getString("Power (hp - kW /rpm)"));
         return c;
@@ -615,7 +692,7 @@ public class MongoDBConnection
 
         Worker w = findWorker(s.get(0));
         if(w != null){
-            return new Worker(w.getSurname(), w.getName(), w.getEmail(), w.getPassword(), w.getDateOfBirth(), w.getSalary(), w.getHiringDate());
+            return new Worker(w.getSurname(), w.getName(), w.getEmail(), w.getPassword(), w.getDateOfBirth(), w.getSalary(), w.getHiringDate(), w.getOffice());
         }
 
         Admin a = findAdmin(s.get(0));
@@ -647,6 +724,38 @@ public class MongoDBConnection
             i++;
         }
 
+    }
+
+    public Office findOfficeByName(String name){
+        MongoCollection<Document> myColl = db.getCollection("offices");
+        MongoCursor<Document> cursor  = myColl.find(eq("Name", name.trim())).iterator();
+        Office o;
+
+        if (!cursor.hasNext()) {
+            System.out.println("Office not found");
+            return null;
+        } else {
+            Document d = cursor.next();
+            o = getOfficeFromDocument(d);
+        }
+
+
+        System.out.println();
+
+        return o;
+    }
+
+
+    public Office getOfficeFromDocument(Document d){
+        Office o = new Office(d.getString("City"), d.getString("Region"), d.getString("ID"),
+                d.getString("Name"), Integer.valueOf(d.getString("Capacity")), Integer.valueOf(d.getString("Position")));
+        return o;
+    }
+
+    public void updateWorkerSalary(int newSalary, String workerEmail){
+        MongoCollection<Document> myColl = db.getCollection("workers");
+        myColl.updateOne(
+                (eq("Email", workerEmail)), set("Salary", newSalary));
     }
 
     public void getMostUsedCarsPerOffice(String startOffice, long date) {
@@ -808,6 +917,18 @@ public class MongoDBConnection
         return orders;
     }
 
+    public void updateWorkerOffice(String emailWorker, Integer position) {
+        MongoCollection<Document> myColl = db.getCollection("workers");
+        myColl.updateOne(
+                (eq("Email", emailWorker)), set("Office", position));
+    }
+
+    public void updateCarOffice(String carPlate, Integer position) {
+        MongoCollection<Document> myColl = db.getCollection("cars");
+        myColl.updateOne(
+                (eq("CarPlate", carPlate)), set("Office", position));
+    }
+
 
 /*
     public User logIn(ArrayList<String> parameters){
@@ -866,5 +987,7 @@ public class MongoDBConnection
 
     }
 */
+
+
 
 }
