@@ -1,25 +1,21 @@
-package main.java;
+package main.java.actors;
 
-import com.mongodb.client.MongoCursor;
-import org.bson.Document;
+import main.java.entities.Car;
+import main.java.entities.Office;
+import main.java.entities.Order;
 
-import java.lang.reflect.Array;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Scanner;
 
 import static com.mongodb.client.model.Filters.eq;
 
-public class User extends UnregisteredUser{
+public class User extends UnregisteredUser {
 
-        User() {
+        public User() {
         }
 
-        User(String surname, String name, String email, String password, Date dateOfBirth){
+        public User(String surname, String name, String email, String password, Date dateOfBirth){
             super(surname, name, email, password, dateOfBirth);
         }
 

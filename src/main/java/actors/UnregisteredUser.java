@@ -1,6 +1,7 @@
-package main.java;
+package main.java.actors;
 
-import java.lang.reflect.Array;
+import main.java.actors.User;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -84,7 +85,7 @@ public class UnregisteredUser {
         System.out.println("Surname: "+ getSurname() +", Name: " +getName() +", E-mail: " +getEmail() + ", Password: " + getPassword() + ", Date of birth: " +getDateOfBirth());
     }
 
-    public static User  signIn(){
+    public static User signIn(){
         User u= new User();
         Scanner sc = new Scanner(System.in);
         System.out.print("Insert the user name: ");

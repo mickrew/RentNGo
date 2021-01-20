@@ -1,5 +1,8 @@
-package main.java;
+package main.java.connections;
 
+import main.java.entities.Car;
+import main.java.entities.Order;
+import main.java.actors.User;
 import org.iq80.leveldb.DB;
 import org.iq80.leveldb.DBIterator;
 import org.iq80.leveldb.Options;
@@ -403,6 +406,7 @@ public class LevelDBConnection {
             }
         }
     }
+
 
 
 }

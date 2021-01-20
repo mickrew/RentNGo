@@ -1,5 +1,15 @@
 package main.java;
 
+import main.java.connections.LevelDBConnection;
+import main.java.connections.MongoDBConnection;
+import main.java.actors.Admin;
+import main.java.actors.UnregisteredUser;
+import main.java.actors.User;
+import main.java.actors.Worker;
+import main.java.entities.Car;
+import main.java.entities.Order;
+import main.java.entities.Service;
+
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -278,22 +288,46 @@ public class RentNGo {
                         switch (j) {
                             case 0:
                                 break;
-                            case 1:
-                                //((Admin) u).addRemoveWorker();
-                            case 2:
-                                //((Admin) u).addRemoveCar();
-                            case 3:
-                                //((Admin) u).promoteWorker();
                             case 4:
-                                //((Admin) u).modifyWorker();
+                                ((Admin) u).addRemoveWorker(db);
+                                break;
+                            case 2:
+                                System.out.println("1) Add car");
+                                System.out.println("2) Remove car");
+                                sc =new Scanner(System.in);
+                                try{
+                                    i = Integer.valueOf(sc.nextLine());
+                                }
+                                catch(Exception e){
+                                    System.out.println("Error. Didn't insert an integer");
+
+                                }
+                                switch (i){
+                                    case 1:
+                                        ((Admin) u).insertNewCar(db);
+                                        break;
+                                    case 2:
+                                        ((Admin) u).deleteCar(db);
+                                }
+                                break;
                             case 5:
-                                //((Admin) u).deliveryCar();
+                                ((Admin) u).promoteWorker(db);
+                                break;
                             case 6:
-                                //((Admin) u).deliveryCar();
+                                ((Admin) u).modifyWorker(db);
+                                break;
+                            case 1:
+                                ((Admin) u).modifyCar(db);
+                                break;
+                            case 3:
+                                ((Admin) u).findWorker(db);
+                                break;
                             case 7:
-                                //((Admin) u).addOffice();
+                                ((Admin) u).removeUser(db);
+                                break;
                             default:
                                 System.out.println("Try again.");
+                                break;
                         }
                     }
                     //u.showMenu

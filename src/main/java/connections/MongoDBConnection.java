@@ -1,8 +1,7 @@
-package main.java;
+package main.java.connections;
 
 import com.mongodb.client.*;
 
-import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -10,16 +9,17 @@ import java.util.*;
 
 import java.util.function.Consumer;
 
-import com.mongodb.client.model.Accumulators;
-import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.MergeOptions;
-import com.mongodb.client.model.UnwindOptions;
-import org.bson.*;
+import main.java.actors.Admin;
+import main.java.actors.UnregisteredUser;
+import main.java.actors.User;
+import main.java.actors.Worker;
+import main.java.entities.Car;
+import main.java.entities.Office;
+import main.java.entities.Order;
+import main.java.entities.Service;
+import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.json.JsonWriterSettings;
-
-import javax.print.Doc;
-import javax.swing.event.DocumentEvent;
 
 import static com.mongodb.client.model.Projections.*;
 import static com.mongodb.client.model.Updates.*;
@@ -33,6 +33,15 @@ public class MongoDBConnection
     //private static Consumer<Document> printDocuments() {
       //  return doc -> System.out.println(doc.toJson());
     //}
+    //Consumer<Document> printFormattedDocuments;
+
+    private static Consumer<Document> printDocuments() {
+        return doc -> System.out.println(doc.toJson());
+    }
+    private static Consumer<Document> printFormattedDocuments() {
+            return doc -> System.out.println(doc.toJson(JsonWriterSettings.builder().indent(true).build()));
+    }
+
     //Consumer<Document> printFormattedDocuments;
     private MongoClient mongoClient;
     private MongoDatabase db;
@@ -302,6 +311,7 @@ public class MongoDBConnection
         User u;
 
         if (!cursor.hasNext()) {
+
             return null;
         } else {
             Document d = cursor.next();
@@ -329,13 +339,22 @@ public class MongoDBConnection
         return w;
     }
 
+
+
     private Worker createWorker(Document d) throws ParseException {
         //String surname, String name, String email, String password, Date dateOfBirth
         Date date1=new SimpleDateFormat("dd/MM/yyyy").parse(d.getString("DateOfBirth"));
         Date date2=new SimpleDateFormat("dd/MM/yyyy").parse(d.getString("Date of hiring"));
 
-        Worker w = new Worker(d.getString("Surname"), d.getString("Name"),d.getString("Email"), d.getString("Password"), date1, Integer.valueOf(d.getString("Salary")),date2);
+        Worker w = new Worker(d.getString("Surname"), d.getString("Name"),d.getString("Email"), d.getString("Password"), date1, Integer.valueOf(d.getString("Salary")),date2, Integer.valueOf(d.getString("Office")));
         return w;
+    }
+
+    public void deleteWorker(String email) {
+        MongoCollection<Document> myColl = db.getCollection("workers");
+        MongoCursor<Document> cursor  = myColl.find(eq("Email", email)).iterator();
+        myColl.deleteOne(eq("Email", email));
+        System.out.println("User deleted successfully");
     }
 
     private Admin createAdmin(Document d) throws ParseException {
@@ -353,6 +372,7 @@ public class MongoDBConnection
         Admin a;
 
         if (!cursor.hasNext()) {
+            System.out.println("Admin not found");
             return null;
         } else {
             Document d = cursor.next();
@@ -363,12 +383,21 @@ public class MongoDBConnection
 
         return a;
     }
+
+    public void deleteAdmin(String email) {
+        MongoCollection<Document> myColl = db.getCollection("admins");
+        MongoCursor<Document> cursor  = myColl.find(eq("Email", email)).iterator();
+        myColl.deleteOne(eq("Email", email));
+        System.out.println("User deleted successfully");
+    }
+
     public void deleteUser(String email) {
         MongoCollection<Document> myColl = db.getCollection("users");
         MongoCursor<Document> cursor  = myColl.find(eq("Email", email)).iterator();
         myColl.deleteOne(eq("Email", email));
         System.out.println("User deleted successfully");
     }
+
 
     private User createUser(Document d) {
         ////////
@@ -386,6 +415,55 @@ public class MongoDBConnection
         return u;
     }
 
+    public boolean insertAdmin(Admin admin)  {
+        MongoCollection<Document> myColl = db.getCollection("admins");
+
+        //check email
+        MongoCursor<Document> cursor = myColl.find(eq("Email", admin.getEmail())).iterator();
+        if(cursor.hasNext()){
+            System.out.println("Worker already present in the database");
+            return false;
+        }
+        DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+
+        Document adminMongo = new Document("Name", admin.getName())
+                .append("Surname", admin.getSurname())
+                .append("Email", admin.getEmail())
+                .append("Password", admin.getPassword())
+                .append("DateOfBirth",formatter.format(admin.getDateOfBirth()))
+                .append("Salary", admin.getSalary())
+                .append("Date of hiring", formatter.format(admin.getHiringDate()))
+                .append("Date WtoA", formatter.format(admin.getWorkertoAdmin()));
+
+        myColl.insertOne(adminMongo);
+
+        return true;
+    }
+
+    public boolean insertWorker(Worker worker)  {
+        MongoCollection<Document> myColl = db.getCollection("workers");
+
+        //check email
+        MongoCursor<Document> cursor = myColl.find(eq("Email", worker.getEmail())).iterator();
+        if(cursor.hasNext()){
+            System.out.println("Worker already present in the database");
+            return false;
+        }
+        DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+
+        Document workerMongo = new Document("Name", worker.getName())
+                .append("Surname", worker.getSurname())
+                .append("Email", worker.getEmail())
+                .append("Password", worker.getPassword())
+                .append("DateOfBirth",formatter.format(worker.getDateOfBirth()))
+                .append("Salary", worker.getSalary())
+                .append("Date of hiring", formatter.format(worker.getHiringDate()));
+
+        myColl.insertOne(workerMongo);
+
+        return true;
+    }
+
     public boolean insertUser(User u)  {
         MongoCollection<Document> myColl = db.getCollection("users");
 
@@ -395,6 +473,7 @@ public class MongoDBConnection
             System.out.println("User already present in the database");
             return false;
         }
+
         DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
 
         Document user = new Document("Name", u.getName())
@@ -643,7 +722,7 @@ public class MongoDBConnection
 
         Worker w = findWorker(s.get(0));
         if(w != null){
-            return new Worker(w.getSurname(), w.getName(), w.getEmail(), w.getPassword(), w.getDateOfBirth(), w.getSalary(), w.getHiringDate());
+            return new Worker(w.getSurname(), w.getName(), w.getEmail(), w.getPassword(), w.getDateOfBirth(), w.getSalary(), w.getHiringDate(), w.getOffice());
         }
 
         Admin a = findAdmin(s.get(0));
@@ -675,6 +754,38 @@ public class MongoDBConnection
             i++;
         }
 
+    }
+
+    public Office findOfficeByName(String name){
+        MongoCollection<Document> myColl = db.getCollection("offices");
+        MongoCursor<Document> cursor  = myColl.find(eq("Name", name.trim())).iterator();
+        Office o;
+
+        if (!cursor.hasNext()) {
+            System.out.println("Office not found");
+            return null;
+        } else {
+            Document d = cursor.next();
+            o = getOfficeFromDocument(d);
+        }
+
+
+        System.out.println();
+
+        return o;
+    }
+
+
+    public Office getOfficeFromDocument(Document d){
+        Office o = new Office(d.getString("City"), d.getString("Region"), d.getString("ID"),
+                d.getString("Name"), Integer.valueOf(d.getString("Capacity")), Integer.valueOf(d.getString("Position")));
+        return o;
+    }
+
+    public void updateWorkerSalary(int newSalary, String workerEmail){
+        MongoCollection<Document> myColl = db.getCollection("workers");
+        myColl.updateOne(
+                (eq("Email", workerEmail)), set("Salary", newSalary));
     }
 
     public void getMostUsedCarsPerOffice(String startOffice, long date) {
@@ -752,6 +863,8 @@ public class MongoDBConnection
         }
     }
 
+    
+
     public void changeStatusOrder(String carPlate, String email, String field, Date d, String status, String damage, double damageCost){
         MongoCollection<Document> myColl = db.getCollection("orders");
         MongoCursor<Document> cursor = myColl.find(and(eq("CarPlate", carPlate), lt(field, d.getTime()+30*1000*60*60), gt(field, d.getTime()-30*1000*60*60), eq("Email", email))).iterator();
@@ -773,7 +886,7 @@ public class MongoDBConnection
         }
     }
 
-    public void showListOrdersByParameters(String carplate, String pickOffice, String pickDate, String deliveryDate) {
+    public void showListOrdersByParameters(String carplate, String pickOffice, Long pickDate) {
         if (carplate != null){
             MongoCollection<Document> myColl = db.getCollection("orders");
             MongoCursor<Document> cursor = myColl.find(eq("CarPlate", carplate)).iterator();
@@ -796,7 +909,7 @@ public class MongoDBConnection
             }
         } else {
             MongoCollection<Document> myColl = db.getCollection("orders");
-            MongoCursor<Document> cursor = myColl.find(and(eq("StartOffice", pickOffice), eq("PickDate", pickDate), eq("DeliveryDate", deliveryDate))).iterator();
+            MongoCursor<Document> cursor = myColl.find(and(eq("StartOffice", pickOffice), gt("PickDate", (pickDate-1000*60*60*12)), lt("PickDate", (pickDate+1000*60*60*12)))).iterator();
             int j = 0;
             while (cursor.hasNext()) {
                 Document d = cursor.next();
@@ -838,6 +951,18 @@ public class MongoDBConnection
             orders.add(o);
         }
         return orders;
+    }
+
+    public void updateWorkerOffice(String emailWorker, Integer position) {
+        MongoCollection<Document> myColl = db.getCollection("workers");
+        myColl.updateOne(
+                (eq("Email", emailWorker)), set("Office", position));
+    }
+
+    public void updateCarOffice(String carPlate, Integer position) {
+        MongoCollection<Document> myColl = db.getCollection("cars");
+        myColl.updateOne(
+                (eq("CarPlate", carPlate)), set("Office", position));
     }
 
 
@@ -898,5 +1023,7 @@ public class MongoDBConnection
 
     }
 */
+
+
 
 }
