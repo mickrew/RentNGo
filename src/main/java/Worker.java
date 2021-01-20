@@ -133,23 +133,8 @@ public class Worker extends UnregisteredUser{
                 return ;
             }
 
-            //Date d2 = new Date();
-           // Date d = formatter.parse(sc.nextLine());
-            //date1 = String.valueOf(d.getTime());
-            //System.out.print("Insert second date: ");
-            //d2 = formatter.parse(sc.nextLine());
-            //date2 = String.valueOf(d2.getTime());
             db.showListOrdersByParameters(carplate, pickOffice, d.getTime());
-/*
 
-            String dateString = sc.nextLine();
-            //DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
-            try {
-                d = formatter.parse(sc.nextLine());
-            }catch (ParseException p){
-                System.out.println("Error. Wrong Date");
-                return false;
-            }*/
         }
 
     }
