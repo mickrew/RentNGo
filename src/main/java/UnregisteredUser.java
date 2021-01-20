@@ -24,7 +24,6 @@ public class UnregisteredUser {
     }
 
     public UnregisteredUser(){
-
     }
 
     public Date getDateOfBirth() {
@@ -71,7 +70,10 @@ public class UnregisteredUser {
         ArrayList<String> r =new ArrayList<>();
         System.out.print("Insert the email: ");
         Scanner sc = new Scanner(System.in);
-        r.add(sc.nextLine());
+        String email = sc.nextLine();
+        if(!email.contains("@"))
+            return null;
+        r.add(email);
 
         System.out.print("Insert the password: ");
         r.add(sc.nextLine());
