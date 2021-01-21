@@ -171,7 +171,7 @@ public class LevelDBConnection {
                             System.out.println("Didn't insert and integer");
                             choice = -2;
                         }
-                        if (choice > (i - 10) && choice < i) {
+                        if (choice > (i - 10) && choice <= i) {
                             c = cars.get(choice);
                             if(carsInCart==null || !carsInCart.contains(c.getPlate()))
                                 addCarInCart(u.getEmail(), c.getPlate(), c.getBrand(), c.getEngine(), c.getPower(), c.getVehicle());
@@ -232,6 +232,7 @@ public class LevelDBConnection {
         o.setDeliveryOffice(c.next());
 
 
+
         key= email + ":accessories";
         value = getValue(key);
         if(value == null){
@@ -242,9 +243,10 @@ public class LevelDBConnection {
             o.setAccessories(value);
             key = email + ":accessoriesPriceDay";
             value = getValue(key);
+            Long millisDay = 86400000L;
             if(value!=null){
                 cost = Double.valueOf(value);
-                cost = cost * Math.ceil(dDelivery.getTime() - dPick.getTime())/(60*1000*60*24);
+                cost = cost * Math.ceil(dDelivery.getTime() - dPick.getTime())/(millisDay);
             }
             key = email + ":accessoriesPriceOneTime";
             value = getValue(key);

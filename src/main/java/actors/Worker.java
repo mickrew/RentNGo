@@ -64,7 +64,7 @@ public class Worker extends UnregisteredUser {
         Scanner sc = new Scanner(System.in);
         System.out.println("0) Exit");
         System.out.println("1) Search by Carplate");
-        System.out.println("2) Search by Brand and Vehicle");
+        System.out.println("2) Search by Brand");
         int choice = Integer.valueOf(sc.nextLine());
         Car c;
 
@@ -78,9 +78,8 @@ public class Worker extends UnregisteredUser {
         } else if (choice==2){
             System.out.print("Insert Brand: ");
             String brand = sc.nextLine();
-            System.out.print("Insert Vehicle: ");
-            String vehicle = sc.nextLine();
-            c = db.findCarByBrand(brand, vehicle);
+
+           db.findCarByBrand(brand);
         }
     }
 
@@ -91,7 +90,12 @@ public class Worker extends UnregisteredUser {
         email = sc.nextLine();
         User u = new User();
         u = db.findUser(email);
-        u.printUser();
+        if(u!=null)
+            u.printUser();
+        else
+        {
+            System.out.println("User not found!");
+        }
     }
 
     public static void searchOrders(MongoDBConnection db) throws ParseException {

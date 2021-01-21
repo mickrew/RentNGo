@@ -34,7 +34,7 @@ public class Office {
     public Office(){};
 
     public void printOffice(){
-        System.out.println("Office: " + id + ", City: "+ city+ ", Region: " + region);
+        System.out.println("Office: " + id + ", City: "+ city+ ", Region: " + region+ ", Name: " + name);
     }
 
     public String getCity() {

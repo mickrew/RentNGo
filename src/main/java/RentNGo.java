@@ -89,7 +89,8 @@ public class RentNGo {
             if(i == 1) {
                 UnregisteredUser u = db.getUser(UnregisteredUser.logIn());
                 if (u == null) {
-                    System.out.println("Login failed");
+                    System.out.println("Login failed\n");
+
                     continue;
                 }
                 if (u instanceof User) {
@@ -143,6 +144,7 @@ public class RentNGo {
                             case 3:
                                 //((User) u).showCart();
                                 ArrayList<Car> cars = ldb.getListOfCarsInCart(u.getEmail());
+                                double total;
                                 if(cars != null){
                                     for(Car c: cars){
                                         c.printCar();
@@ -158,6 +160,12 @@ public class RentNGo {
                                             System.out.println("Car is already rented");
                                         } else {
                                             order.printOrder();
+                                            Long millisDay = 86400000L;
+                                            Long numDays = (order.getDeliveryDate().getTime() - order.getPickDate().getTime())/(millisDay);
+                                            total = order.getPriceCar() * numDays + order.getPriceAccessories();
+                                            System.out.println("The total is: " + total);
+
+
                                             db.insertOrder(order);
                                         }
                                     }
@@ -284,7 +292,11 @@ public class RentNGo {
                     int j = 1;
                     while (j != 0) {
                         ((Admin) u).showMenu();
-                        j = sc.nextInt();
+                        try{
+                            j = Integer.valueOf(sc.nextLine());
+                        } catch(Exception e){
+                            j=1000;
+                        }
                         switch (j) {
                             case 0:
                                 break;
@@ -326,7 +338,7 @@ public class RentNGo {
                                 ((Admin) u).removeUser(db);
                                 break;
                             default:
-                                System.out.println("Try again.");
+                                System.out.println("Try again. Wrong Choice !");
                                 break;
                         }
                     }

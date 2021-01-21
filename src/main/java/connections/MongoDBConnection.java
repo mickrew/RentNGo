@@ -1,5 +1,7 @@
 package main.java.connections;
 
+import com.mongodb.ReadPreference;
+import com.mongodb.WriteConcern;
 import com.mongodb.client.*;
 
 import java.text.DateFormat;
@@ -53,7 +55,9 @@ public class MongoDBConnection
         //mongoClient = MongoClients.create();
          mongoClient = MongoClients.create(
                 "mongodb://172.16.3.134:27022, 172.16.3.135:27022, 172.16.3.137:27022/");
-        db = mongoClient.getDatabase("RentNGO");
+
+        db = mongoClient.getDatabase("RentNGO").withReadPreference(ReadPreference.nearest()).withWriteConcern(WriteConcern.W2);
+
         Consumer<Document> printFormattedDocuments = new Consumer<Document>() {
             @Override
             public void accept(Document document) {
@@ -334,8 +338,6 @@ public class MongoDBConnection
             w = createWorker(d);
         }
 
-        w.printUser();
-
         return w;
     }
 
@@ -372,14 +374,14 @@ public class MongoDBConnection
         Admin a;
 
         if (!cursor.hasNext()) {
-            System.out.println("Admin not found");
+            //System.out.println("Admin not found");
             return null;
         } else {
             Document d = cursor.next();
             a = createAdmin(d);
         }
 
-        a.printUser();
+
 
         return a;
     }
@@ -513,6 +515,9 @@ public class MongoDBConnection
         MongoCursor<Document> cursor = myColl.find(eq("Email", email)).iterator();
         int i=0;
         while(cursor.hasNext()){
+
+
+
             Document d = cursor.next();
             if(choice == i){
                 myColl.deleteOne(d);
@@ -538,23 +543,39 @@ public class MongoDBConnection
     }
 
 
-    public Car findCarByBrand(String brand, String vehicle){
+    public void findCarByBrand(String brand){
         MongoCollection<Document> myColl = db.getCollection("cars");
-        MongoCursor<Document> cursor  = myColl.find(and(eq("Brand", brand), eq("Vehicle", vehicle))).iterator();
+        MongoCursor<Document> cursor  = myColl.find(eq("Brand", brand)).iterator();
         Car c;
+        int i = 0;
+        int choice=0;
+        Scanner sc = new Scanner(System.in);
+        while (cursor.hasNext()) {
 
-        if (!cursor.hasNext()) {
-            System.out.println("Car not found");
-            return null;
-        } else {
+            System.out.print(i + ") ");
+
             Document d = cursor.next();
             c = getCarFromDocument(d);
+            c.printCar();
+
+            if ((i + 1) % 10 == 0) {
+                    System.out.println("(Press -2 to exit, -1 to continue)");
+                        try {
+                            choice = Integer.valueOf(sc.nextLine());
+                        } catch(Exception e){
+                            System.out.println("Didn't insert and integer");
+                            choice = -2;
+                        }
+
+
+                }
+                if (choice == -2) {
+                    break;
+                }
+                i++;
         }
 
-        c.printCar();
         System.out.println();
-
-        return c;
     }
 
     public Car findCar(String plate){
@@ -621,7 +642,8 @@ public class MongoDBConnection
                 .append("GearBox type", c.getGearBoxType())
                 .append("Tyre", c.getTyre())
                 .append("Traction type", c.getTractionType())
-                .append("CarPlate", c.getPlate());
+                .append("CarPlate", c.getPlate())
+                .append("RegistrationYear", c.getRegistrationYear());
         myColl.insertOne(car);
 
         System.out.println();
@@ -702,7 +724,8 @@ public class MongoDBConnection
                 d.getString("GearBox type"),
                 d.getString("Tyre"),
                 d.getString("Traction type"),
-                d.getString("Power (hp - kW /rpm)"));
+                d.getString("Power (hp - kW /rpm)"),
+                d.getInteger("RegistrationYear"));
         return c;
     }
 
@@ -722,14 +745,20 @@ public class MongoDBConnection
 
         Worker w = findWorker(s.get(0));
         if(w != null){
-            return new Worker(w.getSurname(), w.getName(), w.getEmail(), w.getPassword(), w.getDateOfBirth(), w.getSalary(), w.getHiringDate(), w.getOffice());
+            if(s.get(1).equals(w.getPassword())) {
+                w.printUser();
+                return new Worker(w.getSurname(), w.getName(), w.getEmail(), w.getPassword(), w.getDateOfBirth(), w.getSalary(), w.getHiringDate(), w.getOffice());
+            }
         }
 
         Admin a = findAdmin(s.get(0));
         if(a != null){
-            return new Admin(a.getSurname(), a.getName(), a.getEmail(), a.getPassword(), a.getDateOfBirth(), a.getSalary(), a.getHiringDate(), a.getWtoAdDate());
+            if(s.get(1).equals(a.getPassword())) {
+                a.printUser();
+                return new Admin(a.getSurname(), a.getName(), a.getEmail(), a.getPassword(), a.getDateOfBirth(), a.getSalary(), a.getHiringDate(), a.getWtoAdDate());
+            }
         }
-        System.out.println("User not found");
+        //System.out.println("User not found");
         return null;
     }
 
@@ -895,7 +924,7 @@ public class MongoDBConnection
                 Document d = cursor.next();
                 System.out.print(j + ") ");
                 System.out.print("CarPlate: " + d.getString("CarPlate") + " ");
-                System.out.print("CarPrice: " + d.getDouble("CarPrice") + " ");
+                System.out.print("CarPrice: " + Math.ceil(d.getDouble("CarPrice")) + " ");
                 Date datPick =new Date(Long.valueOf(d.getLong("PickDate")));
                 System.out.print("DatePick: " + datPick.toString() + " ");
                 Date datDelivery =new Date(Long.valueOf(d.getLong("DeliveryDate")));
@@ -915,7 +944,7 @@ public class MongoDBConnection
                 Document d = cursor.next();
                 System.out.print(j + ") ");
                 System.out.print("CarPlate: " + d.getString("CarPlate") + " ");
-                System.out.print("CarPrice: " + d.getDouble("CarPrice") + " ");
+                System.out.print("CarPrice: " + Math.ceil(d.getDouble("CarPrice")) + " ");
                 Date datPick = new Date(Long.valueOf(d.getLong("PickDate")));
                 System.out.print("DatePick: " + datPick.toString() + " ");
                 Date datDelivery = new Date(Long.valueOf(d.getLong("DeliveryDate")));
@@ -928,6 +957,7 @@ public class MongoDBConnection
                 j++;
             }
         }
+        System.out.println();
     }
 
 

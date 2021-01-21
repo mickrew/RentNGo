@@ -7,6 +7,7 @@ import main.java.entities.Office;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Scanner;
 import java.util.regex.Pattern;
@@ -251,18 +252,58 @@ public class Admin extends UnregisteredUser {
         System.out.print("Insert the Engine: ");
         c.setEngine(sc.nextLine());
 
-
+        /*
+            Pattern power
+         */
+        check =true;
         System.out.print("Insert the Power: ");
-        c.setPower(sc.nextLine());
+        while(check){
+            String tmpPower = sc.nextLine();
+            String[] firstSplit = tmpPower.split("/");
+            if (firstSplit.length == 2){
+                String[] secondSplit = firstSplit[0].split("-");
+                if (secondSplit.length == 2)
+                    if (Integer.valueOf(firstSplit[1]) instanceof Integer && Integer.valueOf(secondSplit[0]) instanceof Integer && Integer.valueOf(firstSplit[1]) instanceof Integer){
+                        c.setPower(tmpPower.trim());
+                        check = false;
+                        continue;
+                    }
+            }
+            System.out.println("Insert the correct value of Power (HP-CV/RPM)!");
+        }
 
 
-        System.out.print("Insert the average fuel consumption: ");
-        c.setAvgFuelCons(sc.nextLine());
+        check = true;
+        System.out.print("Insert the average fuel consumption (l/100km): ");
+        while(check){
+            String tmpAFC = sc.nextLine();
+            try {
+                if (Double.valueOf(tmpAFC) instanceof Double){
+                    c.setAvgFuelCons(tmpAFC);
+                    check=false;
+                    continue;
+                }
+            } catch (Exception e){
+                System.out.println("Insert the correct value of Average Fuel Consumption!");
+            }
+        }
 
-
+        check = true;
         System.out.print("Insert the CO2: ");
-        c.setCo2(sc.nextLine());
+        while(check){
+            try {
+                String tmpCO2 = sc.nextLine();
+                if (Double.valueOf(tmpCO2) instanceof Double){
+                    c.setCo2(tmpCO2);
+                    check=false;
+                    continue;
+                }
+            } catch (Exception e){
+                System.out.println("Insert the correct value of CO2!");
+            }
 
+
+        }
 
         System.out.print("Insert the weight: ");
         c.setWeight(sc.nextLine());
@@ -275,7 +316,25 @@ public class Admin extends UnregisteredUser {
 
         System.out.print("Insert the Traction type: ");
         c.setTractionType(sc.nextLine());
-        
+
+        check = true;
+        System.out.print("Insert the Registration Year: ");
+        while(check){
+            String tmpRegistrationYear = sc.nextLine();
+            try {
+                if (Integer.valueOf(tmpRegistrationYear) instanceof Integer){
+                    c.setRegistrationYear(Integer.valueOf(tmpRegistrationYear));
+                    check=false;
+                    continue;
+                }
+            } catch (Exception e){
+                System.out.println("Insert the correct value of RegistrationYear!");
+            }
+
+
+        }
+        c.setTractionType(sc.nextLine());
+
         db.insertNewCar(c);
     }
 
