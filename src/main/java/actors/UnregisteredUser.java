@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class UnregisteredUser {
     String email;
@@ -15,6 +17,15 @@ public class UnregisteredUser {
     String name;
     String surname;
     Date dateOfBirth = new Date();
+
+    static final Pattern VALID_EMAIL_ADDRESS_REGEX =
+            Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
+
+    public static boolean validateEmail(String emailStr) {
+        Matcher matcher = VALID_EMAIL_ADDRESS_REGEX.matcher(emailStr);
+        return matcher.find();
+    }
+
 
     public UnregisteredUser(String surname, String name, String email, String password, Date dateofbirth) {
         this.email = email;
@@ -82,7 +93,7 @@ public class UnregisteredUser {
     }
 
     public void printUser(){
-        System.out.println("Surname: "+ getSurname() +", Name: " +getName() +", E-mail: " +getEmail() + ", Password: " + getPassword() + ", Date of birth: " +getDateOfBirth());
+        System.out.println("Surname: "+ getSurname() +", Name: " +getName() +", E-mail: " +getEmail() + ", Password: **********" + ", Date of birth: " +getDateOfBirth());
     }
 
     public static User signIn(){

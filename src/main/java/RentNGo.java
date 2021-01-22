@@ -14,11 +14,14 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class RentNGo {
     static private MongoDBConnection db;
     static private LevelDBConnection ldb;
     static private User u;
+
 
     public static ArrayList<String> setParameters(){
         String email;
@@ -204,7 +207,7 @@ public class RentNGo {
                                 System.out.println("Try again.");
                         }
                     }
-                } else if (u instanceof Worker) {
+                } else if (u instanceof Worker && u instanceof Admin == false) {
                     int j = 1;
                     while (j != 0) {
                         ((Worker) u).showMenu();
@@ -300,43 +303,74 @@ public class RentNGo {
                         switch (j) {
                             case 0:
                                 break;
-                            case 4:
-                                ((Admin) u).addRemoveWorker(db);
+                            case 1:
+                                {
+                                ((Admin) u).searchOrders(db);
                                 break;
+                            }
                             case 2:
+                                {
+                                ((Admin) u).searchCars(db);
+                                break;
+                            }
+
+                            case 3:
+                                {
+                                ((Admin) u).modifyCar(db);
+                                break;
+                            }
+                            case 4:
+                                {
+                                    System.out.println("0) Exit");
                                 System.out.println("1) Add car");
                                 System.out.println("2) Remove car");
-                                sc =new Scanner(System.in);
-                                try{
+                                sc = new Scanner(System.in);
+                                try {
                                     i = Integer.valueOf(sc.nextLine());
-                                }
-                                catch(Exception e){
+                                } catch (Exception e) {
                                     System.out.println("Error. Didn't insert an integer");
 
                                 }
-                                switch (i){
+                                switch (i) {
                                     case 1:
                                         ((Admin) u).insertNewCar(db);
                                         break;
                                     case 2:
                                         ((Admin) u).deleteCar(db);
+                                        break;
+                                    case 3:
+                                        continue;
+
                                 }
                                 break;
+                            }
                             case 5:
-                                ((Admin) u).promoteWorker(db);
-                                break;
-                            case 6:
-                                ((Admin) u).modifyWorker(db);
-                                break;
-                            case 1:
-                                ((Admin) u).modifyCar(db);
-                                break;
-                            case 3:
+                                {
                                 ((Admin) u).findWorker(db);
                                 break;
+                            }
+                            case 6:
+                                {
+                                ((Admin) u).addRemoveWorker(db);
+                                break;
+                            }
                             case 7:
+                                {
+                                ((Admin) u).promoteWorker(db);
+                                break;
+                            }
+                            case 8: {
+                                ((Admin) u).modifyWorker(db);
+                                break;
+                            }
+                            case 9: {
+                                ((Admin) u).searchUser(db);
+                                break;
+                            }
+                            case 10: {
                                 ((Admin) u).removeUser(db);
                                 break;
+                            }
                             default:
                                 System.out.println("Try again. Wrong Choice !");
                                 break;
@@ -452,5 +486,6 @@ public class RentNGo {
         ldb.closeDB();
         db.closeConnection();
     }
+
 
 }

@@ -1,5 +1,6 @@
 package main.java.actors;
 
+import main.java.RentNGo;
 import main.java.connections.MongoDBConnection;
 import main.java.entities.Car;
 import main.java.entities.Office;
@@ -14,19 +15,15 @@ import java.util.regex.Pattern;
 
 import static com.mongodb.client.model.Filters.eq;
 
-public class Admin extends UnregisteredUser {
+public class Admin extends Worker {
     Date workertoAdmin =  new Date();
-    int salary;
-    Date hiringDate = new Date();
 
     public Admin (){
         super();
     }
 
-    public Admin(String surname, String name, String email, String password, Date dateofbirth, int salary, Date hiringDate, Date workertoAdmin){
-        super(surname, name, email, password, dateofbirth);
-        this.salary =salary;
-        this.hiringDate = hiringDate;
+    public Admin(String surname, String name, String email, String password, Date dateofbirth, int salary, Date hiringDate,int office,  Date workertoAdmin){
+        super(surname, name, email,password, dateofbirth, salary, hiringDate, office);
         this.workertoAdmin = workertoAdmin;
     }
 
@@ -124,14 +121,35 @@ public class Admin extends UnregisteredUser {
 
         switch (i) {
             case 1:
-                System.out.println("Insert the Email of Worker: ");
-                String emailWorker = sc.nextLine();
-                Worker w = db.findWorker(emailWorker);
-                if (w != null){
-                    System.out.println("Worker already exists!");
+                boolean check = true;
+                Worker w;
+                String emailWorker="";
+                while (check) {
+
+                    System.out.print("Insert the Email of Worker: ");
+                    emailWorker = sc.nextLine();
+                    w = db.findWorker(emailWorker.trim());
+
+                    if (w != null ) {
+                        System.out.println("Worker already exists!");
+                    }
+                    else if (w.validateEmail(emailWorker)==false){
+                        System.out.println("Incorrect email !");
+                    }
+                    else{
+                        check = false;
+                    }
                 }
+
                 w = new Worker();
                 w.setEmail(emailWorker);
+
+                System.out.print("Insert the name of Worker: ");
+                w.setName(sc.nextLine());
+
+                System.out.print("Insert the surname of Worker: ");
+                w.setSurname(sc.nextLine());
+
                 System.out.print("Insert the worker password: ");
                 assert w != null;
                 w.setPassword(sc.nextLine());
@@ -155,9 +173,45 @@ public class Admin extends UnregisteredUser {
                 System.out.print("Insert the salary: ");
                 w.setSalary(Integer.valueOf(sc.nextLine()));
 
+
+                System.out.print("Choose the office: ");
+                ArrayList<Office> offices = db.listOffices();
+                i = 1;
+                for(Office o : offices){
+                    System.out.print(i++ + ") ");
+                    o.printOffice();
+                }
+                try {
+                    i = Integer.valueOf(sc.nextLine());
+                } catch (Exception p){
+                    System.out.println("Error. Didn't insert an integer");
+                    return;
+                }
+                int idOfficePick = i;
+                if(i > offices.size() || i<1) {
+                    System.out.println("Index out of range");
+                    return;
+                }
+                w.setOffice(offices.get(i-1).getPosition());
+/*
+                check = true;
+                while(check) {
+                    System.out.print("Insert the name of office: ");
+                    String nameOffice = sc.nextLine();
+                    Office o = db.findOfficeByName(nameOffice);
+                    if (o == null) {
+                        System.out.print("Office doesn't exist !");
+                    } else {
+                        w.setOffice(o.getPosition());
+                        check = false;
+                    }
+                }
+*/
                 w.setHiringDate(today);
 
                 db.insertWorker(w);
+
+
                 break;
 
             case 2:
@@ -166,6 +220,7 @@ public class Admin extends UnregisteredUser {
                 w = db.findWorker(emailWorker);
                 if (w == null){
                     System.out.println("Worker doesn't exists!");
+                    break;
                 }
                 db.deleteWorker(emailWorker);
                 break;
@@ -190,7 +245,7 @@ public class Admin extends UnregisteredUser {
 
         System.out.println("Insert the new Salary: ");
         Integer salary = Integer.valueOf(sc.nextLine());
-        a  = new Admin(w.getSurname(), w.getName(), emailWorker, w.getPassword(), w.getDateOfBirth(), salary, w.getHiringDate(), d);
+        a  = new Admin(w.getSurname(), w.getName(), emailWorker, w.getPassword(), w.getDateOfBirth(), salary, w.getHiringDate(),100, d);
         db.insertAdmin(a);
         db.deleteWorker(emailWorker);
 
@@ -232,7 +287,7 @@ public class Admin extends UnregisteredUser {
                 System.out.println("Wrong plate! Try again");
                 continue;
             }
-            c = db.findCar(carPlate);
+            c = db.findCar(carPlate.trim());
             if (c != null){
                 System.out.println("Car already present");
             } else
@@ -240,10 +295,10 @@ public class Admin extends UnregisteredUser {
         }
 
         c = new Car();
-        c.setPlate(carPlate);
+        c.setPlate(carPlate.trim());
 
         System.out.print("Insert the Brand: ");
-        c.setBrand(sc.nextLine());
+        c.setBrand((sc.nextLine()).trim());
 
         System.out.print("Insert the Vehicle: ");
         c.setVehicle(sc.nextLine());
@@ -330,12 +385,11 @@ public class Admin extends UnregisteredUser {
             } catch (Exception e){
                 System.out.println("Insert the correct value of RegistrationYear!");
             }
-
-
         }
-        c.setTractionType(sc.nextLine());
+
 
         db.insertNewCar(c);
+        c.printCar();
     }
 
     public int getSalary(){
@@ -387,6 +441,27 @@ public class Admin extends UnregisteredUser {
                 db.updateWorkerSalary(salary, emailWorker);
                 break;
             case 2:
+                System.out.println("Choose the new office: ");
+                ArrayList<Office> offices = db.listOffices();
+                i = 1;
+                for(Office o : offices){
+                    System.out.print(i++ + ") ");
+                    o.printOffice();
+                }
+                try {
+                    i = Integer.valueOf(sc.nextLine());
+                } catch (Exception p){
+                    System.out.println("Error. Didn't insert an integer");
+                    return;
+                }
+                int idOfficePick = i;
+                if(i > offices.size() || i<1) {
+                    System.out.println("Index out of range");
+                    return;
+                }
+
+
+                /*
                 System.out.println("Insert the new office: ");
                 String office = sc.nextLine();
                 Office o = db.findOfficeByName(office);
@@ -395,7 +470,9 @@ public class Admin extends UnregisteredUser {
                     return;
                 }
                 Integer position = o.getPosition();
-                db.updateWorkerOffice(emailWorker, position);
+
+                 */
+                db.updateWorkerOffice(emailWorker, offices.get(i-1).getPosition());
                 break;
         }
     }
@@ -409,31 +486,40 @@ public class Admin extends UnregisteredUser {
             System.out.println("Car doesn't exists!");
             return;
         }
-        System.out.println("Insert the new office: ");
-        String office = sc.nextLine();
-        Office o = db.findOfficeByName(office.trim());
-        if (o == null){
-            System.out.println("Office doesn't exists!");
+
+        System.out.println("Choose the new office: ");
+        ArrayList<Office> offices = db.listOffices();
+        int i = 1;
+        for(Office o : offices){
+            System.out.print(i++ + ") ");
+            o.printOffice();
+        }
+        try {
+            i = Integer.valueOf(sc.nextLine());
+        } catch (Exception p){
+            System.out.println("Error. Didn't insert an integer");
             return;
         }
-        db.updateCarOffice(carPlate, o.getPosition());
+        if(i > offices.size() || i<1) {
+            System.out.println("Index out of range");
+            return;
+        }
 
+        db.updateCarOffice(carPlate, offices.get(i-1).getPosition());
     }
 
     public void showMenu(){
         System.out.println("0) Exit");
-        System.out.println("1) Modify Car");
-        System.out.println("2) Add/Remove Cars");
-        System.out.println("3) Find Worker");
-        System.out.println("4) Add/Remove worker");
-        System.out.println("5) Promote Worker to Admin");
-        System.out.println("6) Modify Worker");
-        System.out.println("7) Remove user");
-         //es. Salary
-
-
-
-
+        System.out.println("1) Show Orders by Parameters");
+        System.out.println("2) Search cars by parameters");
+        System.out.println("3) Modify Car");
+        System.out.println("4) Add/Remove Cars");
+        System.out.println("5) Find Worker");
+        System.out.println("6) Add/Remove worker");
+        System.out.println("7) Promote Worker to Admin");
+        System.out.println("8) Modify Worker");
+        System.out.println("9) Search User");
+        System.out.println("10) Remove user");
     }
 
     public void findWorker(MongoDBConnection db) throws ParseException {
@@ -445,6 +531,7 @@ public class Admin extends UnregisteredUser {
             System.out.println("Worker doesn't exists!");
             return;
         }
+        w.printUser();
     }
 
     public void removeUser(MongoDBConnection db) {

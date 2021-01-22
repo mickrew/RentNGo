@@ -22,6 +22,8 @@ public class Worker extends UnregisteredUser {
         super(surname, name, email, password, dateofbirth);
         this.salary = salary;
         this.hiringDate = hiringDate;
+        this.office = office;
+
     }
 
     public int getSalary(){
@@ -36,8 +38,8 @@ public class Worker extends UnregisteredUser {
         return hiringDate;
     }
 
-    public void setHiringDate(String hiringDate){
-        Date d = new Date(hiringDate);
+    public void setHiringDate(String hiringDate) throws ParseException {
+        Date d = new SimpleDateFormat("dd/MM/yyyy").parse(hiringDate);
         this.hiringDate = d;
     }
 
@@ -111,7 +113,13 @@ public class Worker extends UnregisteredUser {
         String carplate = null;
         String date1 = null;
         String date2 = null;
-        int choice = Integer.valueOf(sc.nextLine());
+        int choice=0;
+        try{
+            choice = Integer.valueOf(sc.nextLine());
+        } catch (Exception e){
+            System.out.println("Insert the correct value!");
+        }
+
 
         if (choice==0){
             System.out.println("Exit");
@@ -143,6 +151,7 @@ public class Worker extends UnregisteredUser {
         }
 
     }
+
 
 
 

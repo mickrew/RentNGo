@@ -74,6 +74,7 @@ public class MongoDBConnection
             o.setId(d.getString("ID"));
             o.setName(d.getString("Name"));
             o.setRegion(d.getString("Region"));
+            o.setPosition(Integer.valueOf(d.getString("Position")));
             offices.add(o);
         }
 
@@ -356,7 +357,7 @@ public class MongoDBConnection
         MongoCollection<Document> myColl = db.getCollection("workers");
         MongoCursor<Document> cursor  = myColl.find(eq("Email", email)).iterator();
         myColl.deleteOne(eq("Email", email));
-        System.out.println("User deleted successfully");
+        //System.out.println("User deleted successfully");
     }
 
     private Admin createAdmin(Document d) throws ParseException {
@@ -364,7 +365,7 @@ public class MongoDBConnection
         Date date1=new SimpleDateFormat("dd/MM/yyyy").parse(d.getString("DateOfBirth"));
         Date date2=new SimpleDateFormat("dd/MM/yyyy").parse(d.getString("Date of hiring"));
         Date date3=new SimpleDateFormat("dd/MM/yyyy").parse(d.getString("Date WtoA"));
-        Admin a = new Admin(d.getString("Surname"), d.getString("Name"),d.getString("Email"), d.getString("Password"), date1, Integer.valueOf(d.getString("Salary")), date2, date3);
+        Admin a = new Admin(d.getString("Surname"), d.getString("Name"),d.getString("Email"), d.getString("Password"), date1, Integer.valueOf(d.getString("Salary")), date2, 100,date3);
         return a;
     }
 
@@ -381,8 +382,6 @@ public class MongoDBConnection
             a = createAdmin(d);
         }
 
-
-
         return a;
     }
 
@@ -390,14 +389,14 @@ public class MongoDBConnection
         MongoCollection<Document> myColl = db.getCollection("admins");
         MongoCursor<Document> cursor  = myColl.find(eq("Email", email)).iterator();
         myColl.deleteOne(eq("Email", email));
-        System.out.println("User deleted successfully");
+        //System.out.println("User deleted successfully");
     }
 
     public void deleteUser(String email) {
         MongoCollection<Document> myColl = db.getCollection("users");
         MongoCursor<Document> cursor  = myColl.find(eq("Email", email)).iterator();
         myColl.deleteOne(eq("Email", email));
-        System.out.println("User deleted successfully");
+        //System.out.println("User deleted successfully");
     }
 
 
@@ -433,7 +432,7 @@ public class MongoDBConnection
                 .append("Email", admin.getEmail())
                 .append("Password", admin.getPassword())
                 .append("DateOfBirth",formatter.format(admin.getDateOfBirth()))
-                .append("Salary", admin.getSalary())
+                .append("Salary", String.valueOf(admin.getSalary()))
                 .append("Date of hiring", formatter.format(admin.getHiringDate()))
                 .append("Date WtoA", formatter.format(admin.getWorkertoAdmin()));
 
@@ -458,8 +457,9 @@ public class MongoDBConnection
                 .append("Email", worker.getEmail())
                 .append("Password", worker.getPassword())
                 .append("DateOfBirth",formatter.format(worker.getDateOfBirth()))
-                .append("Salary", worker.getSalary())
-                .append("Date of hiring", formatter.format(worker.getHiringDate()));
+                .append("Salary", String.valueOf(worker.getSalary()))
+                .append("Date of hiring", formatter.format(worker.getHiringDate()))
+                .append("Office", String.valueOf(worker.getOffice()));
 
         myColl.insertOne(workerMongo);
 
@@ -725,7 +725,8 @@ public class MongoDBConnection
                 d.getString("Tyre"),
                 d.getString("Traction type"),
                 d.getString("Power (hp - kW /rpm)"),
-                d.getInteger("RegistrationYear"));
+                d.getInteger("RegistrationYear"),
+                Integer.valueOf(d.getString("Office")));
         return c;
     }
 
@@ -755,7 +756,7 @@ public class MongoDBConnection
         if(a != null){
             if(s.get(1).equals(a.getPassword())) {
                 a.printUser();
-                return new Admin(a.getSurname(), a.getName(), a.getEmail(), a.getPassword(), a.getDateOfBirth(), a.getSalary(), a.getHiringDate(), a.getWtoAdDate());
+                return new Admin(a.getSurname(), a.getName(), a.getEmail(), a.getPassword(), a.getDateOfBirth(), a.getSalary(), a.getHiringDate(), 100,a.getWtoAdDate());
             }
         }
         //System.out.println("User not found");
@@ -814,7 +815,7 @@ public class MongoDBConnection
     public void updateWorkerSalary(int newSalary, String workerEmail){
         MongoCollection<Document> myColl = db.getCollection("workers");
         myColl.updateOne(
-                (eq("Email", workerEmail)), set("Salary", newSalary));
+                (eq("Email", workerEmail)), set("Salary", String.valueOf(newSalary)));
     }
 
     public void getMostUsedCarsPerOffice(String startOffice, long date) {
@@ -986,13 +987,13 @@ public class MongoDBConnection
     public void updateWorkerOffice(String emailWorker, Integer position) {
         MongoCollection<Document> myColl = db.getCollection("workers");
         myColl.updateOne(
-                (eq("Email", emailWorker)), set("Office", position));
+                (eq("Email", emailWorker)), set("Office", String.valueOf(position)));
     }
 
     public void updateCarOffice(String carPlate, Integer position) {
         MongoCollection<Document> myColl = db.getCollection("cars");
         myColl.updateOne(
-                (eq("CarPlate", carPlate)), set("Office", position));
+                (eq("CarPlate", carPlate)), set("Office", String.valueOf(position)));
     }
 
 
