@@ -242,7 +242,7 @@ public class RentNGo {
                                 plate = sc.nextLine();
                                 System.out.println("Insert the Email:");
                                 email = sc.nextLine();
-                                System.out.println("Insert the delivery date:");
+                                System.out.println("Insert the booked delivery date:");
                                 Date d = new Date();
                                 Date d2 = new Date();
                                 String dateString = sc.nextLine();
@@ -280,6 +280,7 @@ public class RentNGo {
                                         if(!damage.contains(services.get(p).getNameService())) {
                                             damage += services.get(p).getName() + ", ";
                                             damageCost += services.get(p).getPrice();
+                                            p=0;
                                         }
                                     }
                                 }while(p!=-1);
@@ -371,6 +372,9 @@ public class RentNGo {
                                 ((Admin) u).removeUser(db);
                                 break;
                             }
+                            case 11: {
+
+                            }
                             default:
                                 System.out.println("Try again. Wrong Choice !");
                                 break;
@@ -383,105 +387,6 @@ public class RentNGo {
             }
         } while(i!=0);
 
-
-/*
-        Admin a = new Admin();
-        a.insertNewCar(db);
-        db.findCar("ZZ999ZZ");
-        a.deleteCar(db);
-        */
-
-        /*
-        System.out.println("1) Log in");
-        System.out.println("2) Sign in");
-        String email;
-        Scanner sc = new Scanner(System.in);
-        int i = 0;
-        while(i!=1 && i!=2) {
-            i = sc.nextInt();
-        }
-        if(i==1)
-            do {
-                u.logIn(db);
-                email = u.getEmail();
-                u = db.logInUser(u.getEmail(), u.getPassword());
-            } while(u.getEmail()==null || !u.getEmail().equals(email));
-
-        else {
-            do{
-                u.signIn();
-            } while(!db.insertUser(u));
-        }
-        u.printUser();
-
-        Order o = new Order();
-        o.setUser(u);
-        o.chooseParameters(db.listOffices());
-        String power;
-        System.out.println("Type of car: ");
-        power = sc.nextLine();
-        ArrayList<Car> cars = ldb.getAvailableCars(o.getPickDate(), o.getpickOffice(), o.getDeliveryDate(), power);
-        i=0;
-        for(Car c:cars){ // all cars of that specific type (which depends on the power)
-            System.out.print(i++ + ") ");
-            c.printCar();
-        }
-        do {
-            System.out.println("Select the cars (press -1 to stop)");
-            i = Integer.valueOf(sc.nextLine());
-            if(i>=0) {
-                Car c = cars.get(i);
-                ldb.addCarInCart(u.getEmail(), c.getPlate(), c.getBrand(), c.getEngine(), c.getPower(), c.getVehicle());
-            }
-        } while(i!=-1);
-        ArrayList<Service> services = new ArrayList<>();
-        services = db.listServices();
-        for(Service s: services){
-            System.out.print(i++ + ") ");
-            s.printService();
-        }
-        ArrayList<Service> selectedServices = new ArrayList<>();
-        do {
-            System.out.println("Select the services (press -1 to stop)");
-            i = Integer.valueOf(sc.nextLine());
-            if(i>=0) {
-                selectedServices.add(services.get(i));
-            }
-        } while(i!=-1);
-
-        cars = ldb.getListOfCarsInCart(u.getEmail());
-        for(Car c: cars){
-
-        }
-        //need to consider if the selected car is still available
-        //after having proceed with the order, the selected car is inserted in the leveldb of the available cars
-        //remove the list of cars in the cart.
-        //System.out.println("Add User");
-        //db.insertUser();
-        //db.getInfo("andrea@live.it", "Email", "users");
-        //db.insertNewCar();
-        //db.deleteCar("AA111AA");
-
-        //db.insertUser();
-        //db.getInfo("andrea@live.it", "Email", "users");
-        //db.deleteUser();
-        //db.updateUser();
-        //System.out.println("FINE");
-      /*  Iterator<Car> cars = db.getListOfCars().iterator();
-        Car c;
-        i =0;
-        while (cars.hasNext() && i!=100){
-            c = cars.next();
-            ldb.addCarInCart(u.getEmail(),c.getPlate(), c.getBrand(), c.getEngine(), c.getPower(), c.getVehicle());
-            i++;
-        }
-        Iterator<Car> cars1 = ldb.getListOfCarsInCart(u.getEmail()).iterator();
-        while (cars1.hasNext() ){
-            c = cars1.next();
-            c.printCar();
-        }
-        //ldb.elementInDatabase();
-*/
         System.out.println("Fine");
         ldb.closeDB();
         db.closeConnection();
