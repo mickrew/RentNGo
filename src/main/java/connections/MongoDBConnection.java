@@ -51,6 +51,9 @@ public class MongoDBConnection
     private ArrayList<Service> services = new ArrayList<Service>();
     private ArrayList<Service> servicesWorker = new ArrayList<Service>();
 
+    public String pattern = "dd/MM/yyyy";
+    public SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
+
     public MongoDBConnection(String database){
         //mongoClient = MongoClients.create();
          mongoClient = MongoClients.create(
@@ -771,11 +774,11 @@ public class MongoDBConnection
             Document d = cursor.next();
             System.out.print(i + ") ");
             System.out.print("CarPlate: " + d.getString("CarPlate") + " ");
-            System.out.print("CarPrice: " + d.getDouble("CarPrice") + " ");
-            Date datPick =new Date(Long.valueOf(d.getLong("PickDate")));
-            System.out.print("DatePick: " + datPick.toString() + " ");
+            System.out.print("CarPrice: " + d.getDouble("CarPrice") + "€ ");
+            Date datPick = new Date(Long.valueOf(d.getLong("PickDate")));
+            System.out.print("DatePick: " + simpleDateFormat.format(datPick) + " ");
             Date datDelivery =new Date(Long.valueOf(d.getLong("DeliveryDate")));
-            System.out.print("DateDelivery: " + datDelivery.toString() + " ");
+            System.out.print("DateDelivery: " + simpleDateFormat.format(datDelivery) + " ");
             System.out.print("StartOffice: " + d.getString("StartOffice") + " ");
             System.out.print("EndOffice: " + d.getString("EndOffice") + " ");
             System.out.print("PriceAccessories: " + d.getDouble("PriceAccessories") + " ");
@@ -928,11 +931,12 @@ public class MongoDBConnection
                 Document d = cursor.next();
                 System.out.print(j + ") ");
                 System.out.print("CarPlate: " + d.getString("CarPlate") + " ");
-                System.out.print("CarPrice: " + Math.ceil(d.getDouble("CarPrice")) + " ");
+                System.out.print("Email: " + d.getString("Email") + " ");
+                System.out.print("CarPrice: " + Math.ceil(d.getDouble("CarPrice")) + "€ ");
                 Date datPick =new Date(Long.valueOf(d.getLong("PickDate")));
-                System.out.print("DatePick: " + datPick.toString() + " ");
+                System.out.print("DatePick: " + simpleDateFormat.format(datPick) + " ");
                 Date datDelivery =new Date(Long.valueOf(d.getLong("DeliveryDate")));
-                System.out.print("DateDelivery: " + datDelivery.toString() + " ");
+                System.out.print("DateDelivery: " + simpleDateFormat.format(datDelivery) + " ");
                 System.out.print("StartOffice: " + d.getString("StartOffice") + " ");
                 System.out.print("EndOffice: " + d.getString("EndOffice") + " ");
                 System.out.print("PriceAccessories: " + d.getDouble("PriceAccessories") + " ");
@@ -942,17 +946,18 @@ public class MongoDBConnection
             }
         } else {
             MongoCollection<Document> myColl = db.getCollection("orders");
-            MongoCursor<Document> cursor = myColl.find(and(eq("StartOffice", pickOffice), gt("PickDate", (pickDate-1000*60*60*12)), lt("PickDate", (pickDate+1000*60*60*12)))).iterator();
+            MongoCursor<Document> cursor = myColl.find(and(eq("StartOffice", pickOffice.trim()), gt("PickDate", (pickDate-1000*60*60*12)), lt("PickDate", (pickDate+1000*60*60*12)))).iterator();
             int j = 0;
             while (cursor.hasNext()) {
                 Document d = cursor.next();
                 System.out.print(j + ") ");
                 System.out.print("CarPlate: " + d.getString("CarPlate") + " ");
-                System.out.print("CarPrice: " + Math.ceil(d.getDouble("CarPrice")) + " ");
+                System.out.print("Email: " + d.getString("Email") + " ");
+                System.out.print("CarPrice: " + Math.ceil(d.getDouble("CarPrice")) + "€ ");
                 Date datPick = new Date(Long.valueOf(d.getLong("PickDate")));
-                System.out.print("DatePick: " + datPick.toString() + " ");
+                System.out.print("DatePick: " + simpleDateFormat.format(datPick) + " ");
                 Date datDelivery = new Date(Long.valueOf(d.getLong("DeliveryDate")));
-                System.out.print("DateDelivery: " + datDelivery.toString() + " ");
+                System.out.print("DateDelivery: " + simpleDateFormat.format(datDelivery) + " ");
                 System.out.print("StartOffice: " + d.getString("StartOffice") + " ");
                 System.out.print("EndOffice: " + d.getString("EndOffice") + " ");
                 System.out.print("PriceAccessories: " + d.getDouble("PriceAccessories") + " ");
