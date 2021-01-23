@@ -14,14 +14,11 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class RentNGo {
     static private MongoDBConnection db;
     static private LevelDBConnection ldb;
     static private User u;
-
 
     public static ArrayList<String> setParameters(){
         String email;
@@ -92,8 +89,7 @@ public class RentNGo {
             if(i == 1) {
                 UnregisteredUser u = db.getUser(UnregisteredUser.logIn());
                 if (u == null) {
-                    System.out.println("Login failed\n");
-
+                    System.out.println("Login failed");
                     continue;
                 }
                 if (u instanceof User) {
@@ -135,19 +131,10 @@ public class RentNGo {
                             case 2:
                                 //((User) u).showOrders();
                                 db.showListOrders(u.getEmail());
-                                //System.out.println("Do you want to Delete an order? Y/N");
-                                //String a = sc.nextLine();
-                                //if(a.equals("Y")){
-                                    //db.deleteOrder();
-                                //    System.out.println("Select which one:");
-                                //    int choice = Integer.valueOf(sc.nextLine());
-                                //    db.deleteOrder(u.getEmail(),choice);
-                                //}
                                 break;
                             case 3:
                                 //((User) u).showCart();
                                 ArrayList<Car> cars = ldb.getListOfCarsInCart(u.getEmail());
-                                double total;
                                 if(cars != null){
                                     for(Car c: cars){
                                         c.printCar();
@@ -156,19 +143,13 @@ public class RentNGo {
                                     ldb.showOrderInfo(u.getEmail());
 
                                     System.out.println("Do you want to proceed with the payment? Y/N");
-                                    String  a = sc.nextLine();
+                                    String a = sc.nextLine();
                                     if(a.equals("Y")){
                                         Order order = ldb.payment(u.getEmail(), ((User)u).chooseCar(cars));
                                         if(order == null){
                                             System.out.println("Car is already rented");
                                         } else {
                                             order.printOrder();
-                                            Long millisDay = 86400000L;
-                                            Long numDays = (order.getDeliveryDate().getTime() - order.getPickDate().getTime())/(millisDay);
-                                            total = order.getPriceCar() * numDays + order.getPriceAccessories();
-                                            System.out.println("The total is: " + total + "\n");
-
-
                                             db.insertOrder(order);
                                         }
                                     }
@@ -207,7 +188,7 @@ public class RentNGo {
                                 System.out.println("Try again.");
                         }
                     }
-                } else if (u instanceof Worker && u instanceof Admin == false) {
+                } else if (u instanceof Worker) {
                     int j = 1;
                     while (j != 0) {
                         ((Worker) u).showMenu();
@@ -295,84 +276,49 @@ public class RentNGo {
                     int j = 1;
                     while (j != 0) {
                         ((Admin) u).showMenu();
-                        try{
-                            j = Integer.valueOf(sc.nextLine());
-                        } catch(Exception e){
-                            j=1000;
-                        }
+                        j = sc.nextInt();
                         switch (j) {
                             case 0:
                                 break;
-                            case 1:
-                                {
-                                ((Admin) u).searchOrders(db);
-                                break;
-                            }
-                            case 2:
-                                {
-                                ((Admin) u).searchCars(db);
-                                break;
-                            }
-
-                            case 3:
-                                {
-                                ((Admin) u).modifyCar(db);
-                                break;
-                            }
                             case 4:
-                                {
-                                    System.out.println("0) Exit");
+                                ((Admin) u).addRemoveWorker(db);
+                                break;
+                            case 2:
                                 System.out.println("1) Add car");
                                 System.out.println("2) Remove car");
-                                sc = new Scanner(System.in);
-                                try {
+                                sc =new Scanner(System.in);
+                                try{
                                     i = Integer.valueOf(sc.nextLine());
-                                } catch (Exception e) {
+                                }
+                                catch(Exception e){
                                     System.out.println("Error. Didn't insert an integer");
 
                                 }
-                                switch (i) {
+                                switch (i){
                                     case 1:
                                         ((Admin) u).insertNewCar(db);
                                         break;
                                     case 2:
                                         ((Admin) u).deleteCar(db);
-                                        break;
-                                    case 3:
-                                        continue;
-
                                 }
                                 break;
-                            }
                             case 5:
-                                {
-                                ((Admin) u).findWorker(db);
-                                break;
-                            }
-                            case 6:
-                                {
-                                ((Admin) u).addRemoveWorker(db);
-                                break;
-                            }
-                            case 7:
-                                {
                                 ((Admin) u).promoteWorker(db);
                                 break;
-                            }
-                            case 8: {
+                            case 6:
                                 ((Admin) u).modifyWorker(db);
                                 break;
-                            }
-                            case 9: {
-                                ((Admin) u).searchUser(db);
+                            case 1:
+                                ((Admin) u).modifyCar(db);
                                 break;
-                            }
-                            case 10: {
+                            case 3:
+                                ((Admin) u).findWorker(db);
+                                break;
+                            case 7:
                                 ((Admin) u).removeUser(db);
                                 break;
-                            }
                             default:
-                                System.out.println("Try again. Wrong Choice !");
+                                System.out.println("Try again.");
                                 break;
                         }
                     }
@@ -486,6 +432,5 @@ public class RentNGo {
         ldb.closeDB();
         db.closeConnection();
     }
-
 
 }

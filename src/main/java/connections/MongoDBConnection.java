@@ -783,7 +783,7 @@ public class MongoDBConnection
             System.out.println();
             i++;
         }
-
+        System.out.println();
     }
 
     public Office findOfficeByName(String name){
@@ -856,7 +856,7 @@ public class MongoDBConnection
 
 
 
-    public void query4(long currentDate, long lastYearDate){
+    public void searchUserForDiscount(long currentDate, long lastYearDate){
         Consumer<Document> printFormattedDocuments = new Consumer<Document>() {
             @Override
             public void accept(Document document) {
@@ -866,7 +866,8 @@ public class MongoDBConnection
         Bson group = group("$Email", sum("countCurrent", 1));
         Bson group2 = group("$Email", sum("countPrev", 1));
         Bson matchCurrent = match(gt("PickDate", currentDate));
-        Bson matchPrev = match(and(gt("PickDate", lastYearDate), lt("PickDate", currentDate)));
+        Bson matchPrev = match(and(gt("PickDate", lastYearDate),
+                lt("PickDate", currentDate)));
 
         MongoCollection<Document> collection = db.getCollection("orders");
 
@@ -886,9 +887,11 @@ public class MongoDBConnection
         MongoCursor<Document> cursor = myColl.aggregate(Arrays.asList( merge)).cursor();
         while(cursor.hasNext()){
             Document doc = cursor.next();
-            if(doc.getInteger("countPrev") != null && doc.getInteger("countCurrent")!=null && (doc.getInteger("countPrev") - doc.getInteger("countCurrent")) > 4){
+            if(doc.getInteger("countPrev") != null && doc.getInteger("countCurrent")!=null
+                    && (doc.getInteger("countPrev") - doc.getInteger("countCurrent")) > 4){
                 System.out.println("User: "+ doc.getString("_id")
-                 + ", Current Year Rent: "+ doc.getInteger("countCurrent") + ", Last Year Rent: "+ doc.getInteger("countPrev"));
+                 + ", Current Year Rent: "+ doc.getInteger("countCurrent") + ", Last Year Rent: "
+                        + doc.getInteger("countPrev"));
             }
         }
     }

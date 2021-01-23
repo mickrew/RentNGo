@@ -59,7 +59,41 @@ public class LevelDBConnection {
             System.out.println("Cart is empty");
             return null;
         }
-        Iterator<String> c = Arrays.stream(s.split("<<==>>")).iterator(); // es. AAA11AA,Brand,Engine,Power;BBB11BB;..
+        Iterator<String> c = Arrays.stream(s.split("~")).iterator();
+        ArrayList<Car> cars = new ArrayList<>();
+        while(c.hasNext()){
+            Car ca = new Car();
+            String plate = c.next();
+            ca.setPlate(plate);
+            key = plate + ":info";
+            String value = getValue(key);
+            if(value!=null){
+                Iterator<String> carInfo = Arrays.stream(value.split("~")).iterator();
+                if(carInfo.hasNext())
+                    ca.setBrand(carInfo.next());
+                else
+                    ca.setBrand("No info");
+
+                if(carInfo.hasNext())
+                    ca.setVehicle(carInfo.next());
+                else
+                    ca.setVehicle("No info");
+
+                if(carInfo.hasNext())
+                    ca.setEngine(carInfo.next());
+                else
+                    ca.setEngine("No info");
+
+                if(carInfo.hasNext())
+                    ca.setPower(carInfo.next());
+                else
+                    ca.setPower("No info");
+            }
+            cars.add(ca);
+        }
+        return cars;
+
+    /*    Iterator<String> c = Arrays.stream(s.split("<<==>>")).iterator(); // es. AAA11AA,Brand,Engine,Power;BBB11BB;..
         ArrayList<Car> cars = new ArrayList<>();
         while(c.hasNext()){
             String car = c.next();
@@ -95,17 +129,32 @@ public class LevelDBConnection {
             cars.add(ca);
         }
         return cars;
+
+     */
     }
 
 
     public boolean addCarInCart(String email, String plate, String brand, String engine, String power, String vehicle){
-        String key = email + ":cart"; // KEY:= andrea@live.it:cart   VALUE:= AAA11AA~Renault~Megane 2 (2003)~ 1.4L 100 hp~98-72/6000<<==>>BBB11BB~ ...
-        String s = getValue(key);
+       String key = email + ":cart"; // KEY:= andrea@live.it:cart   VALUE:= AAA11AA~Renault~Megane 2 (2003)~ 1.4L 100 hp~98-72/6000<<==>>BBB11BB~ ...
+       String s = getValue(key);
+       if(s!=null){
+           s += plate +  "~";
+       } else {
+           s = plate + "~";
+       }
+       putValue(key, s);
+       key = plate + ":info";
+       s = getValue(key);
+       if(s==null){
+           s =  brand + "~" + vehicle + "~" + engine + "~" + power;
+           putValue(key, s);
+       }
+        /* String s = getValue(key);
         if(s!=null)
             s += "<<==>>" + plate + "~" + brand + "~" + vehicle + "~" + engine + "~" + power;
         else
             s = plate + "~" + brand + "~" + vehicle + "~" + engine + "~" + power;
-        putValue(key, s);
+        putValue(key, s); */
         return false;
     }
 
@@ -269,6 +318,7 @@ public class LevelDBConnection {
                 if ((dPick.getTime() >= dDeliveryCart && dDelivery.getTime() >= dDeliveryCart)|| (dPick.getTime()<= dPickCart && dDelivery.getTime() <= dPickCart)){
                     System.out.println("Ok");
                 } else{
+                    System.out.println("Car already rented");
                     return null;
                 }
             }
@@ -286,6 +336,7 @@ public class LevelDBConnection {
         //Car c =cars.get(i);
 
     }
+
 
     public void deleteUserCart(String email) {
         String key = email + ":cart";
