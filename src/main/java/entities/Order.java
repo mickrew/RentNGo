@@ -21,6 +21,9 @@ public class Order {
     Double priceAccessories;
     int idOfficePick;
     int idOfficeDelivery;
+
+    public String pattern = "dd/MM/yyyy";
+    public SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
     
     public Order() {
         this.car=car;
@@ -193,9 +196,9 @@ public class Order {
         System.out.println("User: " + "\t" +user);
         System.out.println("Price: " + "\t" + priceCar + "€");
         System.out.println("Pick Office: " + "\t" + pickOffice);
-        System.out.println("Pick Date: " + "\t" + pickDate);
+        System.out.println("Pick Date: " + "\t" + simpleDateFormat.format(pickDate));
         System.out.println("Delivery Office: " + "\t" + deliveryOffice);
-        System.out.println("Delivery Date: " + "\t" + deliveryDate);
+        System.out.println("Delivery Date: " + "\t" + simpleDateFormat.format(deliveryDate));
         System.out.println("Price accessories: " + "\t" + priceAccessories + "€");
         System.out.println("List accessories: " + "\t" + accessories.toString());
     }

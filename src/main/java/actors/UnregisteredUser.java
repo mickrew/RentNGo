@@ -21,6 +21,9 @@ public class UnregisteredUser {
     static final Pattern VALID_EMAIL_ADDRESS_REGEX =
             Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
 
+    String pattern = "dd/MM/yyyy";
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
+
     public static boolean validateEmail(String emailStr) {
         Matcher matcher = VALID_EMAIL_ADDRESS_REGEX.matcher(emailStr);
         return matcher.find();
@@ -93,7 +96,8 @@ public class UnregisteredUser {
     }
 
     public void printUser(){
-        System.out.println("Surname: "+ getSurname() +", Name: " +getName() +", E-mail: " +getEmail() + ", Password: **********" + ", Date of birth: " +getDateOfBirth());
+
+        System.out.println("Surname: "+ getSurname() +", Name: " +getName() +", E-mail: " +getEmail() + ", Password: **********" + ", Date of birth: " +simpleDateFormat.format(getDateOfBirth()));
     }
 
     public static User signIn(){

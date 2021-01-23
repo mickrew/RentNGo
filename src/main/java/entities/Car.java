@@ -2,6 +2,7 @@ package main.java.entities;
 
 import main.java.connections.MongoDBConnection;
 
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.List;
 
@@ -20,6 +21,8 @@ public class Car {
         String tractionType;
         Integer registrationYear;
         Integer office;
+
+
 
     public
         Car(){

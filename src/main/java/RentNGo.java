@@ -135,14 +135,14 @@ public class RentNGo {
                             case 2:
                                 //((User) u).showOrders();
                                 db.showListOrders(u.getEmail());
-                                System.out.println("Do you want to Delete an order? Y/N");
-                                String a = sc.nextLine();
-                                if(a.equals("Y")){
+                                //System.out.println("Do you want to Delete an order? Y/N");
+                                //String a = sc.nextLine();
+                                //if(a.equals("Y")){
                                     //db.deleteOrder();
-                                    System.out.println("Select which one:");
-                                    int choice = Integer.valueOf(sc.nextLine());
-                                    db.deleteOrder(u.getEmail(),choice);
-                                }
+                                //    System.out.println("Select which one:");
+                                //    int choice = Integer.valueOf(sc.nextLine());
+                                //    db.deleteOrder(u.getEmail(),choice);
+                                //}
                                 break;
                             case 3:
                                 //((User) u).showCart();
@@ -156,7 +156,7 @@ public class RentNGo {
                                     ldb.showOrderInfo(u.getEmail());
 
                                     System.out.println("Do you want to proceed with the payment? Y/N");
-                                    a = sc.nextLine();
+                                    String  a = sc.nextLine();
                                     if(a.equals("Y")){
                                         Order order = ldb.payment(u.getEmail(), ((User)u).chooseCar(cars));
                                         if(order == null){
@@ -166,7 +166,7 @@ public class RentNGo {
                                             Long millisDay = 86400000L;
                                             Long numDays = (order.getDeliveryDate().getTime() - order.getPickDate().getTime())/(millisDay);
                                             total = order.getPriceCar() * numDays + order.getPriceAccessories();
-                                            System.out.println("The total is: " + total);
+                                            System.out.println("The total is: " + total + "\n");
 
 
                                             db.insertOrder(order);
