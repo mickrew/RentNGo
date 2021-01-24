@@ -337,6 +337,16 @@ public class LevelDBConnection {
 
     }
 
+    public void carNotAvailable(String plate, Date startDate, Date endDate){
+        String key= plate + ":availability";
+        String value = getValue(key);
+        if(value == null)
+            value = startDate.getTime() + "," + endDate.getTime() + "~";
+        else
+            value += value +  startDate.getTime() + "," + endDate.getTime() + "~";
+        putValue(key, value);
+    }
+
 
     public void deleteUserCart(String email) {
         String key = email + ":cart";

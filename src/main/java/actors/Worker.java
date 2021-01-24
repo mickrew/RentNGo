@@ -58,6 +58,7 @@ public class Worker extends UnregisteredUser {
         System.out.println("3) Search User");
         System.out.println("4) Pick Car");
         System.out.println("5) Delivery Car");
+        System.out.println("6) Make car unavailable");
     }
 
 

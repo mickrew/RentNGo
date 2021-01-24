@@ -287,6 +287,36 @@ public class RentNGo {
 
                                 db.changeStatusOrder(plate, email, "DeliveryDate",d, "Completed", damage, damageCost);
                                 break;
+                            case 6:
+                                System.out.println("Insert the plate:");
+                                plate = sc.nextLine();
+                                System.out.println("Insert the dates in which you want to make it unavailable:");
+                                d = new Date();
+                                d2 = new Date();
+                                System.out.println("Date Start");
+                                dateString = sc.nextLine();
+                                formatter = new SimpleDateFormat("dd/MM/yyyy");
+                                try {
+                                    d = formatter.parse(dateString);
+                                } catch (ParseException p2){
+                                    System.out.println("Error. Wrong Date");
+                                    break;
+                                }
+                                System.out.println("Date End");
+                                dateString = sc.nextLine();
+                                try {
+                                    d2 = formatter.parse(dateString);
+                                } catch (ParseException p3){
+                                    System.out.println("Error. Wrong Date");
+                                    break;
+                                }
+                                if(d2.getTime() <= d.getTime()){
+                                    System.out.println("Date End can't be smaller than Date Start");
+                                    break;
+                                }
+                                ldb.carNotAvailable(plate, d, d2);
+                                db.showUsersOrdersForDate(plate, d, d2);
+                                break;
                             default:
                                 System.out.println("Try again.");
                         }

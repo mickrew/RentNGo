@@ -23,6 +23,8 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.json.JsonWriterSettings;
 
+import javax.print.Doc;
+
 import static com.mongodb.client.model.Projections.*;
 import static com.mongodb.client.model.Updates.*;
 import static com.mongodb.client.model.Filters.*;
@@ -1002,6 +1004,33 @@ public class MongoDBConnection
         MongoCollection<Document> myColl = db.getCollection("cars");
         myColl.updateOne(
                 (eq("CarPlate", carPlate)), set("Office", String.valueOf(position)));
+    }
+
+    public void showUsersOrdersForDate(String plate,Date start, Date stop) {
+        MongoCollection<Document> myColl = db.getCollection("orders");
+        MongoCursor<Document> cursor = myColl.find(or(
+                                                        and(
+                                                            gte("DeliveryDate", stop.getTime()),
+                                                            lte("PickDate", stop.getTime()),
+                                                            eq("CarPlate", plate)
+                                                        ),
+                                                        and(
+                                                            lte("DeliveryDate", start.getTime()),
+                                                            gte("PickDate", start.getTime()),
+                                                            eq("CarPlate", plate)
+                                                        )
+                                                      )
+                                    ).iterator();
+        while(cursor.hasNext()){
+            Document d = cursor.next();
+            Date d1 = new Date(d.getLong("PickDate"));
+            Date d2 = new Date(d.getLong("DeliveryDate"));
+            System.out.println("Email: " + d.getString("Email") + " ,date pick: " + d1 + ", date delivery: "+d2 + ", CarPlate: "+ d.getString("CarPlate"));
+            myColl.updateOne(and(eq("Email",d.getString("Email")),
+                                 eq("CarPlate", d.getString("CarPlate")),
+                                eq("PickDate", d.getLong("PickDate"))), set("Status", "Deleted"));
+        }
+
     }
 
 
