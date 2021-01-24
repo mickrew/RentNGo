@@ -56,7 +56,7 @@ public class LevelDBConnection {
         String key = email + ":cart";
         String s = getValue(key);
         if(s==null){
-            System.out.println("Cart is empty");
+            System.out.println("Cart is empty\n");
             return null;
         }
         Iterator<String> c = Arrays.stream(s.split("~")).iterator();

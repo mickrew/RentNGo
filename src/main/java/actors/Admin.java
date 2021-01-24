@@ -520,6 +520,7 @@ public class Admin extends Worker {
         System.out.println("8) Modify Worker");
         System.out.println("9) Search User");
         System.out.println("10) Remove user");
+        System.out.println("11) Show Analytics");
     }
 
     public void findWorker(MongoDBConnection db) throws ParseException {
