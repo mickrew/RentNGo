@@ -63,19 +63,7 @@ public class Admin extends Worker {
 
     public void deleteCar(MongoDBConnection db){
         Scanner sc = new Scanner(System.in);
-        /*
-        System.out.print("Insert the car plate: ");
-        String plate = sc.nextLine();
-        Car c;
 
-        do {
-            c = db.findCar(plate);
-            if(c==null)
-                System.out.println("Car Not found");
-                plate = sc.nextLine();
-        }
-        while (c == null);
-        */
 
         boolean check = false;
         String regex = "[A-Z][A-Z][0-9][0-9][0-9][A-Z][A-Z]";
@@ -193,24 +181,10 @@ public class Admin extends Worker {
                     return;
                 }
                 w.setOffice(offices.get(i-1).getPosition());
-/*
-                check = true;
-                while(check) {
-                    System.out.print("Insert the name of office: ");
-                    String nameOffice = sc.nextLine();
-                    Office o = db.findOfficeByName(nameOffice);
-                    if (o == null) {
-                        System.out.print("Office doesn't exist !");
-                    } else {
-                        w.setOffice(o.getPosition());
-                        check = false;
-                    }
-                }
-*/
+
                 w.setHiringDate(today);
 
                 db.insertWorker(w);
-
 
                 break;
 
@@ -267,17 +241,7 @@ public class Admin extends Worker {
         String carPlate = null;
         String regex = "[A-Z][A-Z][0-9][0-9][0-9][A-Z][A-Z]";
         Pattern pattern = Pattern.compile(regex);
-        /*
-        do {
-            System.out.print("Insert the Car Plate: ");
-            carPlate = sc.nextLine();
-            c = db.findCar(carPlate);
-            if (c != null){
-                System.out.println("Car already present");
 
-            }
-        } while(!pattern.matcher(carPlate).matches() && c != null);
-        */
         boolean check = false;
 
         while(!check){
