@@ -189,8 +189,8 @@ public class Car {
         try {
              kW = Double.valueOf(power1.get(1));
         } catch (Exception e){
-            System.out.println("Plate: " + plate);
-
+            //System.out.println("Plate: " + plate);
+            kW = 70.0;
         }
         return kW;
     }

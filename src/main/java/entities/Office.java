@@ -4,6 +4,7 @@ import main.java.entities.Car;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 public class Office {
     String city;
@@ -21,6 +22,26 @@ public class Office {
         this.id=id;
         this.capacity=capacity;
         this.position = position;
+    }
+
+    public static Office selectOffice(ArrayList<Office> offices){
+        int i = 1;
+        Scanner sc = new Scanner(System.in);
+        for(Office o : offices){
+            System.out.print(i++ + ") ");
+            o.printOffice();
+        }
+        try {
+            i = Integer.valueOf(sc.nextLine());
+        } catch (Exception p){
+            System.out.println("Error. Didn't insert an integer");
+            return null;
+        }
+        if(i > offices.size() || i<1){
+            System.out.println("Index out of range");
+            return null;
+        }
+        return offices.get(i-1);
     }
 
     public Integer getPosition() {

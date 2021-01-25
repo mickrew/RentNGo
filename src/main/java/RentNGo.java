@@ -8,6 +8,7 @@ import main.java.actors.UnregisteredUser;
 import main.java.actors.User;
 import main.java.actors.Worker;
 import main.java.entities.Car;
+import main.java.entities.Office;
 import main.java.entities.Order;
 import main.java.entities.Service;
 
@@ -411,26 +412,51 @@ public class RentNGo {
                                 switch (choice) {
                                     case 1:
                                         System.out.print("Insert the Office: ");
-                                        String office = sc.nextLine();
+                                        //String office = sc.nextLine();
+                                        Office o = Office.selectOffice(db.listOffices());
+                                        if(o == null)
+                                            break;
                                         System.out.print("Insert the date in which you want to start statistic: ");
                                         String date = sc.nextLine();
-                                        Date date1 =new SimpleDateFormat("dd/MM/yyyy").parse(date.trim());
-                                        db.getMostUsedCarsPerOffice(office.trim(), date1.getTime());
+                                        Date date1;
+                                        try {
+                                            date1 = new SimpleDateFormat("dd/MM/yyyy").parse(date.trim());
+                                        } catch(Exception e){
+                                            System.out.println("Wrong date.");
+                                            break;
+                                        }
+                                        //db.getMostUsedCarsPerOffice(office.trim(), date1.getTime());
+                                        db.getMostUsedCarsPerOffice(o.getName(), date1.getTime());
                                         break;
                                     case 2:
                                         db.getLessEcoFriendlyOffice();
                                         break;
                                     case 3:
-                                        System.out.print("Insert the year in which you want to start statistic: ");
+                                        System.out.print("Insert the year in which you want to start statistic (ONLY THE YEAR): ");
                                         String lastYear = sc.nextLine();
 
-                                        System.out.print("Insert the date in which you want to end statistic: ");
+                                        System.out.print("Insert the date in which you want to end statistic (ONLY THE YEAR): ");
                                         String currentYear = sc.nextLine();
-
-                                        date1 =new SimpleDateFormat("dd/MM/yyyy").parse("01/01/"+lastYear.trim());
-                                        Date date2 = new SimpleDateFormat("dd/MM/yyyy").parse("01/01/"+currentYear.trim());
+                                        Date date2;
+                                        try {
+                                            date1 = new SimpleDateFormat("dd/MM/yyyy").parse("01/01/" + lastYear.trim());
+                                            if(date1.getTime() > new Date().getTime()) {
+                                                System.out.println("Wrong date.");
+                                                break;
+                                            }
+                                            date2 = new SimpleDateFormat("dd/MM/yyyy").parse("01/01/" + currentYear.trim());
+                                            if((date2.getTime() < date1.getTime()) || (date2.getTime() > new Date().getTime())) {
+                                                System.out.println("Wrong date.");
+                                                break;
+                                            }
+                                        } catch(Exception e){
+                                            System.out.println("Wrong Date.");
+                                            break;
+                                        }
                                         db.searchUserForDiscount(date2.getTime(), date1.getTime());
                                         break;
+                                    default:
+                                        System.out.println("Wrong choice");
                                 }
                                 System.out.println("");
                                 break;
