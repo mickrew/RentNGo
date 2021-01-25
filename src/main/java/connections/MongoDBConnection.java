@@ -704,9 +704,7 @@ public class MongoDBConnection
 
         myColl.aggregate(Arrays.asList( group, sort, limit, lookup, project))
                 .forEach(printFormattedDocuments);
-        /*
-        * printare nome ufficio
-        * */
+
     }
 
 
@@ -862,6 +860,9 @@ public class MongoDBConnection
     }
 
     public void showUsersOrdersForDate(String email, String plate,Date start, Date stop, int office) {
+        Car c = findCar(plate);
+        if(c == null)
+            return;
         MongoCollection<Document> myColl = db.getCollection("orders");
         MongoCursor<Document> cursor = myColl.find(or(
                                                         and(
@@ -876,6 +877,7 @@ public class MongoDBConnection
                                                         )
                                                       )
                                     ).iterator();
+
         while(cursor.hasNext()){
             Document d = cursor.next();
             Date d1 = new Date(d.getLong("PickDate"));
@@ -885,11 +887,13 @@ public class MongoDBConnection
                                  eq("CarPlate", d.getString("CarPlate")),
                                 eq("PickDate", d.getLong("PickDate"))), set("Status", "Deleted"));
         }
+
         String nameOffice= "";
         for(Office o: offices){
             if(o.getPosition() == office)
                     nameOffice = o.getName();
         }
+
         insertOrder(new Order(plate, email, 0.0, nameOffice, start,nameOffice, stop,  0.0, ""), "Maintenance");
     }
 
@@ -904,6 +908,19 @@ public class MongoDBConnection
             cars.add(c);
         }
         return cars;
+    }
+
+    public void showAllCarsInMaintenance() {
+        MongoCollection<Document> myColl = db.getCollection("orders");
+        MongoCursor<Document> cursor = myColl.find(and(
+                gt("DeliveryDate", new Date().getTime()),
+                eq("Status", "Maintenance")
+        )).iterator();
+        while(cursor.hasNext()){
+            Document d = cursor.next();
+            System.out.println("CarPlate: " + d.getString("CarPlate"));
+        }
+        System.out.println("");
     }
 
 

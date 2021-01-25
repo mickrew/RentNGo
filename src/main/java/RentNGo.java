@@ -304,6 +304,9 @@ public class RentNGo {
                                 ldb.carNotAvailable(plate, d, d2);
                                 db.showUsersOrdersForDate(u.getEmail(), plate, d, d2, ((Worker) u).getOffice());
                                 break;
+                            case 7:
+                                db.showAllCarsInMaintenance();
+                                break;
                             default:
                                 System.out.println("Try again.");
                         }
