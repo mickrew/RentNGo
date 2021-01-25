@@ -1,8 +1,10 @@
-package main.java;
+package main.java.entities;
 
+import main.java.connections.MongoDBConnection;
+
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
 
 public class Car {
     private
@@ -17,13 +19,17 @@ public class Car {
         String gearBoxType;
         String tyre;
         String tractionType;
+        Integer registrationYear;
+        Integer office;
+
+
 
     public
         Car(){
         }
 
-        Car(String plate, String brand, String vehicle, String engine, String avgFuelCons, String co2, String weight
-        , String gearBoxType, String tyre, String tractionType, String power){
+        public Car(String plate, String brand, String vehicle, String engine, String avgFuelCons, String co2, String weight
+                , String gearBoxType, String tyre, String tractionType, String power, Integer registrationYear, Integer office){
             this.plate = plate;
             this.brand = brand;
             this.vehicle = vehicle;
@@ -36,9 +42,19 @@ public class Car {
             this.tyre = tyre;
             this.tractionType = tractionType;
             this.power = power;
+            this.registrationYear = registrationYear;
+            this.office = office;
         }
 
-        public String getAvgFuelCons() {
+    public Integer getRegistrationYear() {
+        return registrationYear;
+    }
+
+    public void setRegistrationYear(Integer registrationYear) {
+        this.registrationYear = registrationYear;
+    }
+
+    public String getAvgFuelCons() {
             return avgFuelCons;
         }
 
@@ -148,6 +164,10 @@ public class Car {
                 out += ", Traction Type: " + tractionType ;
             if(power!=null)
                 out += ", Power: " + power ;
+            if(registrationYear!=null)
+                out += ", RegistrationYear: " + registrationYear ;
+            if(office!=null)
+                out += ", PositionOffice: " + office ;
            /* System.out.println("Car Plate: " + getPlate() + ", Brand: "+ getBrand() + ", Vehicle: " + getVehicle() + ", Engine: "
             + getEngine() + ", Average Fuel Consumption: " + getAvgFuelCons() + ", CO2: "+ getCo2()+ ", Weight: " + getWeight() +
                     ", GearBoxType: " + getGearBoxType() + ", Tyre: " + getTyre() + ", TractionType: " + getTractionType() + ", Power: " + getPower() );*/

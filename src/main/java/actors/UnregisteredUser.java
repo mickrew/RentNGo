@@ -1,12 +1,15 @@
-package main.java;
+package main.java.actors;
 
-import java.lang.reflect.Array;
+import main.java.actors.User;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class UnregisteredUser {
     String email;
@@ -14,6 +17,18 @@ public class UnregisteredUser {
     String name;
     String surname;
     Date dateOfBirth = new Date();
+
+    static final Pattern VALID_EMAIL_ADDRESS_REGEX =
+            Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
+
+    String pattern = "dd/MM/yyyy";
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
+
+    public static boolean validateEmail(String emailStr) {
+        Matcher matcher = VALID_EMAIL_ADDRESS_REGEX.matcher(emailStr);
+        return matcher.find();
+    }
+
 
     public UnregisteredUser(String surname, String name, String email, String password, Date dateofbirth) {
         this.email = email;
@@ -24,7 +39,6 @@ public class UnregisteredUser {
     }
 
     public UnregisteredUser(){
-
     }
 
     public Date getDateOfBirth() {
@@ -71,7 +85,10 @@ public class UnregisteredUser {
         ArrayList<String> r =new ArrayList<>();
         System.out.print("Insert the email: ");
         Scanner sc = new Scanner(System.in);
-        r.add(sc.nextLine());
+        String email = sc.nextLine();
+        if(!email.contains("@"))
+            return null;
+        r.add(email);
 
         System.out.print("Insert the password: ");
         r.add(sc.nextLine());
@@ -79,10 +96,11 @@ public class UnregisteredUser {
     }
 
     public void printUser(){
-        System.out.println("Surname: "+ getSurname() +", Name: " +getName() +", E-mail: " +getEmail() + ", Password: " + getPassword() + ", Date of birth: " +getDateOfBirth());
+
+        System.out.println("Surname: "+ getSurname() +", Name: " +getName() +", E-mail: " +getEmail() + ", Password: **********" + ", Date of birth: " +simpleDateFormat.format(getDateOfBirth()));
     }
 
-    public static User  signIn(){
+    public static User signIn(){
         User u= new User();
         Scanner sc = new Scanner(System.in);
         System.out.print("Insert the user name: ");

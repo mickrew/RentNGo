@@ -1,24 +1,29 @@
-package main.java;
+package main.java.actors;
+
+import main.java.entities.Car;
+import main.java.connections.MongoDBConnection;
+import main.java.entities.Order;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Date;
 import java.util.Scanner;
 
-public class Worker extends UnregisteredUser{
+public class Worker extends UnregisteredUser {
     int salary;
     Date hiringDate = new Date();
+    int office;
 
     public Worker (){
         super();
     }
 
-    public Worker(String surname, String name, String email, String password, Date dateofbirth, int salary, Date hiringDate){
+    public Worker(String surname, String name, String email, String password, Date dateofbirth, int salary, Date hiringDate, int office){
         super(surname, name, email, password, dateofbirth);
         this.salary = salary;
         this.hiringDate = hiringDate;
+        this.office = office;
+
     }
 
     public int getSalary(){
@@ -33,8 +38,17 @@ public class Worker extends UnregisteredUser{
         return hiringDate;
     }
 
-    public void setHiringDate(Date hiringDate){
-        this.hiringDate = hiringDate;
+    public void setHiringDate(String hiringDate) throws ParseException {
+        Date d = new SimpleDateFormat("dd/MM/yyyy").parse(hiringDate);
+        this.hiringDate = d;
+    }
+
+    public int getOffice() {
+        return office;
+    }
+
+    public void setOffice(int office) {
+        this.office = office;
     }
 
     public void showMenu(){
@@ -44,6 +58,7 @@ public class Worker extends UnregisteredUser{
         System.out.println("3) Search User");
         System.out.println("4) Pick Car");
         System.out.println("5) Delivery Car");
+        System.out.println("6) Make car unavailable");
     }
 
 
@@ -52,7 +67,7 @@ public class Worker extends UnregisteredUser{
         Scanner sc = new Scanner(System.in);
         System.out.println("0) Exit");
         System.out.println("1) Search by Carplate");
-        System.out.println("2) Search by Brand and Vehicle");
+        System.out.println("2) Search by Brand");
         int choice = Integer.valueOf(sc.nextLine());
         Car c;
 
@@ -66,9 +81,8 @@ public class Worker extends UnregisteredUser{
         } else if (choice==2){
             System.out.print("Insert Brand: ");
             String brand = sc.nextLine();
-            System.out.print("Insert Vehicle: ");
-            String vehicle = sc.nextLine();
-            c = db.findCarByBrand(brand, vehicle);
+
+           db.findCarByBrand(brand);
         }
     }
 
@@ -79,7 +93,12 @@ public class Worker extends UnregisteredUser{
         email = sc.nextLine();
         User u = new User();
         u = db.findUser(email);
-        u.printUser();
+        if(u!=null)
+            u.printUser();
+        else
+        {
+            System.out.println("User not found!");
+        }
     }
 
     public static void searchOrders(MongoDBConnection db) throws ParseException {
@@ -88,14 +107,20 @@ public class Worker extends UnregisteredUser{
 
         System.out.println("Select the parameter by which you want to search orders. ");
         System.out.println("0) Exit");
-        System.out.println("1) Search by email");
-        System.out.println("2) Search by carplate");
-        System.out.println("3) Search by PickOffice and dates");
+        System.out.println("1) Search by Email");
+        System.out.println("2) Search by Carplate");
+        System.out.println("3) Search by PickOffice and PickDate");
         String pickOffice = null;
         String carplate = null;
         String date1 = null;
         String date2 = null;
-        int choice = Integer.valueOf(sc.nextLine());
+        int choice=0;
+        try{
+            choice = Integer.valueOf(sc.nextLine());
+        } catch (Exception e){
+            System.out.println("Insert the correct value!");
+        }
+
 
         if (choice==0){
             System.out.println("Exit");
@@ -107,22 +132,28 @@ public class Worker extends UnregisteredUser{
         } else if (choice == 2){
             System.out.print("Insert carplate: ");
             carplate = sc.nextLine();
-            db.showListOrdersByParameters(carplate, pickOffice, date1, date2);
+            db.showListOrdersByParameters(carplate, pickOffice, new Date().getTime());
         } else if (choice == 3){
             System.out.print("Insert pick office: ");
             pickOffice = sc.nextLine();
-            System.out.println("Insert range of dates.");
-            System.out.print("Insert first date: ");
+            System.out.print("Insert pick date: ");
             SimpleDateFormat  formatter = new SimpleDateFormat("dd/MM/yyyy");
-            Date d = (Date)formatter.parse(sc.nextLine());
-            date1 = String.valueOf(d.getTime());
-            System.out.print("Insert second date: ");
-            Date d2 = (Date)formatter.parse(sc.nextLine());
-            date2 = String.valueOf(d2.getTime());
-            db.showListOrdersByParameters(carplate, pickOffice, date1, date2);
+
+            Date d = new Date();
+            try {
+                d = formatter.parse(sc.nextLine());
+            }catch (ParseException p){
+                System.out.println("Error. Wrong Date");
+                return ;
+            }
+
+            db.showListOrdersByParameters(carplate, pickOffice, d.getTime());
+
         }
 
     }
+
+
 
 
 }

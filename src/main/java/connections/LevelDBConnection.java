@@ -1,5 +1,8 @@
-package main.java;
+package main.java.connections;
 
+import main.java.entities.Car;
+import main.java.entities.Order;
+import main.java.actors.User;
 import org.iq80.leveldb.DB;
 import org.iq80.leveldb.DBIterator;
 import org.iq80.leveldb.Options;
@@ -53,10 +56,44 @@ public class LevelDBConnection {
         String key = email + ":cart";
         String s = getValue(key);
         if(s==null){
-            System.out.println("Cart is empty");
+            System.out.println("Cart is empty\n");
             return null;
         }
-        Iterator<String> c = Arrays.stream(s.split("<<==>>")).iterator(); // es. AAA11AA,Brand,Engine,Power;BBB11BB;..
+        Iterator<String> c = Arrays.stream(s.split("~")).iterator();
+        ArrayList<Car> cars = new ArrayList<>();
+        while(c.hasNext()){
+            Car ca = new Car();
+            String plate = c.next();
+            ca.setPlate(plate);
+            key = plate + ":info";
+            String value = getValue(key);
+            if(value!=null){
+                Iterator<String> carInfo = Arrays.stream(value.split("~")).iterator();
+                if(carInfo.hasNext())
+                    ca.setBrand(carInfo.next());
+                else
+                    ca.setBrand("No info");
+
+                if(carInfo.hasNext())
+                    ca.setVehicle(carInfo.next());
+                else
+                    ca.setVehicle("No info");
+
+                if(carInfo.hasNext())
+                    ca.setEngine(carInfo.next());
+                else
+                    ca.setEngine("No info");
+
+                if(carInfo.hasNext())
+                    ca.setPower(carInfo.next());
+                else
+                    ca.setPower("No info");
+            }
+            cars.add(ca);
+        }
+        return cars;
+
+    /*    Iterator<String> c = Arrays.stream(s.split("<<==>>")).iterator(); // es. AAA11AA,Brand,Engine,Power;BBB11BB;..
         ArrayList<Car> cars = new ArrayList<>();
         while(c.hasNext()){
             String car = c.next();
@@ -92,17 +129,32 @@ public class LevelDBConnection {
             cars.add(ca);
         }
         return cars;
+
+     */
     }
 
 
     public boolean addCarInCart(String email, String plate, String brand, String engine, String power, String vehicle){
-        String key = email + ":cart"; // KEY:= andrea@live.it:cart   VALUE:= AAA11AA~Renault~Megane 2 (2003)~ 1.4L 100 hp~98-72/6000<<==>>BBB11BB~ ...
-        String s = getValue(key);
+       String key = email + ":cart"; // KEY:= andrea@live.it:cart   VALUE:= AAA11AA~Renault~Megane 2 (2003)~ 1.4L 100 hp~98-72/6000<<==>>BBB11BB~ ...
+       String s = getValue(key);
+       if(s!=null){
+           s += plate +  "~";
+       } else {
+           s = plate + "~";
+       }
+       putValue(key, s);
+       key = plate + ":info";
+       s = getValue(key);
+       if(s==null){
+           s =  brand + "~" + vehicle + "~" + engine + "~" + power;
+           putValue(key, s);
+       }
+        /* String s = getValue(key);
         if(s!=null)
             s += "<<==>>" + plate + "~" + brand + "~" + vehicle + "~" + engine + "~" + power;
         else
             s = plate + "~" + brand + "~" + vehicle + "~" + engine + "~" + power;
-        putValue(key, s);
+        putValue(key, s); */
         return false;
     }
 
@@ -116,17 +168,18 @@ public class LevelDBConnection {
         System.out.println("Choose the best cars");
         int i = 0;
         int choice = 0;
-        ArrayList<Car> listCars = new ArrayList<Car>();
-        Scanner sc =new Scanner(System.in);
+
+        Scanner sc = new Scanner(System.in);
         Long dPick = pickDate.getTime();
         Long dDelivery = deliveryDate.getTime();
 
-        String key= u.getEmail() + ":order";
+        String key= u.getEmail() + ":order"; //set the orders information
         String value = getValue(key);
-        if(value!=null){
+        if(value!=null){  // checks if
            Iterator<String> c = Arrays.stream(value.split("~")).iterator();
-           if(!getpickOffice.equals(c.next()))
+           if(!getpickOffice.equals(c.next())) {
                deleteCars(u.getEmail());
+           }
         }
 
         value = getpickOffice + "~" + pickDate.getTime() + "~" + deliveryDate.getTime() + "~" + deliveryOffice;
@@ -148,6 +201,7 @@ public class LevelDBConnection {
                     long dPickCart = Long.valueOf(s.next());
                     long dDeliveryCart = Long.valueOf(s.next());
                     if ((dPick >= dDeliveryCart && dDelivery >= dDeliveryCart)|| (dPick<= dPickCart && dDelivery <= dPickCart)){
+                        //OK
                     } else{
                         cars.remove(i);
                         j = 1;
@@ -166,7 +220,7 @@ public class LevelDBConnection {
                             System.out.println("Didn't insert and integer");
                             choice = -2;
                         }
-                        if (choice > (i - 10) && choice < i) {
+                        if (choice > (i - 10) && choice <= i) {
                             c = cars.get(choice);
                             if(carsInCart==null || !carsInCart.contains(c.getPlate()))
                                 addCarInCart(u.getEmail(), c.getPlate(), c.getBrand(), c.getEngine(), c.getPower(), c.getVehicle());
@@ -188,12 +242,22 @@ public class LevelDBConnection {
         value = getValue(key);
         if((u.getDateOfBirth().getYear() + 21) >  d.getYear() ){ // if he has less than 20 years
             if(value==null || !value.contains("Young Driver 19/20"))
-                addAccessories(u.getEmail(),"Young Driver 19/20",19, "day" );
+                addAccessories(u.getEmail(),"Young Driver 19/20",19.0, "day" );
         } else if((u.getDateOfBirth().getYear() + 25) >  d.getYear()){
             if(value==null || !value.contains("Young Driver 21/24"))
-                addAccessories(u.getEmail(),"Young Driver 21/24",6, "day" );
+                addAccessories(u.getEmail(),"Young Driver 21/24",6.0, "day" );
+        }
+
+        if(!getpickOffice.equals(deliveryOffice)){
+            if(value==null || !value.contains("One Way Same Area"))
+                addAccessories(u.getEmail(),"One Way Same Area",75.0, "per rent" );
+        } else {
+            if(value!=null && value.contains("One Way Same Area")){
+                deleteAccessories(u.getEmail(), "One Way Same Area", 75.0, "per rent");
+            }
         }
     }
+
 
     public Order payment(String email, Car car) {
         Order o =new Order();
@@ -217,6 +281,7 @@ public class LevelDBConnection {
         o.setDeliveryOffice(c.next());
 
 
+
         key= email + ":accessories";
         value = getValue(key);
         if(value == null){
@@ -227,9 +292,10 @@ public class LevelDBConnection {
             o.setAccessories(value);
             key = email + ":accessoriesPriceDay";
             value = getValue(key);
+            Long millisDay = 86400000L;
             if(value!=null){
                 cost = Double.valueOf(value);
-                cost = cost * Math.ceil(dDelivery.getTime() - dPick.getTime())/(60*1000*60*24);
+                cost = cost * Math.ceil(dDelivery.getTime() - dPick.getTime())/(millisDay);
             }
             key = email + ":accessoriesPriceOneTime";
             value = getValue(key);
@@ -252,6 +318,7 @@ public class LevelDBConnection {
                 if ((dPick.getTime() >= dDeliveryCart && dDelivery.getTime() >= dDeliveryCart)|| (dPick.getTime()<= dPickCart && dDelivery.getTime() <= dPickCart)){
                     System.out.println("Ok");
                 } else{
+                    System.out.println("Car already rented");
                     return null;
                 }
             }
@@ -269,6 +336,17 @@ public class LevelDBConnection {
         //Car c =cars.get(i);
 
     }
+
+    public void carNotAvailable(String plate, Date startDate, Date endDate){
+        String key= plate + ":availability";
+        String value = getValue(key);
+        if(value == null)
+            value = startDate.getTime() + "," + endDate.getTime() + "~";
+        else
+            value += value +  startDate.getTime() + "," + endDate.getTime() + "~";
+        putValue(key, value);
+    }
+
 
     public void deleteUserCart(String email) {
         String key = email + ":cart";
@@ -391,6 +469,7 @@ public class LevelDBConnection {
             }
         }
     }
+
 
 
 }

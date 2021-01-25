@@ -23,6 +23,7 @@
                 <artifactId>mongodb-driver-sync</artifactId>
                 <version>4.1.1</version>
             </dependency>
+
     </dependencies>
     <build>
         <sourceDirectory>src</sourceDirectory>
