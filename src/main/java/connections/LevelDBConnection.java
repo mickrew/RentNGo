@@ -48,7 +48,7 @@ public class LevelDBConnection {
         return asString(db.get(bytes(key)));
     }
 
-    public DBIterator iterator() {
+    private DBIterator iterator() {
         return db.iterator();
     }
 
@@ -93,48 +93,11 @@ public class LevelDBConnection {
         }
         return cars;
 
-    /*    Iterator<String> c = Arrays.stream(s.split("<<==>>")).iterator(); // es. AAA11AA,Brand,Engine,Power;BBB11BB;..
-        ArrayList<Car> cars = new ArrayList<>();
-        while(c.hasNext()){
-            String car = c.next();
-            Iterator<String> carInfo = Arrays.stream(car.split("~")).iterator();
-            Car ca = null;
-            while(carInfo.hasNext()){ // for every car, in the cart, there are these attribute
-                ca = new Car();
-                if(carInfo.hasNext())
-                    ca.setPlate(carInfo.next());
-                else
-                    ca.setPlate("No info");
 
-                if(carInfo.hasNext())
-                    ca.setBrand(carInfo.next());
-                else
-                    ca.setBrand("No info");
-
-                if(carInfo.hasNext())
-                    ca.setVehicle(carInfo.next());
-                else
-                    ca.setVehicle("No info");
-
-                if(carInfo.hasNext())
-                    ca.setEngine(carInfo.next());
-                else
-                    ca.setEngine("No info");
-
-                if(carInfo.hasNext())
-                    ca.setPower(carInfo.next());
-                else
-                    ca.setPower("No info");
-            }
-            cars.add(ca);
-        }
-        return cars;
-
-     */
     }
 
 
-    public boolean addCarInCart(String email, String plate, String brand, String engine, String power, String vehicle){
+    private boolean addCarInCart(String email, String plate, String brand, String engine, String power, String vehicle){
        String key = email + ":cart"; // KEY:= andrea@live.it:cart   VALUE:= AAA11AA~Renault~Megane 2 (2003)~ 1.4L 100 hp~98-72/6000<<==>>BBB11BB~ ...
        String s = getValue(key);
        if(s!=null){
@@ -159,7 +122,7 @@ public class LevelDBConnection {
     }
 
 
-    public void deleteCars(String email){
+    private void deleteCars(String email){
         String key = email + ":cart";
         deleteValue(key);
     }
@@ -309,12 +272,14 @@ public class LevelDBConnection {
         key= car.getPlate() + ":availability";
         value = getValue(key);
         if(value!=null){
-            Iterator<String> dates = Arrays.stream(value.split("~")).iterator(); // es. AAA11AA,Brand,Engine,Power;BBB11BB;..
+            Iterator<String> dates = Arrays.stream(value.split("~")).iterator();
             while (dates.hasNext()) {
                 String dateInfo = dates.next();
                 Iterator<String> s = Arrays.stream(dateInfo.split(",")).iterator();
                 long dPickCart = Long.valueOf(s.next());
                 long dDeliveryCart = Long.valueOf(s.next());
+
+
                 if ((dPick.getTime() >= dDeliveryCart && dDelivery.getTime() >= dDeliveryCart)|| (dPick.getTime()<= dPickCart && dDelivery.getTime() <= dPickCart)){
                     System.out.println("Ok");
                 } else{
@@ -343,7 +308,7 @@ public class LevelDBConnection {
         if(value == null)
             value = startDate.getTime() + "," + endDate.getTime() + "~";
         else
-            value += value +  startDate.getTime() + "," + endDate.getTime() + "~";
+            value = value +  startDate.getTime() + "," + endDate.getTime() + "~";
         putValue(key, value);
     }
 
@@ -451,10 +416,11 @@ public class LevelDBConnection {
     //"AAA01AA:availability  VALUE: 10000000000,10000002222~20000000000,20000002222"
 
     public void updateLDB(ArrayList<Order> orders) {
+
         if(orders.isEmpty())
             return ;
-        Date dPick = new Date();
-        Date dDelivery = new Date();
+        Date dPick ;
+        Date dDelivery ;
         for (Order order : orders) {
             String key = order.getCar() + ":availability";
             String value = getValue(key);
@@ -471,5 +437,26 @@ public class LevelDBConnection {
     }
 
 
+    public void deleteAllCarsInfo() {
+        String key = "";
+        String value= "";
+        try (DBIterator iterator = db.iterator();)
+        {
+            for (iterator.seekToFirst(); iterator.hasNext(); iterator.next()){
+                key = asString(iterator.peekNext().getKey());
+                System.out.println("KEY: "+key);
+                if(key.contains("availability")){
+                    value = getValue(key);
+                    System.out.println("KEY: "+ key + ", VALUE: "+ value);
+                    value = "";
+                    deleteValue(key);
+                }
+            }
+        }
+        catch(Exception e){
+
+        }
+
+    }
 
 }

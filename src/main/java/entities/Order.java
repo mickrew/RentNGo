@@ -37,7 +37,18 @@ public class Order {
         this.accessories=accessories;
     }
 
-    public Order(String car, String brand, String vehicle, String engine, String string, String dString, String s, String gearBox_type, String tyre, String traction_type, String string1){}
+    public Order(String car,String user,Double priceCar,String pickOffice,Date pickDate,String deliveryOffice, Date deliveryDate,
+                 Double priceAccessories, String accessories){
+        this.car=car;
+        this.user=user;
+        this.priceCar=priceCar;
+        this.pickDate=pickDate;
+        this.pickOffice=pickOffice;
+        this.deliveryDate=deliveryDate;
+        this.deliveryOffice=deliveryOffice;
+        this.priceAccessories=priceAccessories;
+        this.accessories=accessories;
+    }
     
     public String getCar() {
         return car;

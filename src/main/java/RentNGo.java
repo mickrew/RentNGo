@@ -47,14 +47,18 @@ public class RentNGo {
     public static void main(String args[]) throws ParseException {
         Logger mongoLogger = Logger.getLogger( "org.mongodb.driver" );
         mongoLogger.setLevel(Level.SEVERE);
-
-        db = new MongoDBConnection("RentNGO");
-        ldb = new LevelDBConnection();
-        ldb.openDB();
-        ldb.updateLDB(db.getListOfRecentOrders());
-        ldb.closeDB();
-        db.closeConnection();
-
+        try {
+            db = new MongoDBConnection("RentNGO");
+            ldb = new LevelDBConnection();
+            ldb.openDB();
+            ldb.deleteAllCarsInfo();
+            ldb.updateLDB(db.getListOfRecentOrders());
+            ldb.closeDB();
+            db.closeConnection();
+        } catch (Exception e){
+            System.out.println("Error");
+            return ;
+        }
 
         int i = 0;
 
@@ -146,7 +150,7 @@ public class RentNGo {
                                             System.out.println("The total is: " + total + "\n");
 
 
-                                            db.insertOrder(order);
+                                            db.insertOrder(order, "Booked");
                                         }
                                     }
                                 }
@@ -297,7 +301,7 @@ public class RentNGo {
                                     break;
                                 }
                                 ldb.carNotAvailable(plate, d, d2);
-                                db.showUsersOrdersForDate(plate, d, d2);
+                                db.showUsersOrdersForDate(u.getEmail(), plate, d, d2, ((Worker) u).getOffice());
                                 break;
                             default:
                                 System.out.println("Try again.");
@@ -428,6 +432,7 @@ public class RentNGo {
                                         db.searchUserForDiscount(date2.getTime(), date1.getTime());
                                         break;
                                 }
+                                System.out.println("");
                                 break;
 
                             }

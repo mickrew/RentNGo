@@ -366,7 +366,7 @@ public class MongoDBConnection
 
     }
 
-    public void insertOrder(Order o) {
+    public void insertOrder(Order o, String status) {
         MongoCollection<Document> myColl = db.getCollection("orders");
         Document order = new Document("CarPlate", o.getCar())
                 .append("Email", o.getUser())
@@ -377,7 +377,7 @@ public class MongoDBConnection
                 .append("DeliveryDate", o.getDeliveryDate().getTime())
                 .append("PriceAccessories", o.getPriceAccessories())
                 .append("ListAccessories", o.getAccessories())
-                .append("Status", "Booked");
+                .append("Status", status);
         myColl.insertOne(order);
     }
 
@@ -541,6 +541,8 @@ public class MongoDBConnection
         return cars;
     }
 
+
+
     public void updateUser(){
         MongoCollection<Document> myColl = db.getCollection("users");
         MongoCursor<Document> cursor = myColl.find().iterator();
@@ -665,14 +667,15 @@ public class MongoDBConnection
                 System.out.println(document.toJson(JsonWriterSettings.builder().indent(true).build()));
             }
         };
-        Bson match1 = match(gt("PickDate", date));
+        //Bson match1 = match();
         MongoCollection<Document> myColl = db.getCollection("orders");
         Bson sort = sort(descending(Arrays.asList("count")));
         Bson group = group(Arrays.asList("$StartOffice", "$CarPlate"), sum("count", 1));
-        Bson match= match(eq("StartOffice", startOffice));
+        Bson match= match(and(eq("StartOffice", startOffice), ne("Status", "Maintenance"),
+                gt("PickDate", date)));
         Bson project = project(fields(include("_id", "count")));
         Bson limit = limit(3);
-        myColl.aggregate(Arrays.asList(match1, match,group, sort, limit))
+        myColl.aggregate(Arrays.asList( match,group, sort, limit))
                .forEach(printFormattedDocuments);
 
     }
@@ -707,6 +710,7 @@ public class MongoDBConnection
                 System.out.println(document.toJson(JsonWriterSettings.builder().indent(true).build()));
             }
         };
+        Bson match = match(ne("Status", "Maintenance"));
         Bson group = group("$Email", sum("countCurrent", 1));
         Bson group2 = group("$Email", sum("countPrev", 1));
         Bson matchCurrent = match(gt("PickDate", currentDate));
@@ -716,11 +720,13 @@ public class MongoDBConnection
         MongoCollection<Document> collection = db.getCollection("orders");
 
         collection.aggregate(Arrays.asList(
+                match,
                 matchCurrent,
                 group,
                 out("currentYear"))).toCollection();
 
         collection.aggregate(Arrays.asList(
+                match,
                 matchPrev,
                 group2,
                 out("prevYear"))).toCollection();
@@ -847,7 +853,7 @@ public class MongoDBConnection
                 (eq("CarPlate", carPlate)), set("Office", String.valueOf(position)));
     }
 
-    public void showUsersOrdersForDate(String plate,Date start, Date stop) {
+    public void showUsersOrdersForDate(String email, String plate,Date start, Date stop, int office) {
         MongoCollection<Document> myColl = db.getCollection("orders");
         MongoCursor<Document> cursor = myColl.find(or(
                                                         and(
@@ -871,7 +877,25 @@ public class MongoDBConnection
                                  eq("CarPlate", d.getString("CarPlate")),
                                 eq("PickDate", d.getLong("PickDate"))), set("Status", "Deleted"));
         }
+        String nameOffice= "";
+        for(Office o: offices){
+            if(o.getPosition() == office)
+                    nameOffice = o.getName();
+        }
+        insertOrder(new Order(plate, email, 0.0, nameOffice, start,nameOffice, stop,  0.0, ""), "Maintenance");
+    }
 
+
+    public ArrayList<Car> getListOfAllCars() {
+        MongoCollection<Document> myColl = db.getCollection("cars");
+        MongoCursor<Document> cursor = myColl.find().iterator();
+        ArrayList<Car> cars = new ArrayList<>();
+        while(cursor.hasNext()){
+            Document d = cursor.next();
+            Car c = getCarFromDocument(d);
+            cars.add(c);
+        }
+        return cars;
     }
 
 
