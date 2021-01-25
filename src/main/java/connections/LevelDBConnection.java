@@ -444,10 +444,10 @@ public class LevelDBConnection {
         {
             for (iterator.seekToFirst(); iterator.hasNext(); iterator.next()){
                 key = asString(iterator.peekNext().getKey());
-                System.out.println("KEY: "+key);
+                //System.out.println("KEY: "+key);
                 if(key.contains("availability")){
                     value = getValue(key);
-                    System.out.println("KEY: "+ key + ", VALUE: "+ value);
+                    //System.out.println("KEY: "+ key + ", VALUE: "+ value);
                     value = "";
                     deleteValue(key);
                 }

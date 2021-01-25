@@ -689,13 +689,21 @@ public class MongoDBConnection
             }
         };
         MongoCollection<Document> myColl = db.getCollection("cars");
-        Bson sort = sort(ascending("AvgCO2"));
+        Bson sort = sort(descending("AvgCO2"));
         Bson group = group("$Office", avg("AvgCO2", "$CO2"));
         //Bson project = project(fields(include( "AvgCO2")));
         Bson limit = limit(3);
-        myColl.aggregate(Arrays.asList( group, sort, limit))
-                .forEach(printFormattedDocuments);
 
+        Bson lookup = lookup(
+                "offices",
+                "_id",
+                "Position",
+                "Office"
+        );
+        Bson project = project(fields(include("AvgCO2", "Office.City", "Office.Region", "Office.Name"), excludeId()));
+
+        myColl.aggregate(Arrays.asList( group, sort, limit, lookup, project))
+                .forEach(printFormattedDocuments);
         /*
         * printare nome ufficio
         * */

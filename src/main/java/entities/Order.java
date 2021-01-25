@@ -142,7 +142,12 @@ public class Order {
         setPickDate(d);
 
         System.out.println("Insert the pick Office");
-        int i = 1;
+        Office pickOffice = Office.selectOffice(offices);
+        if(pickOffice == null)
+            return false;
+        idOfficePick = pickOffice.getPosition();
+        setpickOffice(pickOffice.getName());
+    /*    int i = 1;
         for(Office o : offices){
             System.out.print(i++ + ") ");
             o.printOffice();
@@ -158,10 +163,10 @@ public class Order {
             System.out.println("Index out of range");
             return false;
         }
-        setpickOffice(offices.get(i-1).getName());
+        setpickOffice(offices.get(i-1).getName()); */
 
         System.out.print("Insert the date of delivery. ( DD/MM/YYYY ): ");
-        Date d2= new Date();
+        Date d2;
 
         String dateString2 = sc.nextLine();
         //System.out.println(dateString);
@@ -177,7 +182,7 @@ public class Order {
             return false;
         }
         setDeliveryDate(d2);
-
+/*
         System.out.println("Insert the delivery Office");
         i = 1;
         for(Office o : offices){
@@ -196,9 +201,12 @@ public class Order {
             return false;
         }
         idOfficeDelivery = i;
-        setDeliveryOffice(offices.get(i-1).getName());
-
-
+        setDeliveryOffice(offices.get(i-1).getName()); */
+        Office deliveryOff = Office.selectOffice(offices);
+        if(deliveryOff == null)
+            return false;
+        idOfficeDelivery = deliveryOff.getPosition();
+        setDeliveryOffice(deliveryOff.getName());
         return true;
     }
 
