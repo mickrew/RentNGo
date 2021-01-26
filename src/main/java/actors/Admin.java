@@ -351,6 +351,11 @@ public class Admin extends Worker {
             }
         }
 
+        System.out.println("Insert the Office: ");
+        Office o = Office.selectOffice(db.listOffices());
+        if (o == null)
+            return;
+        c.setOffice(o.getPosition());
 
         db.insertNewCar(c);
         c.printCar();

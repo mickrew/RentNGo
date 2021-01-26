@@ -46,6 +46,14 @@ public class Car {
             this.office = office;
         }
 
+    public void setOffice(Integer office) {
+        this.office = office;
+    }
+
+    public Integer getOffice() {
+        return office;
+    }
+
     public Integer getRegistrationYear() {
         return registrationYear;
     }

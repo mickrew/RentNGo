@@ -306,15 +306,25 @@ public class MongoDBConnection
     }
 
     public boolean insertUser(User u)  {
-        MongoCollection<Document> myColl = db.getCollection("users");
-        String email = u.getEmail();
+        //
+
         //check email
-        MongoCursor<Document> cursor = myColl.find(eq("Email", (email))).iterator();
+
+        /*
+        MongoCursor<Document> cursor = myColl.find(eq("Email", u.getEmail())).iterator();
+
         if(cursor.hasNext()){
             System.out.println("User already present in the database");
             return false;
         }
+        */
 
+        User user1 = findUser(u.getEmail());
+        if (user1 != null){
+            System.out.println("User already present in the database");
+            return false;
+        }
+        MongoCollection<Document> myColl = db.getCollection("users");
         DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
 
         Document user = new Document("Name", u.getName())
@@ -430,7 +440,7 @@ public class MongoDBConnection
             c = getCarFromDocument(d);
         }
 
-        c.printCar();
+        //c.printCar();
         System.out.println();
 
         return c;
@@ -482,7 +492,8 @@ public class MongoDBConnection
                 .append("Tyre", c.getTyre())
                 .append("Traction type", c.getTractionType())
                 .append("CarPlate", c.getPlate())
-                .append("RegistrationYear", c.getRegistrationYear());
+                .append("RegistrationYear", c.getRegistrationYear())
+                .append("Office", String.valueOf(c.getOffice()));
         myColl.insertOne(car);
 
         System.out.println();
@@ -746,7 +757,7 @@ public class MongoDBConnection
             if(doc.getInteger("countPrev") != null && doc.getInteger("countCurrent")!=null
                     && (doc.getInteger("countPrev") - doc.getInteger("countCurrent")) > 4){
                 System.out.println("User: "+ doc.getString("_id")
-                 + ", Current Year Rent: "+ doc.getInteger("countCurrent") + ", Last Year Rent: "
+                 + ", Start Year Rent: "+ doc.getInteger("countCurrent") + ", End Year Rent: "
                         + doc.getInteger("countPrev"));
             }
         }
@@ -795,7 +806,7 @@ public class MongoDBConnection
                 System.out.printf(format, "EndOffice: " + d.getString("EndOffice") + " ");
                 System.out.printf(format,"PriceAccessories: " + d.getDouble("PriceAccessories") + " ");
                 System.out.printf(format,"ListAccessories: " + d.getString("ListAccessories") + " ");
-                //System.out.println();
+                System.out.println();
                 j++;
             }
         } else {
@@ -817,11 +828,11 @@ public class MongoDBConnection
                 System.out.printf(format,"EndOffice: " + d.getString("EndOffice") + " ");
                 System.out.printf(format, "PriceAccessories: " + d.getDouble("PriceAccessories") + " ");
                 System.out.printf(format, "ListAccessories: " + d.getString("ListAccessories") + " ");
-                //System.out.println();
+                System.out.println();
                 j++;
             }
         }
-        System.out.println();
+        //System.out.println();
     }
 
 
@@ -860,6 +871,9 @@ public class MongoDBConnection
     }
 
     public void showUsersOrdersForDate(String email, String plate,Date start, Date stop, int office) {
+        Car c = findCar(plate);
+        if(c == null)
+            return;
         MongoCollection<Document> myColl = db.getCollection("orders");
         MongoCursor<Document> cursor = myColl.find(or(
                                                         and(

@@ -2,6 +2,7 @@ package main.java.actors;
 
 import main.java.entities.Car;
 import main.java.connections.MongoDBConnection;
+import main.java.entities.Office;
 import main.java.entities.Order;
 
 import java.text.ParseException;
@@ -135,8 +136,13 @@ public class Worker extends UnregisteredUser {
             carplate = sc.nextLine();
             db.showListOrdersByParameters(carplate, pickOffice, new Date().getTime());
         } else if (choice == 3){
-            System.out.print("Insert pick office: ");
-            pickOffice = sc.nextLine();
+
+
+            System.out.println("Insert pick office: ");
+            Office o = Office.selectOffice(db.listOffices());
+            if (o == null)
+                return;
+            //pickOffice = sc.nextLine();
             System.out.print("Insert pick date: ");
             SimpleDateFormat  formatter = new SimpleDateFormat("dd/MM/yyyy");
 
@@ -148,7 +154,7 @@ public class Worker extends UnregisteredUser {
                 return ;
             }
 
-            db.showListOrdersByParameters(carplate, pickOffice, d.getTime());
+            db.showListOrdersByParameters(carplate, o.getName(), d.getTime());
 
         }
 

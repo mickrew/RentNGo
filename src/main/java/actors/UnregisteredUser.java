@@ -101,7 +101,7 @@ public class UnregisteredUser {
     }
 
     public static User signIn(){
-        User u= new User();
+        UnregisteredUser u = new UnregisteredUser();
         Scanner sc = new Scanner(System.in);
         System.out.print("Insert the user name: ");
             u.setName(sc.nextLine());
@@ -133,7 +133,7 @@ public class UnregisteredUser {
                 System.out.println("Error");
             }
             u.setDateofbirth(d);
-            return u;
+            return new User(u.getSurname(), u.getName(), u.getEmail(), u.getPassword(), u.getDateOfBirth());
     }
 
     public void setDateofbirth(Date dateOfBirth){

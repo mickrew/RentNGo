@@ -148,7 +148,7 @@ public class RentNGo {
                                             Long millisDay = 86400000L;
                                             Long numDays = (order.getDeliveryDate().getTime() - order.getPickDate().getTime())/(millisDay);
                                             total = order.getPriceCar() * numDays + order.getPriceAccessories();
-                                            System.out.println("The total is: " + total + "\n");
+                                            System.out.println("The total is: " + total + "€\n");
 
 
                                             db.insertOrder(order, "Booked");
@@ -176,7 +176,11 @@ public class RentNGo {
                                 }
                                 while(choice!=-1) {
                                     System.out.println("Which Accessories do you want to add/remove? (-1 to stop)");
-                                    choice = Integer.valueOf(sc.nextLine());
+                                    try {
+                                        choice = Integer.valueOf(sc.nextLine());
+                                    } catch (Exception e){
+                                        break;
+                                    }
                                     if(choice <= services.size() && choice > -1) {
                                         if(ad.equals("A"))
                                             ldb.addAccessories(u.getEmail(), services.get(choice).getNameService(), services.get(choice).getPrice(), services.get(choice).getMultiplicator());
@@ -222,6 +226,7 @@ public class RentNGo {
                                 System.out.println("Insert the Email:");
                                 String email = sc.nextLine();
                                 db.changeStatusOrder(plate, email,"PickDate", new Date(), "Picked", "", 0.0);
+                                System.out.println("Car picked successfully!\n");
                                 break;
                             case 5:
                                 //((Worker) u).deliveryCar();
@@ -271,7 +276,8 @@ public class RentNGo {
                                         }
                                     }
                                 }while(p!=-1);
-
+                                System.out.println("The list of additional services is: " + damage );
+                                System.out.println("The surcharge is: " + damageCost+ "€\n");
                                 db.changeStatusOrder(plate, email, "DeliveryDate",d, "Completed", damage, damageCost);
                                 break;
                             case 6:
@@ -378,6 +384,7 @@ public class RentNGo {
                             case 6:
                                 {
                                 ((Admin) u).addRemoveWorker(db);
+                                System.out.println();
                                 break;
                             }
                             case 7:
@@ -414,7 +421,7 @@ public class RentNGo {
                                 * */
                                 switch (choice) {
                                     case 1:
-                                        System.out.print("Insert the Office: ");
+                                        System.out.println("Insert the Office: ");
                                         //String office = sc.nextLine();
                                         Office o = Office.selectOffice(db.listOffices());
                                         if(o == null)
@@ -457,6 +464,7 @@ public class RentNGo {
                                             break;
                                         }
                                         db.searchUserForDiscount(date2.getTime(), date1.getTime());
+                                        System.out.println();
                                         break;
                                     default:
                                         System.out.println("Wrong choice");
@@ -475,7 +483,9 @@ public class RentNGo {
 
                 }
             }  else if (i == 2){
+                db = new MongoDBConnection("RentNGO");
                 db.insertUser(UnregisteredUser.signIn());
+                db.closeConnection();
             }
         } while(i!=0);
 
