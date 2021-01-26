@@ -307,9 +307,9 @@ public class MongoDBConnection
 
     public boolean insertUser(User u)  {
         MongoCollection<Document> myColl = db.getCollection("users");
-
+        String email = u.getEmail();
         //check email
-        MongoCursor<Document> cursor = myColl.find(eq("Email", u.getEmail())).iterator();
+        MongoCursor<Document> cursor = myColl.find(eq("Email", (email))).iterator();
         if(cursor.hasNext()){
             System.out.println("User already present in the database");
             return false;
@@ -860,9 +860,6 @@ public class MongoDBConnection
     }
 
     public void showUsersOrdersForDate(String email, String plate,Date start, Date stop, int office) {
-        Car c = findCar(plate);
-        if(c == null)
-            return;
         MongoCollection<Document> myColl = db.getCollection("orders");
         MongoCursor<Document> cursor = myColl.find(or(
                                                         and(
@@ -871,9 +868,14 @@ public class MongoDBConnection
                                                             eq("CarPlate", plate)
                                                         ),
                                                         and(
-                                                            lte("DeliveryDate", start.getTime()),
-                                                            gte("PickDate", start.getTime()),
+                                                            gte("DeliveryDate", start.getTime()),
+                                                            lte("PickDate", start.getTime()),
                                                             eq("CarPlate", plate)
+                                                        ),
+                                                        and(
+                                                             lte("DeliveryDate", stop.getTime()),
+                                                             gte("PickDate", start.getTime()),
+                                                             eq("CarPlate", plate)
                                                         )
                                                       )
                                     ).iterator();
