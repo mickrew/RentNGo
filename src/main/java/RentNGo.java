@@ -93,10 +93,9 @@ public class RentNGo {
                         try {
                             j = Integer.valueOf(sc.nextLine());
                             db = new MongoDBConnection("RentNGO");
-
                             ldb.openDB();
                         }catch (Exception e){
-                            System.out.println("Didn't insert an integer");
+                            e.printStackTrace();
                             j=100;
                         }
                         switch (j) {
@@ -105,64 +104,19 @@ public class RentNGo {
                                 u =null;
                                 break;
                             case 1:
-                                Order o = ((User) u).createOrder(db.listOffices());
-                                if(o == null){
-                                     break;
-                                }
-                                int category = 0;
-                                System.out.println("Choose the class: (if different from 1,2,3 --> ALL CLASSES)");
-                                System.out.println("1) Class  (55-75kw)");
-                                System.out.println("2) Class  (76-120kw)");
-                                System.out.println("3) Class  (121-over)");
-                                try {
-                                    category = Integer.valueOf(sc.nextLine());
-                                }
-                                catch(Exception e){
-                                    category = 4;
-                                }
-
-                                ldb.searchCar(o.getpickOffice(),o.getDeliveryOffice(), o.getPickDate(), o.getDeliveryDate(), db.getListOfCars(o.getOfficePickPosition(), category), (User)u);
+                                ((User)u).searchForCar(db,ldb,u,sc);
                                 break;
                             case 2:
-                                db.showListOrders(u.getEmail());
+                                ((User)u).showListOrder(db, u);
                                 break;
                             case 3:
-
-                                ArrayList<Car> cars = ldb.getListOfCarsInCart(u.getEmail());
-                                double total;
-                                if(cars != null){
-                                    for(Car c: cars){
-                                        c.printCar();
-                                        System.out.println("The car price per day is: "+ Math.ceil(c.calcolatePrice()) + "€");
-                                    }
-                                    ldb.showOrderInfo(u.getEmail());
-
-                                    System.out.println("Do you want to proceed with the payment? Y/N");
-                                    String  a = sc.nextLine();
-                                    if(a.equals("Y")){
-                                        Order order = ldb.payment(u.getEmail(), ((User)u).chooseCar(cars));
-                                        if(order == null){
-                                            System.out.println("Car is already rented");
-                                        } else {
-                                            order.printOrder();
-                                            Long millisDay = 86400000L;
-                                            Long numDays = (order.getDeliveryDate().getTime() - order.getPickDate().getTime())/(millisDay);
-                                            total = order.getPriceCar() * numDays + order.getPriceAccessories();
-                                            System.out.println("The total is: " + total + "€\n");
-
-
-                                            db.insertOrder(order, "Booked");
-                                        }
-                                    }
-                                }
+                                ((User)u).showCart(db,ldb, sc, u);
                                 break;
                             case 4:
-                                db.deleteUser(u.getEmail());
-                                ldb.deleteUserCart(u.getEmail());
-                                u = null;
+                                ((User)u).deleteAccount(db,ldb,u);
                                 i=0;
                                 j=0;
-                                break;
+                                break; /*
                             case 5:
                                 ArrayList<Service> services= new ArrayList<>();
                                 services = db.getServices();//Service.clientServices(db.getServices());
@@ -188,7 +142,7 @@ public class RentNGo {
                                             ldb.deleteAccessories(u.getEmail(), services.get(choice).getNameService(), services.get(choice).getPrice(), services.get(choice).getMultiplicator());
                                     }
                                 }
-                                break;
+                                break; */
                             default:
                                 System.out.println("Try again.");
                         }

@@ -1,6 +1,9 @@
 package main.java.actors;
 
 import main.java.actors.User;
+import main.java.connections.LevelDBConnection;
+import main.java.connections.MongoDBConnection;
+import main.java.entities.Order;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -139,4 +142,6 @@ public class UnregisteredUser {
     public void setDateofbirth(Date dateOfBirth){
         this.dateOfBirth = dateOfBirth;
     }
+
+
 }

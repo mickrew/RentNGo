@@ -542,7 +542,6 @@ public class MongoDBConnection
                     if(kw >120.0)
                         cars.add(c);
                     break;
-
                 default:
                     cars.add(c);
             }
@@ -781,7 +780,7 @@ public class MongoDBConnection
                         , set("ListAccessories", damageU));
                 myColl.updateOne(
                         (and(eq("CarPlate", carPlate), lt(field, d.getTime() + 12 * 1000 * 60 * 60), gt(field, d.getTime() - 12 * 1000 * 60 * 60), eq("Email", email)))
-                        , set("PriceAccessories", damageCost));
+                        , set("PriceAccessories", damageCostU));
             }
         }
     }
@@ -937,6 +936,10 @@ public class MongoDBConnection
             System.out.println("CarPlate: " + d.getString("CarPlate"));
         }
         System.out.println("");
+    }
+
+    public boolean checkIfCarRented(Order o) {
+        return true;
     }
 
 
