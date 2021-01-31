@@ -18,7 +18,7 @@ import static org.iq80.leveldb.impl.Iq80DBFactory.*;
 public class LevelDBConnection {
 
     private DB db = null;
-
+    private Integer Max_N_Cars = 5;
     public void openDB(){
         Options options = new Options();
         options.createIfMissing(true);
@@ -51,16 +51,50 @@ public class LevelDBConnection {
     private DBIterator iterator() {
         return db.iterator();
     }
-
+/*
     public ArrayList<Car> getListOfCarsInCart(String email){
-        String key = email + ":cart";
+        ArrayList<Car> cars = new ArrayList<>();
+        String key = email +":cart1:brand";
+        String value = getValue(key);
+        if(value!= null){
+            Car c = new Car();
+            c.setBrand(value);
+            key = email + ":cart1:vehicle";
+            value = getValue(key);
+            c.setVehicle(value);
+            cars.add(c);
+        }
+
+        key = email +":cart2:brand";
+        value = getValue(key);
+
+        if(value!= null){
+            Car c = new Car();
+            c.setBrand(value);
+            key = email + ":cart2:vehicle";
+            value = getValue(key);
+            c.setVehicle(value);
+            cars.add(c);
+        }
+
+        key = email +":cart3:brand";
+        value = getValue(key);
+
+        if(value!= null){
+            Car c = new Car();
+            c.setBrand(value);
+            key = email + ":cart3:vehicle";
+            value = getValue(key);
+            c.setVehicle(value);
+            cars.add(c);
+        }
+       /* String key = email + ":cart1";
         String s = getValue(key);
         if(s==null){
             System.out.println("Cart is empty\n");
             return null;
         }
         Iterator<String> c = Arrays.stream(s.split("~")).iterator();
-        ArrayList<Car> cars = new ArrayList<>();
         while(c.hasNext()){
             Car ca = new Car();
             String plate = c.next();
@@ -94,11 +128,30 @@ public class LevelDBConnection {
         return cars;
 
 
-    }
+    } */
 
-    public ArrayList<Car> getListOfCarsInCart2(String email){
+    public ArrayList<Car> getListOfCarsInCart(String email){
         ArrayList<Car> cars = new ArrayList<>();
-        String key = email + ":cart1:brand";
+        String key ;
+        String value;
+        int i = 0;
+        do {
+            key = email + ":cart"+i+":brand";
+            value = getValue(key);
+            if(value != null){
+                Car c = new Car();
+                c.setBrand(value);
+                key = email + ":cart"+i+":vehicle";
+                value = getValue(key);
+                c.setVehicle(value);
+                key = email + ":cart"+i+":power";
+                value = getValue(key);
+                c.setPower(value);
+                cars.add(c);
+            }
+            i++;
+        } while(i != Max_N_Cars);
+       /* String key = email + ":cart1:brand";
         String value = getValue(key);
         if(value!=null){
             Car c = new Car();
@@ -130,38 +183,57 @@ public class LevelDBConnection {
             c.setVehicle(value);
             cars.add(c);
         }
-
+*/
         return cars;
 
 
     }
 
 
-    private void addCarInCart(String email, String brand, String vehicle) {
+    private void addCarInCart(String email, String brand, String vehicle, String power) {
+        /*
         String key = email + ":cart1:brand";
-        if(getValue(key)!=null){
+        if(getValue(key) == null){
             putValue(key, brand);
             key = email + ":cart1:vehicle";
             putValue(key, vehicle);
             return ;
         }
-        key = email + ":cart2:brand";
-        if(getValue(key)!=null){
-            putValue(key, brand);
-            key = email + ":cart2:vehicle";
-            putValue(key, vehicle);
-            return ;
-        }
-        key = email + ":cart2:brand";
-        if(getValue(key)!=null){
-            putValue(key, brand);
-            key = email + ":cart2:vehicle";
-            putValue(key, vehicle);
-            return ;
-        }
-        System.out.println("Cart full");
-    }
 
+        key = email + ":cart2:brand";
+        if(getValue(key) == null){
+            putValue(key, brand);
+            key = email + ":cart2:vehicle";
+            putValue(key, vehicle);
+            return ;
+        }
+
+        key = email + ":cart3:brand";
+        if(getValue(key) == null){
+            putValue(key, brand);
+            key = email + ":cart3:vehicle";
+            putValue(key, vehicle);
+            return ;
+        }
+
+        */
+        //System.out.println("Cart full");
+        int i = 0;
+        do {
+            String key = email + ":cart"+i+":brand";
+            if(getValue(key) == null){
+                putValue(key, brand);
+                key = email + ":cart"+i+":vehicle";
+                putValue(key, vehicle);
+                key = email + ":cart"+i+":power";
+                putValue(key, power);
+                return ;
+            }
+            i++;
+        } while(i != Max_N_Cars);
+
+    }
+/*
         private boolean addCarInCart(String email, String plate, String brand, String engine, String power, String vehicle){
        String key = email + ":cart"; // KEY:= andrea@live.it:cart   VALUE:= AAA11AA~AAA21AA~..
        String s = getValue(key);
@@ -182,14 +254,30 @@ public class LevelDBConnection {
             s += "<<==>>" + plate + "~" + brand + "~" + vehicle + "~" + engine + "~" + power;
         else
             s = plate + "~" + brand + "~" + vehicle + "~" + engine + "~" + power;
-        putValue(key, s); */
+        putValue(key, s);
         return false;
     }
-
+*/
 
     private void deleteCars(String email){
-        String key = email + ":cart";
-        deleteValue(key);
+        //String key = email + ":cart";
+        //deleteValue(key);
+        int i = 0;
+        do {
+            String key = email + ":cart"+i+":brand";
+            if(getValue(key) != null){
+                deleteValue(key);
+            }
+            key = email + ":cart"+i+":vehicle";
+            if(getValue(key)!=null){
+                deleteValue(key);
+            }
+            key = email + ":cart"+i+":power";
+            if(getValue(key)!=null){
+                deleteValue(key);
+            }
+            i++;
+        } while(i != Max_N_Cars);
     }
 
     public void searchCar(String pickOffice,String deliveryOffice, Date pickDate, Date deliveryDate, ArrayList<Car> cars, User u) {
@@ -213,6 +301,7 @@ public class LevelDBConnection {
         while(!cars.isEmpty()){
             System.out.print(i + ") ");
             cars.get(i).printCar();
+            System.out.println("- Price per day:"+Math.ceil(cars.get(i).calcolatePrice())+"\n");
             if ((i + 1) % 10 == 0) {
                 do {
                         System.out.println("Which cars do you want to add on the cart? (Press -2 to exit, -1 to continue)");
@@ -224,7 +313,7 @@ public class LevelDBConnection {
                         }
                         if (choice > (i - 10) && choice <= i) {
                             Car c = cars.get(choice);
-                            addCarInCart(u.getEmail(), c.getBrand(), c.getVehicle());
+                            addCarInCart(u.getEmail(), c.getBrand(), c.getVehicle(), c.getPower());
                         }
                     } while (choice != -1 && choice != -2);
                 }

@@ -20,7 +20,7 @@ public class Car {
         String tyre;
         String tractionType;
         Integer registrationYear;
-        Integer office;
+        String office;
 
 
 
@@ -29,7 +29,7 @@ public class Car {
         }
 
         public Car(String plate, String brand, String vehicle, String engine, String avgFuelCons, String co2, String weight
-                , String gearBoxType, String tyre, String tractionType, String power, Integer registrationYear, Integer office){
+                , String gearBoxType, String tyre, String tractionType, String power, Integer registrationYear, String office){
             this.plate = plate;
             this.brand = brand;
             this.vehicle = vehicle;
@@ -46,11 +46,11 @@ public class Car {
             this.office = office;
         }
 
-    public void setOffice(Integer office) {
+    public void setOffice(String office) {
         this.office = office;
     }
 
-    public Integer getOffice() {
+    public String getOffice() {
         return office;
     }
 
@@ -151,9 +151,11 @@ public class Car {
         }
 
         public void printCar(){
-            String out = "Car Plate: " + plate;
+            String out = "";
+            if(plate!= null && !plate.contains(""))
+                out = "Car Plate: " + plate+ " ";
             if(brand!=null)
-                out += ", Brand: " + brand ;
+                out += "Brand: " + brand ;
             if(vehicle!=null)
                 out += ", Vehicle: " + vehicle ;
             if(engine!=null)
@@ -164,21 +166,18 @@ public class Car {
                 out += ", CO2: " + co2 ;
             if(weight!=null)
                 out += ", Weight: " + weight ;
-            if(gearBoxType!=null)
+       /*     if(gearBoxType!=null)
                 out += ", Gear Box Type: " + gearBoxType ;
             if(tyre!=null)
                 out += ", Tyre: " + tyre;
             if(tractionType!=null)
-                out += ", Traction Type: " + tractionType ;
+                out += ", Traction Type: " + tractionType ; */
             if(power!=null)
                 out += ", Power: " + power ;
-            if(registrationYear!=null)
+         /*   if(registrationYear!=null)
                 out += ", RegistrationYear: " + registrationYear ;
             if(office!=null)
-                out += ", PositionOffice: " + office ;
-           /* System.out.println("Car Plate: " + getPlate() + ", Brand: "+ getBrand() + ", Vehicle: " + getVehicle() + ", Engine: "
-            + getEngine() + ", Average Fuel Consumption: " + getAvgFuelCons() + ", CO2: "+ getCo2()+ ", Weight: " + getWeight() +
-                    ", GearBoxType: " + getGearBoxType() + ", Tyre: " + getTyre() + ", TractionType: " + getTractionType() + ", Power: " + getPower() );*/
+                out += ", Office: " + office ; */
             System.out.println(out);
         }
 

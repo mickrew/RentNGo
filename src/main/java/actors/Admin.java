@@ -22,7 +22,7 @@ public class Admin extends Worker {
         super();
     }
 
-    public Admin(String surname, String name, String email, String password, Date dateofbirth, int salary, Date hiringDate,int office,  Date workertoAdmin){
+    public Admin(String surname, String name, String email, String password, Date dateofbirth, int salary, Date hiringDate,String office,  Date workertoAdmin){
         super(surname, name, email,password, dateofbirth, salary, hiringDate, office);
         this.workertoAdmin = workertoAdmin;
     }
@@ -180,7 +180,7 @@ public class Admin extends Worker {
                     System.out.println("Index out of range");
                     return;
                 }
-                w.setOffice(offices.get(i-1).getPosition());
+                w.setOffice(offices.get(i-1).getName());
 
                 w.setHiringDate(today);
 
@@ -219,7 +219,7 @@ public class Admin extends Worker {
 
         System.out.println("Insert the new Salary: ");
         Integer salary = Integer.valueOf(sc.nextLine());
-        a  = new Admin(w.getSurname(), w.getName(), emailWorker, w.getPassword(), w.getDateOfBirth(), salary, w.getHiringDate(),100, d);
+        a  = new Admin(w.getSurname(), w.getName(), emailWorker, w.getPassword(), w.getDateOfBirth(), salary, w.getHiringDate(),"", d);
         db.insertAdmin(a);
         db.deleteWorker(emailWorker);
 
@@ -355,7 +355,7 @@ public class Admin extends Worker {
         Office o = Office.selectOffice(db.listOffices());
         if (o == null)
             return;
-        c.setOffice(o.getPosition());
+        c.setOffice(o.getName());
 
         db.insertNewCar(c);
         c.printCar();
@@ -441,7 +441,7 @@ public class Admin extends Worker {
                 Integer position = o.getPosition();
 
                  */
-                db.updateWorkerOffice(emailWorker, offices.get(i-1).getPosition());
+                db.updateWorkerOffice(emailWorker, offices.get(i-1).getName());
                 break;
         }
     }
@@ -474,7 +474,7 @@ public class Admin extends Worker {
             return;
         }
 
-        db.updateCarOffice(carPlate, offices.get(i-1).getPosition());
+        db.updateCarOffice(carPlate, offices.get(i-1).getName());
     }
 
     public void showMenu(){

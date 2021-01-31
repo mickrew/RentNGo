@@ -48,12 +48,12 @@ public class RentNGo {
     public static void main(String args[]) throws ParseException {
         Logger mongoLogger = Logger.getLogger( "org.mongodb.driver" );
         mongoLogger.setLevel(Level.SEVERE);
-        try {
+       try {
             db = new MongoDBConnection("RentNGO");
             ldb = new LevelDBConnection();
             ldb.openDB();
-            ldb.deleteAllCarsInfo();
-            ldb.updateLDB(db.getListOfRecentOrders());
+      //      ldb.deleteAllCarsInfo();
+       //     ldb.updateLDB(db.getListOfRecentOrders());
             ldb.closeDB();
             db.closeConnection();
         } catch (Exception e){
@@ -78,14 +78,18 @@ public class RentNGo {
             }
 
             if(i == 1) {
-                db = new MongoDBConnection("RentNGO");
-                UnregisteredUser u = db.getUser(UnregisteredUser.logIn());
-                db.closeConnection();
+                //db = new MongoDBConnection("RentNGO");
+                User u = User.login();
+
+                //db.closeConnection();
 
                 if (u == null) {
                     System.out.println("Login failed\n");
                     continue;
+                } else {
+                    u.printUser();
                 }
+
                 if (u instanceof User) {
                     int j = 1;
                     while (j != 0) {
@@ -98,53 +102,31 @@ public class RentNGo {
                             e.printStackTrace();
                             j=100;
                         }
-                        switch (j) {
-                            case 0:
-                                j=0;
-                                u =null;
-                                break;
-                            case 1:
-                                ((User)u).searchForCar(db,ldb,u,sc);
-                                break;
-                            case 2:
-                                ((User)u).showListOrder(db, u);
-                                break;
-                            case 3:
-                                ((User)u).showCart(db,ldb, sc, u);
-                                break;
-                            case 4:
-                                ((User)u).deleteAccount(db,ldb,u);
-                                i=0;
-                                j=0;
-                                break; /*
-                            case 5:
-                                ArrayList<Service> services= new ArrayList<>();
-                                services = db.getServices();//Service.clientServices(db.getServices());
-                                System.out.println("Do you want to delete(D) or add(A)?");
-                                String ad =sc.nextLine();
-                                int choice =0;
-                                for(Service s: services){
-                                    System.out.print(choice + ") ");
-                                    s.printService();
-                                    choice ++;
-                                }
-                                while(choice!=-1) {
-                                    System.out.println("Which Accessories do you want to add/remove? (-1 to stop)");
-                                    try {
-                                        choice = Integer.valueOf(sc.nextLine());
-                                    } catch (Exception e){
-                                        break;
-                                    }
-                                    if(choice <= services.size() && choice > -1) {
-                                        if(ad.equals("A"))
-                                            ldb.addAccessories(u.getEmail(), services.get(choice).getNameService(), services.get(choice).getPrice(), services.get(choice).getMultiplicator());
-                                        else if(ad.equals("D"))
-                                            ldb.deleteAccessories(u.getEmail(), services.get(choice).getNameService(), services.get(choice).getPrice(), services.get(choice).getMultiplicator());
-                                    }
-                                }
-                                break; */
-                            default:
-                                System.out.println("Try again.");
+                        try{
+                            switch (j) {
+                                case 0:
+                                    j=0;
+                                    u =null;
+                                    break;
+                                case 1:
+                                    ((User)u).searchForCar(db,ldb,u,sc);
+                                    break;
+                                case 2:
+                                    ((User)u).showListOrder(db, u);
+                                    break;
+                                case 3:
+                                    ((User)u).showCart(db,ldb, sc, u);
+                                    break;
+                                case 4:
+                                    ((User)u).deleteAccount(db,ldb,u);
+                                    i=0;
+                                    j=0;
+                                    break;
+                                default:
+                                    System.out.println("Try again.");
+                            }
+                        }catch (Exception e){
+                            e.printStackTrace();
                         }
                         db.closeConnection();
                         ldb.closeDB();
@@ -437,9 +419,10 @@ public class RentNGo {
 
                 }
             }  else if (i == 2){
-                db = new MongoDBConnection("RentNGO");
-                db.insertUser(UnregisteredUser.signIn());
-                db.closeConnection();
+                /*db = new MongoDBConnection("RentNGO");
+                db.insertUser(User.signin());
+                db.closeConnection(); */
+                User.signin();
             }
         } while(i!=0);
 

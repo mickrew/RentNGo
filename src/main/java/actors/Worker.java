@@ -10,16 +10,16 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Scanner;
 
-public class Worker extends UnregisteredUser {
+public class Worker extends User {
     int salary;
     Date hiringDate = new Date();
-    int office;
+    String office;
 
     public Worker (){
         super();
     }
 
-    public Worker(String surname, String name, String email, String password, Date dateofbirth, int salary, Date hiringDate, int office){
+    public Worker(String surname, String name, String email, String password, Date dateofbirth, int salary, Date hiringDate, String office){
         super(surname, name, email, password, dateofbirth);
         this.salary = salary;
         this.hiringDate = hiringDate;
@@ -44,11 +44,11 @@ public class Worker extends UnregisteredUser {
         this.hiringDate = d;
     }
 
-    public int getOffice() {
+    public String getOffice() {
         return office;
     }
 
-    public void setOffice(int office) {
+    public void setOffice(String office) {
         this.office = office;
     }
 

@@ -125,7 +125,7 @@ public class Order {
     public boolean chooseParameters(ArrayList<Office> offices){
         Scanner sc = new Scanner(System.in);
         System.out.print("Insert the date of pick. ( DD/MM/YYYY ): ");
-        Date d= new Date();
+        Date d;
 
         String dateString = sc.nextLine();
         DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
@@ -145,7 +145,6 @@ public class Order {
         Office pickOffice = Office.selectOffice(offices);
         if(pickOffice == null)
             return false;
-        idOfficePick = pickOffice.getPosition();
         setpickOffice(pickOffice.getName());
     /*    int i = 1;
         for(Office o : offices){
@@ -205,7 +204,6 @@ public class Order {
         Office deliveryOff = Office.selectOffice(offices);
         if(deliveryOff == null)
             return false;
-        idOfficeDelivery = deliveryOff.getPosition();
         setDeliveryOffice(deliveryOff.getName());
         return true;
     }
