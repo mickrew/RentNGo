@@ -90,10 +90,10 @@ public class RentNGo {
                     u.printUser();
                 }
 
-                if (u instanceof User) {
+                if (u instanceof User && !(u instanceof Worker)) {
                     int j = 1;
                     while (j != 0) {
-                        ((User) u).showMenu();
+                        (u).showMenu();
                         try {
                             j = Integer.valueOf(sc.nextLine());
                             db = new MongoDBConnection("RentNGO");
@@ -109,16 +109,16 @@ public class RentNGo {
                                     u =null;
                                     break;
                                 case 1:
-                                    ((User)u).searchForCar(db,ldb,u,sc);
+                                    u.searchForCar(db,ldb,u,sc);
                                     break;
                                 case 2:
-                                    ((User)u).showListOrder(db, u);
+                                    u.showListOrder(db, u);
                                     break;
                                 case 3:
-                                    ((User)u).showCart(db,ldb, sc, u);
+                                    u.showCart(db,ldb, sc, u);
                                     break;
                                 case 4:
-                                    ((User)u).deleteAccount(db,ldb,u);
+                                    u.deleteAccount(db,ldb,u);
                                     i=0;
                                     j=0;
                                     break;
@@ -138,7 +138,6 @@ public class RentNGo {
                         try{
                             j = Integer.valueOf(sc.nextLine());
                             db = new MongoDBConnection("RentNGO");
-
                             ldb.openDB();
                         } catch(Exception e){
                             j=100;
@@ -157,74 +156,21 @@ public class RentNGo {
                                 break;
                             case 4:
                                 //((Worker) u).pickCar();
-                                System.out.println("Insert the plate:");
-                                String plate = sc.nextLine();
-                                System.out.println("Insert the Email:");
-                                String email = sc.nextLine();
-                                db.changeStatusOrder(plate, email,"PickDate", new Date(), "Picked", "", 0.0);
-                                System.out.println("Car picked successfully!\n");
+                                ((Worker) u).changeStatusOrder(db, sc);
                                 break;
                             case 5:
                                 //((Worker) u).deliveryCar();
-                                System.out.println("Insert the plate:");
-                                plate = sc.nextLine();
-                                System.out.println("Insert the Email:");
-                                email = sc.nextLine();
-                                System.out.println("Insert the booked delivery date:");
-                                Date d = new Date();
-                                Date d2 = new Date();
-                                String dateString = sc.nextLine();
-                                DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
-                                try {
-                                    d = formatter.parse(dateString);
-                                } catch (ParseException p){
-                                    System.out.println("Error. Wrong Date");
-                                    break;
-                                }
-
-                                String damage = "";
-                                Double taxDelay = 50.0;
-                                Double damageCost;
-                                if(d2.getTime() > d.getTime())
-                                    damageCost = ((d2.getTime() - d.getTime())*taxDelay)/(1000*60*60*24);
-                                else
-                                    damageCost = 0.0;
-
-                                int p=0;
-                                ArrayList<Service> services = db.getServicesWorker();
-                                do {
-                                    for(Service s: services){
-                                        System.out.print(p+") ");
-                                        s.printService();
-                                        p++;
-                                    }
-                                    System.out.println("Select one (Press -1 to exit)");
-                                    try{
-                                        p=Integer.valueOf(sc.nextLine());
-                                    } catch (Exception e){
-                                        p=-1;
-                                    }
-                                    if(p>=0 && p<services.size()){
-                                        if(!damage.contains(services.get(p).getNameService())) {
-                                            damage += services.get(p).getName() + ", ";
-                                            damageCost += services.get(p).getPrice();
-                                            p=0;
-                                        }
-                                    }
-                                }while(p!=-1);
-                                System.out.println("The list of additional services is: " + damage );
-                                System.out.println("The surcharge is: " + damageCost+ "€\n");
-                                db.changeStatusOrder(plate, email, "DeliveryDate",d, "Completed", damage, damageCost);
+                                ((Worker) u).changeStatusOrderInDelivery(db, sc);
                                 break;
                             case 6:
                                 System.out.println("Insert the plate:");
-                                plate = sc.nextLine();
+                                String plate = sc.nextLine();
                                 System.out.println("Insert the dates in which you want to make it unavailable:");
-                                d = new Date();
-                                d2 = new Date();
+                                Date d = new Date();
+                                Date d2 = new Date();
                                 System.out.println("Date Start");
-                                dateString = sc.nextLine();
-                                formatter = new SimpleDateFormat("dd/MM/yyyy");
+                                String dateString = sc.nextLine();
+                                SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
                                 try {
                                     d = formatter.parse(dateString);
                                 } catch (ParseException p2){

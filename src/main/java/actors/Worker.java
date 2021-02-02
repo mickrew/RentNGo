@@ -4,9 +4,12 @@ import main.java.entities.Car;
 import main.java.connections.MongoDBConnection;
 import main.java.entities.Office;
 import main.java.entities.Order;
+import main.java.entities.Service;
 
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Scanner;
 
@@ -110,7 +113,7 @@ public class Worker extends User {
         System.out.println("Select the parameter by which you want to search orders. ");
         System.out.println("0) Exit");
         System.out.println("1) Search by Email");
-        System.out.println("2) Search by Carplate");
+        System.out.println("2) Search by CarPlate");
         System.out.println("3) Search by PickOffice and PickDate");
         String pickOffice = null;
         String carplate = null;
@@ -161,6 +164,65 @@ public class Worker extends User {
     }
 
 
+    public void changeStatusOrder(MongoDBConnection db, Scanner sc) {
+        System.out.println("Insert the plate:");
+        String plate = sc.nextLine();
+        System.out.println("Insert the Email:");
+        String email = sc.nextLine();
+        db.changeStatusOrder(plate, email,"PickDate", new Date(), "Picked", null, 0.0);
+        System.out.println("Car picked successfully!\n");
+    }
 
+    public void changeStatusOrderInDelivery(MongoDBConnection db, Scanner sc) {
+        System.out.println("Insert the plate:");
+        String plate = sc.nextLine();
+        System.out.println("Insert the Email:");
+        String email = sc.nextLine();
+        System.out.println("Insert the booked delivery date:");
+        Date d ;
+        Date d2 = new Date();
+        String dateString = sc.nextLine();
+        DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+        try {
+            d = formatter.parse(dateString);
+        } catch (ParseException p){
+            System.out.println("Error. Wrong Date");
+            return;
+        }
 
+        String damage = "";
+        Double taxDelay = 50.0;
+        Double damageCost;
+        if(d2.getTime() > d.getTime())
+            damageCost = ((d2.getTime() - d.getTime())*taxDelay)/(1000*60*60*24);
+        else
+            damageCost = 0.0;
+
+        int p=0;
+        ArrayList<Service> services = Service.chooseServices(db.getServicesWorker());
+
+    /*    do {
+            for(Service s: services){
+                System.out.print(p+") ");
+                s.printService();
+                p++;
+            }
+            System.out.println("Select one (Press -1 to exit)");
+            try{
+                p=Integer.valueOf(sc.nextLine());
+            } catch (Exception e){
+                p=-1;
+            }
+            if(p>=0 && p<services.size()){
+                if(!damage.contains(services.get(p).getNameService())) {
+                    damage += services.get(p).getName() + ", ";
+                    damageCost += services.get(p).getPrice();
+                    p=0;
+                }
+            }
+        }while(p!=-1); */
+        System.out.println("The list of additional services is: " + damage );
+        System.out.println("The surcharge is: " + Math.ceil(damageCost)+ "€\n");
+        db.changeStatusOrder(plate, email, "DeliveryDate",d, "Completed", services, damageCost);
+    }
 }

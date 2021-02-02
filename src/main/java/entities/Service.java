@@ -1,6 +1,7 @@
 package main.java.entities;
 
 import java.util.ArrayList;
+import java.util.Scanner;
 
 public class Service {
     String nameService;
@@ -58,6 +59,34 @@ public class Service {
 
     public void setPrice(Double price) {
         this.price = price;
+    }
+
+    public static ArrayList<Service> chooseServices(ArrayList<Service> services){
+        int i = 1;
+        System.out.println("Add Services (Insert -2 to exit)");
+        ArrayList<Service> chosenServices = new ArrayList<>();
+        Scanner sc = new Scanner(System.in);
+        for(Service s : services){
+            System.out.print(i++ + ") ");
+            s.printService();
+            System.out.println("");
+        }
+        while(i != -2) {
+            try {
+                i = Integer.valueOf(sc.nextLine());
+            } catch (Exception p) {
+                System.out.println("Error. Didn't insert an integer");
+                break;
+            }
+            if (i > services.size() || i < 1) {
+                System.out.println("Index out of range");
+                break;
+            } else{
+                System.out.println("Service inserted");
+                chosenServices.add(services.get(i-1));
+            }
+        }
+        return chosenServices;
     }
 
     public void printService(){

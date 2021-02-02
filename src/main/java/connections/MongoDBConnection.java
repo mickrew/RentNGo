@@ -4,6 +4,7 @@ import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
 import com.mongodb.client.*;
 
+import java.lang.reflect.Array;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -144,7 +145,18 @@ public class MongoDBConnection
     // String
 
     public ArrayList<Service> getServicesWorker(){
-        return servicesWorker;
+        ArrayList<Service> servicesUser = new ArrayList<>();
+        MongoCollection<Document> myColl = db.getCollection("services");
+        MongoCursor<Document> cursor  = myColl.find(eq("PAYER", "worker")).iterator();
+        while(cursor.hasNext()){
+            Service s = new Service();
+            Document d = cursor.next();
+            s.setName(d.getString("SERVICES"));
+            s.setPrice(d.getDouble("PRICE VAT INCLUDED "));
+            s.setMultiplicator(d.getString("MULTIPLICATOR"));
+            servicesUser.add(s);
+        }
+        return servicesUser;
     }
 
     public void closeConnection(){
@@ -653,8 +665,14 @@ public class MongoDBConnection
             System.out.printf(format, "DateDelivery: " + simpleDateFormat.format(datDelivery) + " ");
             System.out.printf(format, "StartOffice: " + d.getString("StartOffice") + " ");
             System.out.printf(format, "EndOffice: " + d.getString("EndOffice") + " ");
-           // System.out.printf(format,"PriceAccessories: " + d.getDouble("PriceAccessories") + "€ ");
-           // System.out.printf(format,"ListAccessories: " + d.getString("ListAccessories") + " ");
+            List<Document> accessories = d.get("Accessories", List.class);
+            if(accessories!=null) {
+                System.out.println("SERVICES: ");
+                for (Document service : accessories) {
+                    System.out.println("\tSERVICE NAME: " + service.getString("SERVICES"));
+                    System.out.println("\t-PRICE VAT INCLUDED: " + service.getDouble("PRICE VAT INCLUDED ") + "€");
+                }
+            }
             System.out.println();
             i++;
         }
@@ -787,23 +805,31 @@ public class MongoDBConnection
 
     
 
-    public void changeStatusOrder(String carPlate, String email, String field, Date d, String status, String damage, double damageCost){
+    public void changeStatusOrder(String carPlate, String email, String field, Date d, String status, ArrayList<Service> damage, double damageCost){
         MongoCollection<Document> myColl = db.getCollection("orders");
-        MongoCursor<Document> cursor = myColl.find(and(eq("CarPlate", carPlate), lt(field, d.getTime()+30*1000*60*60), gt(field, d.getTime()-30*1000*60*60), eq("Email", email))).iterator();
+        MongoCursor<Document> cursor = myColl.find(and(eq("CarPlate.CarPlate", carPlate), lt(field, d.getTime()+30*1000*60*60), gt(field, d.getTime()-30*1000*60*60), eq("Email", email))).iterator();
         if(cursor.hasNext()) {
             myColl.updateOne(
-                    (and(eq("CarPlate", carPlate), lt(field, d.getTime() + 12 * 1000 * 60 * 60), gt(field, d.getTime() - 12 * 1000 * 60 * 60), eq("Email", email)))
+                    (and(eq("CarPlate.CarPlate", carPlate), lt(field, d.getTime() + 12 * 1000 * 60 * 60), gt(field, d.getTime() - 12 * 1000 * 60 * 60), eq("Email", email)))
                     , set("Status", status));
-            if(!damage.equals("")) {
-                Document doc = cursor.next();
-                String damageU = doc.getString("ListAccessories") + damage;
-                Double damageCostU = doc.getDouble("PriceAccessories") + damageCost;
+            if(damage!=null) {
+                ArrayList<Document> documents = new ArrayList<>();
+                List<Document> docum = cursor.next().get("Accessories", List.class);
+                for(Document doc: docum){
+                    documents.add(doc);
+                }
+                for(Service s: damage) {
+                    Document doc = new Document("SERVICES", s.getNameService()).append("PRICE VAT INCLUDED ", s.getPrice())
+                            .append("MULTIPLICATOR", s.getMultiplicator());
+                    documents.add(doc);
+
+                }
+                    myColl.updateOne(
+                            (and(eq("CarPlate.CarPlate", carPlate), lt(field, d.getTime() + 12 * 1000 * 60 * 60), gt(field, d.getTime() - 12 * 1000 * 60 * 60), eq("Email", email)))
+                            , set("Accessories", documents));
                 myColl.updateOne(
-                        (and(eq("CarPlate", carPlate), lt(field, d.getTime() + 12 * 1000 * 60 * 60), gt(field, d.getTime() - 12 * 1000 * 60 * 60), eq("Email", email)))
-                        , set("ListAccessories", damageU));
-                myColl.updateOne(
-                        (and(eq("CarPlate", carPlate), lt(field, d.getTime() + 12 * 1000 * 60 * 60), gt(field, d.getTime() - 12 * 1000 * 60 * 60), eq("Email", email)))
-                        , set("PriceAccessories", damageCostU));
+                        (and(eq("CarPlate.CarPlate", carPlate), lt(field, d.getTime() + 12 * 1000 * 60 * 60), gt(field, d.getTime() - 12 * 1000 * 60 * 60), eq("Email", email)))
+                        , set("Delay Cost:", damageCost));
             }
         }
     }
@@ -859,7 +885,18 @@ public class MongoDBConnection
 
 
     public ArrayList<Service> getServices() {
-        return services;
+        ArrayList<Service> servicesUser = new ArrayList<>();
+        MongoCollection<Document> myColl = db.getCollection("services");
+        MongoCursor<Document> cursor  = myColl.find(exists("PAYER", false)).iterator();
+        while(cursor.hasNext()){
+            Service s = new Service();
+            Document d = cursor.next();
+            s.setName(d.getString("SERVICES"));
+            s.setPrice(d.getDouble("PRICE VAT INCLUDED "));
+            s.setMultiplicator(d.getString("MULTIPLICATOR"));
+            servicesUser.add(s);
+        }
+        return servicesUser;
     }
 
     public ArrayList<Order> getListOfRecentOrders() {
@@ -1012,7 +1049,7 @@ public class MongoDBConnection
         return null;
     }
 
-    public void procedeWithOrder(Car c, Long dateOfPick,Long dateOfDelivery, String email, String pickOffice, String deliveryOffice) {
+    public void procedeWithOrder(Car c, Long dateOfPick,Long dateOfDelivery, String email, String pickOffice, String deliveryOffice, ArrayList<Service> services) {
         if(c.getBrand() == null || c.getVehicle()== null) {
             System.out.println("Error");
             return;
@@ -1067,7 +1104,7 @@ public class MongoDBConnection
                         }
 
                         insertNewOrder(plate, c.getBrand(), c.getVehicle(), email, dateOfPick, dateOfDelivery, pickOffice, deliveryOffice,
-                                "Booked", Math.ceil(c.calcolatePrice()), new ArrayList<Service>());
+                                "Booked", Math.ceil(c.calcolatePrice()), services);
                         return;
                     }
                 }
@@ -1080,7 +1117,13 @@ public class MongoDBConnection
     public void insertNewOrder(String plate, String brand, String vehicle, String email, Long dateOfPick, Long dateOfDelivery, String pickOffice, String deliveryOffice,
     String status, Double price, ArrayList<Service> services){
         MongoCollection<Document> myColl = db.getCollection("orders");
+        ArrayList<Document> documents = new ArrayList<>();
+        for(Service s: services){
+            Document d = new Document("SERVICES", s.getNameService()).append("PRICE VAT INCLUDED ", s.getPrice())
+                    .append("MULTIPLICATOR", s.getMultiplicator());
+            documents.add(d);
 
+        }
         Document order = new Document("CarPlate", new Document("CarPlate", plate).append("Brand", brand).append("Vehicle", vehicle))
                 .append("Email", email)
                 .append("CarPrice", price)
@@ -1088,7 +1131,8 @@ public class MongoDBConnection
                 .append("PickDate", dateOfPick)
                 .append("EndOffice", deliveryOffice)
                 .append("DeliveryDate", dateOfDelivery)
-                .append("Status", status);
+                .append("Status", status)
+                .append("Accessories",documents);
         myColl.insertOne(order);
 
         System.out.println("Order completed successfully");

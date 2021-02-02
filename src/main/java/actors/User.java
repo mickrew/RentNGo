@@ -5,6 +5,7 @@ import main.java.connections.MongoDBConnection;
 import main.java.entities.Car;
 import main.java.entities.Office;
 import main.java.entities.Order;
+import main.java.entities.Service;
 
 import java.rmi.server.ExportException;
 import java.text.DateFormat;
@@ -165,7 +166,6 @@ public class User {
                 System.out.println("2) Show Orders"); //even delete or modify
                 System.out.println("3) Show Cart");
                 System.out.println("4) Delete Account");
-                System.out.println("5) Add/remove Accessories");
         }
 
     public boolean searchForCar(MongoDBConnection db, LevelDBConnection ldb, User u, Scanner sc) {
@@ -227,7 +227,7 @@ public class User {
 
         for(Car c: cars){
             c.printCar();
-            //System.out.println("The car price per day is: "+ Math.ceil(c.calcolatePrice()) + "€");
+            System.out.println("-The car price per day is: "+ Math.ceil(c.calcolatePrice()) + "€\n");
         }
 
         Order o = ldb.showOrderInfo(u.getEmail());
@@ -250,10 +250,12 @@ public class User {
                 db.insertOrder(o, "Booked");
             }*/
             //Choose accessories
+            ArrayList<Service> services = Service.chooseServices(db.getServices());
+
             Car c = u.chooseCar(cars);
             if(c == null)
                 return;
-            db.procedeWithOrder(c, o.getPickDate().getTime(), o.getDeliveryDate().getTime(), email, o.getpickOffice(), o.getDeliveryOffice());
+            db.procedeWithOrder(c, o.getPickDate().getTime(), o.getDeliveryDate().getTime(), email, o.getpickOffice(), o.getDeliveryOffice(), services);
         }
     }
 
