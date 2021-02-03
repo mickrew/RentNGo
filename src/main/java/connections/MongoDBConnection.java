@@ -74,7 +74,7 @@ public class MongoDBConnection
         while(cursor.hasNext()){
             Document d = cursor.next();
             Office o = new Office();
-            o.setCapacity(Integer.valueOf(d.getString("Capacity")));
+            //o.setCapacity(Integer.valueOf(d.getString("Capacity")));
             o.setCity(d.getString("City"));
             o.setId(d.getString("ID"));
             o.setName(d.getString("Name"));
@@ -182,7 +182,7 @@ public class MongoDBConnection
     }
 
     public Worker findWorker(String email) throws ParseException {
-        MongoCollection<Document> myColl = db.getCollection("workers");
+        MongoCollection<Document> myColl = db.getCollection("users");
         MongoCursor<Document> cursor  = myColl.find(eq("Email", email)).iterator();
         Worker w;
 
@@ -208,10 +208,10 @@ public class MongoDBConnection
     }
 
     public void deleteWorker(String email) {
-        MongoCollection<Document> myColl = db.getCollection("workers");
+        MongoCollection<Document> myColl = db.getCollection("users");
         MongoCursor<Document> cursor  = myColl.find(eq("Email", email)).iterator();
         myColl.deleteOne(eq("Email", email));
-        //System.out.println("User deleted successfully");
+
     }
 
     public void deleteOffice(String name) {
@@ -278,7 +278,7 @@ public class MongoDBConnection
     }
 
     public boolean insertAdmin(Admin admin)  {
-        MongoCollection<Document> myColl = db.getCollection("admins");
+        MongoCollection<Document> myColl = db.getCollection("users");
 
         //check email
         MongoCursor<Document> cursor = myColl.find(eq("Email", admin.getEmail())).iterator();
@@ -303,7 +303,7 @@ public class MongoDBConnection
     }
 
     public boolean insertWorker(Worker worker)  {
-        MongoCollection<Document> myColl = db.getCollection("workers");
+        MongoCollection<Document> myColl = db.getCollection("users");
 
         //check email
         MongoCursor<Document> cursor = myColl.find(eq("Email", worker.getEmail())).iterator();
@@ -319,7 +319,7 @@ public class MongoDBConnection
                 .append("Password", worker.getPassword())
                 .append("DateOfBirth",formatter.format(worker.getDateOfBirth()))
                 .append("Salary", String.valueOf(worker.getSalary()))
-                .append("Date of hiring", formatter.format(worker.getHiringDate()))
+                .append("DateOfHiring", formatter.format(worker.getHiringDate()))
                 .append("Office", String.valueOf(worker.getOffice()));
 
         myColl.insertOne(workerMongo);
@@ -673,20 +673,21 @@ public class MongoDBConnection
                 d.getString("Power (hp - kW /rpm)"),
                 0,
                 "");
+
         List<Document> cars = d.get("cars", List.class);
 
         if (plate.equals("")){
             for(int i = 0; i< cars.size(); i++) {
-                c.setPlate(d.getString("CarPlate"));
-                c.setOffice(d.getString("Office"));
-                c.setRegistrationYear(d.getInteger("RegistrationYear"));
+                c.setPlate(cars.get(i).getString("CarPlate"));
+                c.setOffice(cars.get(i).getString("Office"));
+                c.setRegistrationYear(cars.get(i).getInteger("RegistrationYear"));
             }
         } else{
             for(int i = 0; i< cars.size(); i++){
                 if (cars.get(i).getString("CarPlate").equals(plate)){
-                    c.setPlate(plate);
-                    c.setOffice(d.getString("Office"));
-                    c.setRegistrationYear(d.getInteger("RegistrationYear"));
+                    c.setPlate(cars.get(i).getString("CarPlate"));
+                    c.setOffice(cars.get(i).getString("Office"));
+                    c.setRegistrationYear(cars.get(i).getInteger("RegistrationYear"));
                     break;
                 }
             }
@@ -795,7 +796,7 @@ public class MongoDBConnection
     }
 
     public void updateWorkerSalary(int newSalary, String workerEmail){
-        MongoCollection<Document> myColl = db.getCollection("workers");
+        MongoCollection<Document> myColl = db.getCollection("users");
         myColl.updateOne(
                 (eq("Email", workerEmail)), set("Salary", String.valueOf(newSalary)));
     }
@@ -1006,7 +1007,7 @@ public class MongoDBConnection
     }
 
     public void updateWorkerOffice(String emailWorker,String office) {
-        MongoCollection<Document> myColl = db.getCollection("workers");
+        MongoCollection<Document> myColl = db.getCollection("users");
         myColl.updateOne(
                 (eq("Email", emailWorker)), set("Office", office));
     }
@@ -1224,6 +1225,16 @@ public class MongoDBConnection
         myColl.insertOne(order);
 
         System.out.println("Order completed successfully");
+    }
+
+    public void promoteWorker(Admin a) {
+        MongoCollection<Document> listUsers = db.getCollection("users");
+        Bson filter = Filters.and( eq("Email", a.getEmail()));
+        Bson update1 = Updates.combine(
+                Updates.set("Salary", String.valueOf(a.getSalary())),
+                Updates.set("DateWorkerToAdmin", simpleDateFormat.format(a.getWorkertoAdmin()))
+        );
+        listUsers.updateOne(filter, update1);
     }
 
 

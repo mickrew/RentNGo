@@ -32,8 +32,9 @@ public class Admin extends Worker {
         return workertoAdmin;
     }
 
-    public void setWtoAdDate(Date workertoAdmin){
-        this.workertoAdmin = workertoAdmin;
+    public void setWtoAdDate(String workertoAdmin) throws ParseException {
+        Date d = new SimpleDateFormat("dd/MM/yyyy").parse(workertoAdmin);
+        this.hiringDate = d;;
     }
 
     public void deleteUser(MongoDBConnection db){
@@ -187,6 +188,8 @@ public class Admin extends Worker {
 
                 db.insertWorker(w);
 
+                System.out.println("Worker inserted successfully!");
+
                 break;
 
             case 2:
@@ -197,7 +200,19 @@ public class Admin extends Worker {
                     System.out.println("Worker doesn't exists!");
                     break;
                 }
-                db.deleteWorker(emailWorker);
+
+                w.printUser();
+
+                System.out.print("Do you want to proceed with the delete operation? (Y/N) ");
+                String r = sc.nextLine();
+
+                if(r.equals("Y")){
+                    db.deleteWorker(emailWorker);
+                    System.out.println("User deleted successfully");
+                } else {
+                    System.out.println("Operation failed");
+                }
+
                 break;
         }
 
@@ -217,12 +232,14 @@ public class Admin extends Worker {
             return;
         }
         Date d = new Date();
+        DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+        String today = formatter.format(d);
 
         System.out.println("Insert the new Salary: ");
         Integer salary = Integer.valueOf(sc.nextLine());
         a  = new Admin(w.getSurname(), w.getName(), emailWorker, w.getPassword(), w.getDateOfBirth(), salary, w.getHiringDate(),"", d);
-        db.insertAdmin(a);
-        db.deleteWorker(emailWorker);
+
+        db.promoteWorker(a);
 
     }
 
@@ -504,6 +521,7 @@ public class Admin extends Worker {
             return;
         }
         w.printUser();
+        System.out.println();
     }
 
     public void removeUser(MongoDBConnection db) {
