@@ -1,8 +1,14 @@
 package main.java.entities;
 
+import main.java.actors.Worker;
+import main.java.connections.MongoDBConnection;
 import main.java.entities.Car;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
 
@@ -11,10 +17,10 @@ public class Office {
     String region;
     String id;
     String name;
-    Integer capacity;
+    String capacity;
     List<Car> officeCars = new ArrayList<Car>();
 
-    public Office(String city, String region, String name, String id, Integer capacity){
+    public Office(String city, String region, String name, String id, String capacity){
         this.city=city;
         this.region=region;
         this.name = name;
@@ -52,11 +58,11 @@ public class Office {
         return city;
     }
 
-    public Integer getCapacity() {
+    public String getCapacity() {
         return capacity;
     }
 
-    public void setCapacity(Integer capacity) {
+    public void setCapacity(String capacity) {
         this.capacity = capacity;
     }
 
@@ -95,6 +101,8 @@ public class Office {
     public void setOfficeCars(List<Car> officeCars) {
         this.officeCars = officeCars;
     }
+
+
 
 
     /*

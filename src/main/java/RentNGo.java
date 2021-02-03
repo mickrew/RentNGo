@@ -355,6 +355,12 @@ public class RentNGo {
                                 break;
 
                             }
+                            case 12:
+                            {
+                                ((Admin) u).addRemoveOffice(db);
+                                System.out.println();
+                                break;
+                            }
                             default:
                                 System.out.println("Try again. Wrong Choice !");
                                 break;

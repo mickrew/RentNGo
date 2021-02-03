@@ -11,6 +11,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Scanner;
+import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
 import static com.mongodb.client.model.Filters.eq;
@@ -490,6 +491,7 @@ public class Admin extends Worker {
         System.out.println("9) Search User");
         System.out.println("10) Remove user");
         System.out.println("11) Show Analytics");
+        System.out.println("12) Add/Remove Offices");
     }
 
     public void findWorker(MongoDBConnection db) throws ParseException {
@@ -515,4 +517,75 @@ public class Admin extends Worker {
         }
         db.deleteUser(emailUser);
     }
+
+
+    public static void addRemoveOffice (MongoDBConnection db) throws ParseException {
+        Integer i=0;
+        System.out.println("1) Add Office");
+        System.out.println("2) Remove Office");
+        Scanner sc =new Scanner(System.in);
+        try{
+            i = Integer.valueOf(sc.nextLine());
+        }
+        catch(Exception e){
+            System.out.println("Error. Didn't insert an integer");
+
+        }
+
+        switch (i) {
+            case 1:
+                boolean check = true;
+                Office o;
+                String name="";
+                while (check) {
+
+                    System.out.print("Insert the name: ");
+                    name = sc.nextLine();
+                    o = db.findOfficeByName(name.trim());
+
+                    if (o != null ) {
+                        System.out.println("Worker already exists!");
+                    }
+                    else{
+                        check = false;
+                    }
+                }
+
+                o = new Office();
+                o.setName(name);
+
+                System.out.print("Insert the city: ");
+                o.setCity(sc.nextLine());
+
+                System.out.print("Insert the region: ");
+                o.setRegion(sc.nextLine());
+
+                System.out.print("Insert the ID: ");
+                o.setId(sc.nextLine());
+
+                System.out.print("Insert the capacity: ");
+                o.setCapacity(sc.nextLine());
+
+
+
+                db.insertOffice(o);
+                System.out.println("Office inserted successfully");
+                break;
+
+            case 2:
+                System.out.println("Insert the Name of the office: ");
+                name = sc.nextLine();
+                o = db.findOfficeByName(name);
+                if (o == null){
+                    System.out.println("Office doesn't exist!");
+                    break;
+                }
+                db.deleteOffice(name);
+                System.out.println("Office deleted successfully");
+                break;
+        }
+
+    }
+
+
 }

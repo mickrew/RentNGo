@@ -214,6 +214,13 @@ public class MongoDBConnection
         //System.out.println("User deleted successfully");
     }
 
+    public void deleteOffice(String name) {
+        MongoCollection<Document> myColl = db.getCollection("offices");
+        MongoCursor<Document> cursor  = myColl.find(eq("Name", name)).iterator();
+        myColl.deleteOne(eq("Name", name));
+        //System.out.println("Office deleted successfully");
+    }
+
     private Admin createAdmin(Document d) throws ParseException {
         //String surname, String name, String email, String password, Date dateOfBirth
         Date date1=new SimpleDateFormat("dd/MM/yyyy").parse(d.getString("DateOfBirth"));
@@ -320,6 +327,27 @@ public class MongoDBConnection
         return true;
     }
 
+    public boolean insertOffice(Office office)  {
+        MongoCollection<Document> myColl = db.getCollection("offices");
+
+        //check email
+        MongoCursor<Document> cursor = myColl.find(eq("Name", office.getName())).iterator();
+        if(cursor.hasNext()){
+            System.out.println("Office already present in the database");
+            return false;
+        }
+
+        Document officeMongo = new Document("City", office.getCity())
+                .append("Region", office.getRegion())
+                .append("ID", office.getId())
+                .append("Name", office.getName())
+                .append("Capacity",office.getCapacity());
+
+        myColl.insertOne(officeMongo);
+
+        return true;
+    }
+
     public boolean insertUser(User u)  {
         //
 
@@ -372,7 +400,7 @@ public class MongoDBConnection
         while(cursor.hasNext()){
             Document d = cursor.next();
             Office o = new Office();
-            o.setCapacity(Integer.valueOf(d.getString("Capacity")));
+            o.setCapacity(d.getString("Capacity"));
             o.setCity(d.getString("City"));
             o.setId(d.getString("ID"));
             o.setName(d.getString("Name"));
@@ -762,7 +790,7 @@ public class MongoDBConnection
 
     public Office getOfficeFromDocument(Document d){
         Office o = new Office(d.getString("City"), d.getString("Region"), d.getString("ID"),
-                d.getString("Name"), Integer.valueOf(d.getString("Capacity")));
+                d.getString("Name"), d.getString("Capacity"));
         return o;
     }
 
@@ -863,7 +891,6 @@ public class MongoDBConnection
             }
         }
     }
-
     
 
     public void changeStatusOrder(String carPlate, String email, String field, Date d, String status, ArrayList<Service> damage, double damageCost){
@@ -898,22 +925,22 @@ public class MongoDBConnection
     public void showListOrdersByParameters(String carplate, String pickOffice, Long pickDate) {
         if (carplate != null){
             MongoCollection<Document> myColl = db.getCollection("orders");
-            MongoCursor<Document> cursor = myColl.find(eq("CarPlate", carplate)).iterator();
+            MongoCursor<Document> cursor = myColl.find(eq("CarPlate.CarPlate", carplate)).iterator();
             int j=0;
             while(cursor.hasNext()){
                 Document d = cursor.next();
                 String format = "%-40s%n";
                 System.out.print(j + ") ");
-                System.out.printf(format,"CarPlate: " + d.getString("CarPlate") + " ");
+                System.out.printf(format,"CarPlate: " + d.getString("CarPlate.CarPlate") + " ");
                 System.out.printf(format,"Email: " + d.getString("Email") + " ");
-                System.out.printf(format,"CarPrice: " + Math.ceil(d.getDouble("CarPrice")) + "€ ");
+                //System.out.printf(format,"CarPrice: " + "€ ");
                 Date datPick =new Date(Long.valueOf(d.getLong("PickDate")));
                 System.out.printf(format,"DatePick: " + simpleDateFormat.format(datPick) + " ");
                 Date datDelivery =new Date(Long.valueOf(d.getLong("DeliveryDate")));
                 System.out.printf(format,"DateDelivery: " + simpleDateFormat.format(datDelivery) + " ");
                 System.out.printf(format,"StartOffice: " + d.getString("StartOffice") + " ");
                 System.out.printf(format, "EndOffice: " + d.getString("EndOffice") + " ");
-                System.out.printf(format,"PriceAccessories: " + d.getDouble("PriceAccessories") + " ");
+                System.out.printf(format,"PriceAccessories: " + d.getInteger("PriceAccessories") + " ");
                 System.out.printf(format,"ListAccessories: " + d.getString("ListAccessories") + " ");
                 System.out.println();
                 j++;
@@ -926,16 +953,16 @@ public class MongoDBConnection
                 Document d = cursor.next();
                 String format = "%-40s%n";
                 System.out.print(j + ") ");
-                System.out.printf(format, "CarPlate: " + d.getString("CarPlate") + " ");
+                System.out.printf(format, "CarPlate: " + d.getString("CarPlate.CarPlate") + " ");
                 System.out.printf(format, "Email: " + d.getString("Email") + " ");
-                System.out.printf(format,"CarPrice: " + Math.ceil(d.getDouble("CarPrice")) + "€ ");
+                //System.out.printf(format,"CarPrice: " + Math.ceil(d.getDouble("CarPrice")) + "€ ");
                 Date datPick = new Date(Long.valueOf(d.getLong("PickDate")));
                 System.out.printf(format,"DatePick: " + simpleDateFormat.format(datPick) + " ");
                 Date datDelivery = new Date(Long.valueOf(d.getLong("DeliveryDate")));
                 System.out.printf(format, "DateDelivery: " + simpleDateFormat.format(datDelivery) + " ");
                 System.out.printf(format, "StartOffice: " + d.getString("StartOffice") + " ");
                 System.out.printf(format,"EndOffice: " + d.getString("EndOffice") + " ");
-                System.out.printf(format, "PriceAccessories: " + d.getDouble("PriceAccessories") + " ");
+                System.out.printf(format, "PriceAccessories: " + d.getDouble("PriceAccessories") + "€ ");
                 System.out.printf(format, "ListAccessories: " + d.getString("ListAccessories") + " ");
                 System.out.println();
                 j++;
