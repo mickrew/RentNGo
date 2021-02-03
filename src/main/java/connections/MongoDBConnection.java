@@ -218,7 +218,7 @@ public class MongoDBConnection
         //String surname, String name, String email, String password, Date dateOfBirth
         Date date1=new SimpleDateFormat("dd/MM/yyyy").parse(d.getString("DateOfBirth"));
         Date date2=new SimpleDateFormat("dd/MM/yyyy").parse(d.getString("DateOfHiring"));
-        Date date3=new SimpleDateFormat("dd/MM/yyyy").parse(d.getString("DateWokerToAdmin"));
+        Date date3=new SimpleDateFormat("dd/MM/yyyy").parse(d.getString("DateWorkerToAdmin"));
         Admin a = new Admin(d.getString("Surname"), d.getString("Name"),d.getString("Email"), d.getString("Password"), date1, Integer.valueOf(d.getString("Salary")), date2, "",date3);
         return a;
     }
@@ -533,7 +533,8 @@ public class MongoDBConnection
                 .append("Office", c.getOffice());
 
         MongoCursor<Document> cursor = myColl.find(and(eq("Brand", c.getBrand()), eq("Vehicle", c.getVehicle()))).iterator();
-        if (cursor.hasNext()) {
+
+        if (!cursor.hasNext()) {
             Document car = new Document("Brand", c.getBrand().trim())
                     .append("Vehicle", c.getVehicle().trim())
                     .append("Engine", c.getEngine().trim())
@@ -631,13 +632,12 @@ public class MongoDBConnection
     }
 
 
-    //differenziare caso ricerca targa precisa e caso
     public Car getCarFromDocument(String plate, Document d){
         Car c = new Car("", d.getString("Brand"),
                 d.getString("Vehicle"),
                 d.getString("Engine"),
                 String.valueOf(d.getDouble("AverageFuelConsumption")),
-                String.valueOf(d.getInteger("CO2")),
+                String.valueOf(d.getDouble("CO2")),
                 d.getString("Weight(3p/5p) kg"),
                 d.getString("GearBox type"),
                 d.getString("Tyre"),
@@ -646,7 +646,7 @@ public class MongoDBConnection
                 0,
                 "");
         List<Document> cars = d.get("cars", List.class);
-        /*
+
         if (plate.equals("")){
             for(int i = 0; i< cars.size(); i++) {
                 c.setPlate(d.getString("CarPlate"));
@@ -656,18 +656,20 @@ public class MongoDBConnection
         } else{
             for(int i = 0; i< cars.size(); i++){
                 if (cars.get(i).getString("CarPlate").equals(plate)){
-                c.setPlate(plate);
-                c.setOffice(d.getString("Office"));
-                c.setRegistrationYear(d.getInteger("RegistrationYear"));
+                    c.setPlate(plate);
+                    c.setOffice(d.getString("Office"));
+                    c.setRegistrationYear(d.getInteger("RegistrationYear"));
+                    break;
                 }
             }
-        }*/
-        for(int i = 0; i< cars.size(); i++) {
-                if(cars.get(i).getString("CarPlate").equals(plate) || plate.equals(""))
-                c.setPlate(d.getString("CarPlate"));
-                c.setOffice(d.getString("Office"));
-                c.setRegistrationYear(d.getInteger("RegistrationYear"));
         }
+        /*
+        for(int i = 0; i< cars.size(); i++) {
+                if(!cars.get(i).getString("CarPlate").equals(plate) || !plate.equals(""))
+                    c.setPlate(d.getString("CarPlate"));
+                    c.setOffice(d.getString("Office"));
+                    c.setRegistrationYear(d.getInteger("RegistrationYear"));
+        }*/
         return c;
         }
 
@@ -985,7 +987,7 @@ public class MongoDBConnection
     public void updateCarOffice(String carPlate, String office) {
         MongoCollection<Document> myColl = db.getCollection("cars");
         myColl.updateOne(
-                (eq("CarPlate", carPlate)), set("Office", office));
+                (eq("cars.CarPlate", carPlate)), set("cars.$.Office", office));
     }
 
     public void showUsersOrdersForDate(String email, String plate,Date start, Date stop, String office) {
@@ -1099,7 +1101,7 @@ public class MongoDBConnection
             if(d.getString("DateOfHiring") == null){
                 return createUser(d);
             }
-            else if(d.getString("DateWokerToAdmin") == null){
+            else if(d.getString("DateWorkerToAdmin") == null){
                 return createWorker(d);
             } else {
                 return createAdmin(d);

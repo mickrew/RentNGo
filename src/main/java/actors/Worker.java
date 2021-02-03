@@ -83,11 +83,13 @@ public class Worker extends User {
             System.out.print("Insert carplate: ");
             String plate = sc.nextLine();
             c = db.findCar(plate);
+            c.printCar();
+            System.out.println();
         } else if (choice==2){
             System.out.print("Insert Brand: ");
             String brand = sc.nextLine();
-
-           db.findCarByBrand(brand);
+            db.findCarByBrand(brand);
+            System.out.println();
         }
     }
 

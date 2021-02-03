@@ -151,10 +151,10 @@ public class Car {
 
         public void printCar(){
             String out = "";
-            if(plate!= null && !plate.contains(""))
-                out = "Car Plate: " + plate+ " ";
+            if(plate!= null)
+                out = "Car Plate: " + plate;
             if(brand!=null)
-                out += "Brand: " + brand ;
+                out += ", Brand: " + brand ;
             if(vehicle!=null)
                 out += ", Vehicle: " + vehicle ;
             if(engine!=null)
@@ -173,10 +173,10 @@ public class Car {
                 out += ", Traction Type: " + tractionType ; */
             if(power!=null)
                 out += ", Power: " + power ;
-         /*   if(registrationYear!=null)
+            if(registrationYear!=null)
                 out += ", RegistrationYear: " + registrationYear ;
             if(office!=null)
-                out += ", Office: " + office ; */
+                out += ", Office: " + office ;
             System.out.println(out);
         }
 
