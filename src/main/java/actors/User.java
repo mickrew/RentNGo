@@ -185,9 +185,11 @@ public class User {
         catch(Exception e){
             category = 4;
         }
+        System.out.println("Select the brand of the car or let it empty to get all the brands");
+        String brand = sc.nextLine();
 
         ldb.searchCar(o.getpickOffice(),o.getDeliveryOffice(), o.getPickDate(), o.getDeliveryDate(), db.getListOfCars(o.getpickOffice(),
-                category, o.getPickDate().getTime(), o.getDeliveryDate().getTime()), u);
+                category, o.getPickDate().getTime(), o.getDeliveryDate().getTime(), brand), u);
         return true;
     }
 

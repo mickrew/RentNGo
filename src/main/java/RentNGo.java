@@ -131,7 +131,7 @@ public class RentNGo {
                         db.closeConnection();
                         ldb.closeDB();
                     }
-                } else if (u instanceof Worker && u instanceof Admin == false) {
+                } else if (u instanceof Worker && !(u instanceof Admin)) {
                     int j = 1;
                     while (j != 0) {
                         ((Worker) u).showMenu();
@@ -163,34 +163,7 @@ public class RentNGo {
                                 ((Worker) u).changeStatusOrderInDelivery(db, sc);
                                 break;
                             case 6:
-                                System.out.println("Insert the plate:");
-                                String plate = sc.nextLine();
-                                System.out.println("Insert the dates in which you want to make it unavailable:");
-                                Date d = new Date();
-                                Date d2 = new Date();
-                                System.out.println("Date Start");
-                                String dateString = sc.nextLine();
-                                SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
-                                try {
-                                    d = formatter.parse(dateString);
-                                } catch (ParseException p2){
-                                    System.out.println("Error. Wrong Date");
-                                    break;
-                                }
-                                System.out.println("Date End");
-                                dateString = sc.nextLine();
-                                try {
-                                    d2 = formatter.parse(dateString);
-                                } catch (ParseException p3){
-                                    System.out.println("Error. Wrong Date");
-                                    break;
-                                }
-                                if(d2.getTime() <= d.getTime()){
-                                    System.out.println("Date End can't be smaller than Date Start");
-                                    break;
-                                }
-                                ldb.carNotAvailable(plate, d, d2);
-                                db.showUsersOrdersForDate(u.getEmail(), plate, d, d2, ((Worker) u).getOffice());
+                                ((Worker)u).makeCarUnavailable(db, ldb, sc);
                                 break;
                             case 7:
                                 db.showAllCarsInMaintenance();
@@ -382,6 +355,8 @@ public class RentNGo {
         ldb.closeDB();
         db.closeConnection();
     }
+
+
 
 
 }
