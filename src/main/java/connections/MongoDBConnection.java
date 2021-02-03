@@ -426,12 +426,20 @@ public class MongoDBConnection
         int i = 0;
         int choice=0;
         Scanner sc = new Scanner(System.in);
-        while (cursor.hasNext()) {
+        Document d=null;
+        List<Document> plates = null;
+
+        if (cursor.hasNext()){
+            d = cursor.next();
+            plates = d.get("cars", List.class);
+        }
+
+        for(int j=0; i<plates.size(); j++) {
 
             System.out.print(i + ") ");
 
-            Document d = cursor.next();
-            c = getCarFromDocument(d);
+            c = getCarFromDocument(plates.get(j).getString("CarPlate"), d);
+
             c.printCar();
 
             if ((i + 1) % 10 == 0) {
@@ -456,7 +464,7 @@ public class MongoDBConnection
 
     public Car findCar(String plate){
         MongoCollection<Document> myColl = db.getCollection("cars");
-        MongoCursor<Document> cursor  = myColl.find(eq("CarPlate", plate)).iterator();
+        MongoCursor<Document> cursor  = myColl.find(eq("cars.CarPlate", plate)).iterator();
         Car c;
 
         if (!cursor.hasNext()) {
@@ -464,7 +472,7 @@ public class MongoDBConnection
             return null;
         } else {
             Document d = cursor.next();
-            c = getCarFromDocument(d);
+            c = getCarFromDocument(plate, d);
         }
 
         //c.printCar();
@@ -474,8 +482,9 @@ public class MongoDBConnection
     }
 
     public void deleteCar(String plate) {
+        /*
         MongoCollection<Document> myColl = db.getCollection("cars");
-        MongoCursor<Document> cursor  = myColl.find(eq("CarPlate", plate)).iterator();
+        MongoCursor<Document> cursor  = myColl.find(eq("cars.CarPlate", plate)).iterator();
         Car c;
         if (!cursor.hasNext()) {
             System.out.println("Car not found");
@@ -483,9 +492,20 @@ public class MongoDBConnection
         } else {
             myColl.deleteOne(eq("CarPlate", plate));
             System.out.println("Car deleted successfully");
+        }*/
+        Car c = findCar(plate);
+        if (c==null){
+            System.out.println("Car not found!");
         }
+        MongoCollection<Document> myColl = db.getCollection("cars");
+
+        Bson filter = Filters.and( eq("Brand", c.getBrand()), eq("Vehicle", c.getVehicle())); //get the parent-document
+        Bson delete = Updates.pull("cars", new Document("CarPlate", c.getPlate()).append("RegistrationYear", c.getRegistrationYear()).append("Office", c.getOffice()));
+        myColl.updateOne(filter, delete);
 
     }
+
+
 
    /* public void deleteOrders(){
         MongoCollection<Document> myColl = db.getCollection("orders");
@@ -502,27 +522,40 @@ public class MongoDBConnection
 
         MongoCollection<Document> myColl = db.getCollection("cars");
 
-        try (MongoCursor<Document> cursor = myColl.find(eq("CarPlate", c.getPlate())).iterator()) {
+        try (MongoCursor<Document> cursor = myColl.find(eq("cars.CarPlate", c.getPlate())).iterator()) {
             while (cursor.hasNext()) {
                 System.out.println("Car's plate already present in the database");
                 return;
             }
         }
-        Document car = new Document("Brand", c.getBrand())
-                .append("Vehicle", c.getVehicle())
-                .append("Engine", c.getEngine())
-                .append("Power (hp - kW /rpm)", c.getPower())
-                .append("AverageFuelConsumption", Double.valueOf(c.getAvgFuelCons()))
-                .append("CO2", Double.valueOf(c.getCo2()))
-                .append("Weight(3p/5p) kg", c.getWeight())
-                .append("GearBox type", c.getGearBoxType())
-                .append("Tyre", c.getTyre())
-                .append("Traction type", c.getTractionType())
-                .append("CarPlate", c.getPlate())
+        Document carEmbedded = new Document("CarPlate", c.getPlate())
                 .append("RegistrationYear", c.getRegistrationYear())
-                .append("Office", String.valueOf(c.getOffice()));
-        myColl.insertOne(car);
+                .append("Office", c.getOffice());
 
+        MongoCursor<Document> cursor = myColl.find(and(eq("Brand", c.getBrand()), eq("Vehicle", c.getVehicle()))).iterator();
+        if (cursor.hasNext()) {
+            Document car = new Document("Brand", c.getBrand().trim())
+                    .append("Vehicle", c.getVehicle().trim())
+                    .append("Engine", c.getEngine().trim())
+                    .append("Power (hp - kW /rpm)", c.getPower().trim())
+                    .append("AverageFuelConsumption", Double.valueOf(c.getAvgFuelCons()))
+                    .append("CO2", Double.valueOf(c.getCo2()))
+                    .append("Weight(3p/5p) kg", c.getWeight().trim())
+                    .append("GearBox type", c.getGearBoxType().trim())
+                    .append("Tyre", c.getTyre().trim())
+                    .append("Traction type", c.getTractionType().trim());
+
+            myColl.insertOne(car);
+            Bson filter = Filters.and(eq("Brand", c.getBrand()), eq("Engine", c.getEngine()), eq("Vehicle", c.getVehicle())); //get the parent-document
+            Bson setUpdate = Updates.push("cars", carEmbedded);
+
+            myColl.updateOne(filter, setUpdate);
+        } else {
+            Bson filter = Filters.and( eq("Brand", c.getBrand()), eq("Engine", c.getEngine()), eq("Vehicle", c.getVehicle())); //get the parent-document
+            Bson setUpdate = Updates.push("cars", carEmbedded);
+
+            myColl.updateOne(filter, setUpdate);
+        }
         System.out.println();
     }
 
@@ -556,7 +589,7 @@ public class MongoDBConnection
         while(cursor.hasNext()){
             Document d = cursor.next();
             if(checkIfCarRented(d,pickDate, deliveryDate)==true) {
-                Car c = getCarFromDocument(d);
+                Car c = getCarFromDocument("", d);
                 Double kw = c.getKw(this);
                 switch (category) {
                     case 1:
@@ -597,7 +630,9 @@ public class MongoDBConnection
         }
     }
 
-    public Car getCarFromDocument(Document d){
+
+    //differenziare caso ricerca targa precisa e caso
+    public Car getCarFromDocument(String plate, Document d){
         Car c = new Car("", d.getString("Brand"),
                 d.getString("Vehicle"),
                 d.getString("Engine"),
@@ -610,8 +645,32 @@ public class MongoDBConnection
                 d.getString("Power (hp - kW /rpm)"),
                 0,
                 "");
+        List<Document> cars = d.get("cars", List.class);
+        /*
+        if (plate.equals("")){
+            for(int i = 0; i< cars.size(); i++) {
+                c.setPlate(d.getString("CarPlate"));
+                c.setOffice(d.getString("Office"));
+                c.setRegistrationYear(d.getInteger("RegistrationYear"));
+            }
+        } else{
+            for(int i = 0; i< cars.size(); i++){
+                if (cars.get(i).getString("CarPlate").equals(plate)){
+                c.setPlate(plate);
+                c.setOffice(d.getString("Office"));
+                c.setRegistrationYear(d.getInteger("RegistrationYear"));
+                }
+            }
+        }*/
+        for(int i = 0; i< cars.size(); i++) {
+                if(cars.get(i).getString("CarPlate").equals(plate) || plate.equals(""))
+                c.setPlate(d.getString("CarPlate"));
+                c.setOffice(d.getString("Office"));
+                c.setRegistrationYear(d.getInteger("RegistrationYear"));
+        }
         return c;
-    }
+        }
+
 
     public User getUser(ArrayList<String> s) throws ParseException {
         if(s == null)
@@ -979,7 +1038,7 @@ public class MongoDBConnection
         ArrayList<Car> cars = new ArrayList<>();
         while(cursor.hasNext()){
             Document d = cursor.next();
-            Car c = getCarFromDocument(d);
+            Car c = getCarFromDocument("",d);
             cars.add(c);
         }
         return cars;
