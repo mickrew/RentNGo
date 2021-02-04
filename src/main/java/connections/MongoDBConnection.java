@@ -465,8 +465,10 @@ public class MongoDBConnection
         for(int j=0; i<plates.size(); j++) {
 
             System.out.print(i + ") ");
+            Document car = plates.get(i);
 
-            c = getCarFromDocument(plates.get(j).getString("CarPlate"), d);
+            c = getCarFromDocument(car.getString("CarPlate"), d);
+
 
             c.printCar();
 
