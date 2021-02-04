@@ -254,14 +254,17 @@ public class User {
         String  choice = sc.nextLine();
         if(choice.equals("Yes")){
             //Choose accessories
+
             ArrayList<Service> services = Service.chooseServices(db.getServices());
 
+            System.out.println("Choose one car:");
             Car c = u.chooseCar(cars);
             if(c == null)
                 return;
             db.procedeWithOrder(c, o.getPickDate().getTime(), o.getDeliveryDate().getTime(), email, o.getpickOffice(), o.getDeliveryOffice(), services);
             ldb.deleteUserCart(email);
         } else if (choice.equals("Delete")) {
+            System.out.println("Choose a car:");
             Car c = u.chooseCar(cars);
             if(c == null)
                 return;

@@ -152,19 +152,19 @@ public class Car {
         public void printCar(){
             String out = "";
             if(plate!= null)
-                out = "Car Plate: " + plate;
+                out = "Car Plate: " + plate + ", ";
             if(brand!=null)
-                out += ", Brand: " + brand ;
+                out += "Brand: " + brand + ", ";
             if(vehicle!=null)
-                out += ", Vehicle: " + vehicle ;
+                out += "Vehicle: " + vehicle + ", ";
             if(engine!=null)
-                out += ", Engine: " + engine ;
+                out += "Engine: " + engine + ", ";
             if(avgFuelCons!=null)
-                out += ", Average Fuel Consumption: " + Math.ceil(Double.valueOf(avgFuelCons)) ;
+                out += "Average Fuel Consumption: " + Math.ceil(Double.valueOf(avgFuelCons)) + ", ";
             if(co2!=null)
-                out += ", CO2: " + Math.ceil(Double.valueOf(co2)) ;
+                out += "CO2: " + Math.ceil(Double.valueOf(co2)) + ", ";
             if(weight!=null)
-                out += ", Weight: " + weight ;
+                out += "Weight: " + weight + ", ";
        /*     if(gearBoxType!=null)
                 out += ", Gear Box Type: " + gearBoxType ;
             if(tyre!=null)
@@ -172,11 +172,11 @@ public class Car {
             if(tractionType!=null)
                 out += ", Traction Type: " + tractionType ; */
             if(power!=null)
-                out += ", Power: " + power ;
+                out += "Power: " + power + ", ";
             if(registrationYear!=null)
-                out += ", RegistrationYear: " + registrationYear ;
+                out += "RegistrationYear: " + registrationYear + ", ";
             if(office!=null)
-                out += ", Office: " + office ;
+                out += "Office: " + office ;
             System.out.println(out);
         }
 

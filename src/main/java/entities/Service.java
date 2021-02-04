@@ -78,7 +78,7 @@ public class Service {
                 System.out.println("Error. Didn't insert an integer");
                 break;
             }
-            if (i > services.size() || i < 1) {
+            if (i > services.size() || i < 1 || i!=-2) {
                 System.out.println("Index out of range");
                 break;
             } else{

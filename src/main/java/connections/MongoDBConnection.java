@@ -784,21 +784,21 @@ public class MongoDBConnection
 
             System.out.printf(format, "StartOffice: " + d.getString("StartOffice") + " ");
             System.out.printf(format, "EndOffice: " + d.getString("EndOffice") + " ");
+
             List<Document> accessories = d.get("Accessories", List.class);
             if(accessories!=null) {
                 System.out.println("SERVICES: ");
                 for (Document service : accessories) {
                     System.out.println("\tSERVICE NAME: " + service.getString("SERVICES"));
                     Double priceAccessories;
-                    /*
-                    try{
-                        priceAccessories = d.getDouble(service.getDouble("PRICE VAT INCLUDED "));
-                    } catch (Exception e){
-                        priceAccessories = Double.valueOf((service.getInteger("PRICE VAT INCLUDED ")));
-                    }
-                    */
 
-                    System.out.println("\tPRICE VAT INCLUDED: " + service.getString("PRICE VAT INCLUDED ") + "€");
+                    try{
+                        priceAccessories = service.getDouble("PRICE VAT INCLUDED ");
+                    } catch (Exception e){
+                        priceAccessories = Double.valueOf((service.getString("PRICE VAT INCLUDED ")));
+                    }
+
+                    System.out.println("\tPRICE VAT INCLUDED: " + priceAccessories + "€");
                 }
             }
             System.out.println();

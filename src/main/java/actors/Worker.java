@@ -107,6 +107,7 @@ public class Worker extends User {
         {
             System.out.println("User not found!");
         }
+        System.out.println();
     }
 
     public static void searchOrders(MongoDBConnection db) throws ParseException {
