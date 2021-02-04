@@ -748,11 +748,33 @@ public class MongoDBConnection
             System.out.printf(format, "CarPlate: " +cars.getString("CarPlate") + " ");
             System.out.printf(format, "Brand: " + cars.getString("Brand") + " ");
             System.out.printf(format, "Vehicle: " + cars.getString("Vehicle") + " ");
-//            System.out.printf(format, "CarPrice: " + Math.ceil(d.getDouble("CarPrice")) + "€ ");
-            Date datPick = new Date(Long.valueOf(d.getLong("PickDate")));
-            System.out.printf(format, "DatePick: " + simpleDateFormat.format(datPick) + " ");
-            Date datDelivery =new Date(Long.valueOf(d.getLong("DeliveryDate")));
-            System.out.printf(format, "DateDelivery: " + simpleDateFormat.format(datDelivery) + " ");
+
+            Double carPrice = 0.0;
+            try{
+                carPrice = d.getDouble("CarPrice");
+            } catch (Exception e){
+                carPrice = Double.valueOf((d.getInteger("CarPrice")));
+            }
+            System.out.printf(format, "CarPrice: " + Math.ceil(carPrice) + "€ ");
+
+            Long datePick = 0L;
+            try{
+                datePick = d.getLong("PickDate");
+            } catch (Exception e){
+                datePick = d.getDouble("PickDate").longValue();
+            }
+            Date pick = new Date(datePick);
+            System.out.printf(format, "PickDate: " + simpleDateFormat.format(pick) + " ");
+
+            Long dateDelivery = 0L;
+            try{
+                dateDelivery = d.getLong("DeliveryDate");
+            } catch (Exception e){
+                dateDelivery = d.getDouble("DeliveryDate").longValue();
+            }
+            Date delivery = new Date(dateDelivery);
+            System.out.printf(format, "DateDelivery: " + simpleDateFormat.format(delivery) + " ");
+
             System.out.printf(format, "StartOffice: " + d.getString("StartOffice") + " ");
             System.out.printf(format, "EndOffice: " + d.getString("EndOffice") + " ");
             List<Document> accessories = d.get("Accessories", List.class);
@@ -760,7 +782,16 @@ public class MongoDBConnection
                 System.out.println("SERVICES: ");
                 for (Document service : accessories) {
                     System.out.println("\tSERVICE NAME: " + service.getString("SERVICES"));
-                    System.out.println("\t-PRICE VAT INCLUDED: " + service.getDouble("PRICE VAT INCLUDED ") + "€");
+                    Double priceAccessories;
+                    /*
+                    try{
+                        priceAccessories = d.getDouble(service.getDouble("PRICE VAT INCLUDED "));
+                    } catch (Exception e){
+                        priceAccessories = Double.valueOf((service.getInteger("PRICE VAT INCLUDED ")));
+                    }
+                    */
+
+                    System.out.println("\tPRICE VAT INCLUDED: " + service.getString("PRICE VAT INCLUDED ") + "€");
                 }
             }
             System.out.println();
@@ -932,39 +963,132 @@ public class MongoDBConnection
                 Document d = cursor.next();
                 String format = "%-40s%n";
                 System.out.print(j + ") ");
-                System.out.printf(format,"CarPlate: " + d.getString("CarPlate.CarPlate") + " ");
-                System.out.printf(format,"Email: " + d.getString("Email") + " ");
-                //System.out.printf(format,"CarPrice: " + "€ ");
-                Date datPick =new Date(Long.valueOf(d.getLong("PickDate")));
-                System.out.printf(format,"DatePick: " + simpleDateFormat.format(datPick) + " ");
-                Date datDelivery =new Date(Long.valueOf(d.getLong("DeliveryDate")));
-                System.out.printf(format,"DateDelivery: " + simpleDateFormat.format(datDelivery) + " ");
+
+                Document car = (Document) d.get("CarPlate");
+                System.out.printf(format, "CarPlate: " + car.getString("CarPlate") + " ");
+
+                System.out.printf(format, "Email: " + d.getString("Email") + " ");
+
+                Double carPrice = 0.0;
+                try{
+                    carPrice = d.getDouble("CarPrice");
+                } catch (Exception e){
+                    carPrice = Double.valueOf((d.getInteger("CarPrice")));
+                }
+                System.out.printf(format, "CarPrice: " + Math.ceil(carPrice) + "€ ");
+
+                Long datePick = 0L;
+                try{
+                    datePick = d.getLong("PickDate");
+                } catch (Exception e){
+                    datePick = d.getDouble("PickDate").longValue();
+                }
+                Date pick = new Date(datePick);
+                System.out.printf(format, "PickDate: " + simpleDateFormat.format(pick) + " ");
+
+                Long dateDelivery = 0L;
+                try{
+                    dateDelivery = d.getLong("DeliveryDate");
+                } catch (Exception e){
+                    dateDelivery = d.getDouble("DeliveryDate").longValue();
+                }
+                Date delivery = new Date(dateDelivery);
+
+                System.out.printf(format,"DatePick: " + simpleDateFormat.format(delivery) + " ");
+
+
                 System.out.printf(format,"StartOffice: " + d.getString("StartOffice") + " ");
                 System.out.printf(format, "EndOffice: " + d.getString("EndOffice") + " ");
                 System.out.printf(format,"PriceAccessories: " + d.getInteger("PriceAccessories") + " ");
-                System.out.printf(format,"ListAccessories: " + d.getString("ListAccessories") + " ");
+
+                List<Document> accessories = d.get("Accessories", List.class);
+                if(accessories!=null) {
+                    System.out.println("SERVICES: ");
+                    for (Document service : accessories) {
+                        System.out.println("\tSERVICE NAME: " + service.getString("SERVICES"));
+                        Double priceAccessories;
+                    /*
+                    try{
+                        priceAccessories = d.getDouble(service.getDouble("PRICE VAT INCLUDED "));
+                    } catch (Exception e){
+                        priceAccessories = Double.valueOf((service.getInteger("PRICE VAT INCLUDED ")));
+                    }
+                    */
+
+                        System.out.println("\tPRICE VAT INCLUDED: " + service.getString("PRICE VAT INCLUDED ") + "€");
+                    }
+                }
                 System.out.println();
                 j++;
             }
         } else {
             MongoCollection<Document> myColl = db.getCollection("orders");
-            MongoCursor<Document> cursor = myColl.find(and(eq("StartOffice", pickOffice.trim()), gt("PickDate", (pickDate-1000*60*60*12)), lt("PickDate", (pickDate+1000*60*60*12)))).iterator();
+            MongoCursor<Document> cursor = myColl.find(and(eq("StartOffice", pickOffice.trim()), gt("PickDate", (pickDate-1000*60*60*12)), lt("PickDate", (pickDate+1000*60*60*12)), exists("CarPlate.CarPlate"))).iterator();
             int j = 0;
             while (cursor.hasNext()) {
                 Document d = cursor.next();
                 String format = "%-40s%n";
                 System.out.print(j + ") ");
-                System.out.printf(format, "CarPlate: " + d.getString("CarPlate.CarPlate") + " ");
+
+                Document car = (Document) d.get("CarPlate");
+                System.out.printf(format, "CarPlate: " + car.getString("CarPlate") + " ");
                 System.out.printf(format, "Email: " + d.getString("Email") + " ");
-                //System.out.printf(format,"CarPrice: " + Math.ceil(d.getDouble("CarPrice")) + "€ ");
-                Date datPick = new Date(Long.valueOf(d.getLong("PickDate")));
-                System.out.printf(format,"DatePick: " + simpleDateFormat.format(datPick) + " ");
-                Date datDelivery = new Date(Long.valueOf(d.getLong("DeliveryDate")));
-                System.out.printf(format, "DateDelivery: " + simpleDateFormat.format(datDelivery) + " ");
+
+                Double carPrice = 0.0;
+                try{
+                    carPrice = d.getDouble("CarPrice");
+                } catch (Exception e){
+                    carPrice = Double.valueOf((d.getInteger("CarPrice")));
+                }
+                System.out.printf(format, "CarPrice: " + Math.ceil(carPrice) + "€ ");
+
+                Long datePick = 0L;
+                try{
+                    datePick = d.getLong("PickDate");
+                } catch (Exception e){
+                    datePick = d.getDouble("PickDate").longValue();
+                }
+                Date pick = new Date(datePick);
+                System.out.printf(format, "PickDate: " + simpleDateFormat.format(pick) + " ");
+
+                Long dateDelivery = 0L;
+                try{
+                    dateDelivery = d.getLong("DeliveryDate");
+                } catch (Exception e){
+                    dateDelivery = d.getDouble("DeliveryDate").longValue();
+                }
+                Date delivery = new Date(dateDelivery);
+
                 System.out.printf(format, "StartOffice: " + d.getString("StartOffice") + " ");
                 System.out.printf(format,"EndOffice: " + d.getString("EndOffice") + " ");
-                System.out.printf(format, "PriceAccessories: " + d.getDouble("PriceAccessories") + "€ ");
-                System.out.printf(format, "ListAccessories: " + d.getString("ListAccessories") + " ");
+
+
+
+                Double priceAccessories = 0.0;
+                try{
+                    priceAccessories = d.getDouble("PriceAccessories");
+                } catch (Exception e){
+                    priceAccessories = Double.valueOf((d.getInteger("PriceAccessories")));
+                }
+                System.out.printf(format, "PriceAccessories: " + priceAccessories + "€ ");
+
+                List<Document> accessories = d.get("Accessories", List.class);
+                if(accessories!=null) {
+                    System.out.println("SERVICES: ");
+                    for (Document service : accessories) {
+                        System.out.println("\tSERVICE NAME: " + service.getString("SERVICES"));
+
+                    /*
+                    try{
+                        priceAccessories = d.getDouble(service.getDouble("PRICE VAT INCLUDED "));
+                    } catch (Exception e){
+                        priceAccessories = Double.valueOf((service.getInteger("PRICE VAT INCLUDED ")));
+                    }
+                    */
+
+                        System.out.println("\tPRICE VAT INCLUDED: " + service.getString("PRICE VAT INCLUDED ") + "€");
+                    }
+                }
                 System.out.println();
                 j++;
             }
