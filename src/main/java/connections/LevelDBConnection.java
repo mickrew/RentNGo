@@ -701,31 +701,24 @@ public class LevelDBConnection {
         do {
             String key = email + ":cart"+i+":brand";
             String cartBrand = getValue(key);
-            if(cartBrand==null)
-                continue;
-
-            key = email + ":cart" + i + ":vehicle";
-            String cartVehicle = getValue(key);
-            if(cartVehicle==null)
-                continue;
-
-            key = email + ":cart" + i + ":power";
-            String cartPower = getValue(key);
-            if(cartPower==null)
-                continue;
-            if(cartBrand.equals(brand) && cartVehicle.equals(vehicle) && cartPower.equals(power)){
-                key = email + ":cart"+i+":brand";
-                deleteValue(key);
-
+            if(cartBrand!=null){
                 key = email + ":cart" + i + ":vehicle";
-                deleteValue(key);
+                String cartVehicle = getValue(key);
+                if (cartVehicle != null){
+                    key = email + ":cart" + i + ":power";
+                    String cartPower = getValue(key);
+                    if (cartBrand!= null && cartBrand.equals(brand) && cartVehicle.equals(vehicle) && cartPower.equals(power)) {
+                        key = email + ":cart" + i + ":brand";
+                        deleteValue(key);
 
-                key = email + ":cart" + i + ":power";
-                deleteValue(key);
+                        key = email + ":cart" + i + ":vehicle";
+                        deleteValue(key);
 
-
+                        key = email + ":cart" + i + ":power";
+                        deleteValue(key);
+                    }
+                }
             }
-
             i++;
         } while(i != Max_N_Cars);
     }

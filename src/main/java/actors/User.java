@@ -185,7 +185,7 @@ public class User {
         catch(Exception e){
             category = 4;
         }
-        String choice = "N";
+        String choice;
         System.out.println("Do you want to look for a specific Brand? Y/N");
         choice = sc.nextLine();
         String brand;
@@ -206,9 +206,13 @@ public class User {
                 System.out.print(i++ +") ");
                 c.printCar();
             }
-            System.out.println("To proceed with the payment you need to select a car");
+            //System.out.println("To proceed with the payment you need to select a car");
             Scanner sc=new Scanner(System.in);
-            i=sc.nextInt();
+            try {
+                i = Integer.valueOf(sc.nextLine());
+            }catch (Exception e){
+                return null;
+            }
             if(i >= cars.size() || i < 0){
                 System.out.println("Error");
                 return null;
@@ -249,17 +253,6 @@ public class User {
         System.out.println("Insert another button to show the main menu");
         String  choice = sc.nextLine();
         if(choice.equals("Yes")){
-            /*ldb.payment(u.getEmail(), ((User)u).chooseCar(cars), o);
-            if(db.checkIfCarRented(o)){
-                System.out.println("Car is already rented");
-            } else {
-                o.printOrder();
-                Long millisDay = 86400000L;
-                Long numDays = (o.getDeliveryDate().getTime() - o.getPickDate().getTime())/(millisDay);
-                total = o.getPriceCar() * numDays + o.getPriceAccessories();
-                System.out.println("The total is: " + total + "€\n");
-                db.insertOrder(o, "Booked");
-            }*/
             //Choose accessories
             ArrayList<Service> services = Service.chooseServices(db.getServices());
 
