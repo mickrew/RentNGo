@@ -338,6 +338,17 @@ public class LevelDBConnection {
         putValue(key, String.valueOf(dDelivery));
     }
 
+    private void deleteCart(String email){
+        String key= email + ":pickOffice"; //set the orders information
+        deleteValue(key);
+        key =email + ":pickDate";
+        deleteValue(key);
+        key =email + ":deliveryOffice";
+        deleteValue(key);
+        key =email + ":deliveryDate";
+        deleteValue(key);
+    }
+
 /*
     public void searchCar(String getpickOffice,String deliveryOffice, Date pickDate, Date deliveryDate, ArrayList<Car> cars, User u) {
         System.out.println("Choose the best cars");
@@ -527,7 +538,7 @@ public class LevelDBConnection {
 
 
     public void deleteUserCart(String email) {
-        String key = email + ":cart";
+       /* String key = email + ":cart";
         deleteValue(key);
         key = email + ":order";
         deleteValue(key);
@@ -536,7 +547,9 @@ public class LevelDBConnection {
         key = email + ":accessoriesPriceDay";
         deleteValue(key);
         key = email + ":accessoriesPriceOneTime";
-        deleteValue(key);
+        deleteValue(key); */
+        deleteCars(email);
+        deleteCart(email);
     }
 
     public void addAccessories(String email, String service, double price, String type) {
@@ -683,4 +696,30 @@ public class LevelDBConnection {
 
     }
 
+    public void deleteCarFromCart(String email, String brand, String vehicle, String power) {
+        int i = 0;
+        do {
+            String key = email + ":cart"+i+":brand";
+            String cartBrand = getValue(key);
+            if(cartBrand!=null){
+                key = email + ":cart" + i + ":vehicle";
+                String cartVehicle = getValue(key);
+                if (cartVehicle != null){
+                    key = email + ":cart" + i + ":power";
+                    String cartPower = getValue(key);
+                    if (cartBrand!= null && cartBrand.equals(brand) && cartVehicle.equals(vehicle) && cartPower.equals(power)) {
+                        key = email + ":cart" + i + ":brand";
+                        deleteValue(key);
+
+                        key = email + ":cart" + i + ":vehicle";
+                        deleteValue(key);
+
+                        key = email + ":cart" + i + ":power";
+                        deleteValue(key);
+                    }
+                }
+            }
+            i++;
+        } while(i != Max_N_Cars);
+    }
 }

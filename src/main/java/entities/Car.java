@@ -160,9 +160,9 @@ public class Car {
             if(engine!=null)
                 out += ", Engine: " + engine ;
             if(avgFuelCons!=null)
-                out += ", Average Fuel Consumption: " + avgFuelCons ;
+                out += ", Average Fuel Consumption: " + Math.ceil(Double.valueOf(avgFuelCons)) ;
             if(co2!=null)
-                out += ", CO2: " + co2 ;
+                out += ", CO2: " + Math.ceil(Double.valueOf(co2)) ;
             if(weight!=null)
                 out += ", Weight: " + weight ;
        /*     if(gearBoxType!=null)

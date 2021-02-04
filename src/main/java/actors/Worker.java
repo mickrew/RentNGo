@@ -1,5 +1,6 @@
 package main.java.actors;
 
+import main.java.connections.LevelDBConnection;
 import main.java.entities.Car;
 import main.java.connections.MongoDBConnection;
 import main.java.entities.Office;
@@ -226,6 +227,12 @@ public class Worker extends User {
         System.out.println("The list of additional services is: " + damage );
         System.out.println("The surcharge is: " + Math.ceil(damageCost)+ "€\n");
         db.changeStatusOrder(plate, email, "DeliveryDate",d, "Completed", services, damageCost);
+    }
+    public void makeCarUnavailable(MongoDBConnection db, LevelDBConnection ldb, Scanner sc) {
+        System.out.println("Insert the plate:");
+        String plate = sc.nextLine();
+
+        db.showUsersOrdersForDate(email, plate, getOffice());
     }
 }
 

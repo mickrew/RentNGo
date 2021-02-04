@@ -185,9 +185,18 @@ public class User {
         catch(Exception e){
             category = 4;
         }
-
+        String choice;
+        System.out.println("Do you want to look for a specific Brand? Y/N");
+        choice = sc.nextLine();
+        String brand;
+        if(choice.equals("Y")) {
+            System.out.println("Select the brand of the car or let it empty to get all the brands");
+            brand = sc.nextLine();
+        } else {
+            brand = "";
+        }
         ldb.searchCar(o.getpickOffice(),o.getDeliveryOffice(), o.getPickDate(), o.getDeliveryDate(), db.getListOfCars(o.getpickOffice(),
-                category, o.getPickDate().getTime(), o.getDeliveryDate().getTime()), u);
+                category, o.getPickDate().getTime(), o.getDeliveryDate().getTime(), brand), u);
         return true;
     }
 
@@ -197,9 +206,13 @@ public class User {
                 System.out.print(i++ +") ");
                 c.printCar();
             }
-            System.out.println("To proceed with the payment you need to select a car");
+            //System.out.println("To proceed with the payment you need to select a car");
             Scanner sc=new Scanner(System.in);
-            i=sc.nextInt();
+            try {
+                i = Integer.valueOf(sc.nextLine());
+            }catch (Exception e){
+                return null;
+            }
             if(i >= cars.size() || i < 0){
                 System.out.println("Error");
                 return null;
@@ -235,21 +248,11 @@ public class User {
         if(o == null)
             return;
         //o.printOrder();
-        System.out.println(o.getpickOffice()+ ", "+ o.getPickDate() + ", "+ o.getDeliveryOffice()+ ", "+ o.getDeliveryDate());
-        System.out.println("Do you want to proceed with the payment? Y/N");
+        System.out.println(o.getpickOffice()+ ", "+ o.getPickDate() + ", "+ o.getDeliveryOffice()+ ", "+ o.getDeliveryDate()+"\n");
+        System.out.println("Insert 'Yes' if you want to proceed with the payment or 'Delete' to delete a car from the cart.");
+        System.out.println("Insert another button to show the main menu");
         String  choice = sc.nextLine();
-        if(choice.equals("Y")){
-            /*ldb.payment(u.getEmail(), ((User)u).chooseCar(cars), o);
-            if(db.checkIfCarRented(o)){
-                System.out.println("Car is already rented");
-            } else {
-                o.printOrder();
-                Long millisDay = 86400000L;
-                Long numDays = (o.getDeliveryDate().getTime() - o.getPickDate().getTime())/(millisDay);
-                total = o.getPriceCar() * numDays + o.getPriceAccessories();
-                System.out.println("The total is: " + total + "€\n");
-                db.insertOrder(o, "Booked");
-            }*/
+        if(choice.equals("Yes")){
             //Choose accessories
             ArrayList<Service> services = Service.chooseServices(db.getServices());
 
@@ -257,6 +260,12 @@ public class User {
             if(c == null)
                 return;
             db.procedeWithOrder(c, o.getPickDate().getTime(), o.getDeliveryDate().getTime(), email, o.getpickOffice(), o.getDeliveryOffice(), services);
+            ldb.deleteUserCart(email);
+        } else if (choice.equals("Delete")) {
+            Car c = u.chooseCar(cars);
+            if(c == null)
+                return;
+            ldb.deleteCarFromCart(email, c.getBrand(), c.getVehicle(), c.getPower());
         }
     }
 
