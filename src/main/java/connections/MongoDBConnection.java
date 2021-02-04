@@ -1068,14 +1068,19 @@ public class MongoDBConnection
     }
 
     public void showAllCarsInMaintenance() {
-        MongoCollection<Document> myColl = db.getCollection("orders");
-        MongoCursor<Document> cursor = myColl.find(and(
-                gt("DeliveryDate", new Date().getTime()),
-                eq("Status", "Maintenance")
-        )).iterator();
+        MongoCollection<Document> myColl = db.getCollection("cars");
+        MongoCursor<Document> cursor = myColl.find(exists( "cars.maintenance", true)
+        ).iterator();
         while(cursor.hasNext()){
             Document d = cursor.next();
-            System.out.println("CarPlate: " + d.getString("CarPlate"));
+            Car c = getCarFromDocument("", d);
+            List<Document> documents = d.get("cars", List.class);
+            for(Document car: documents){
+                if(car.getInteger("maintenance")!=null){
+                    c.setPlate(car.getString("CarPlate"));
+                    c.printCar();
+                }
+            }
         }
         System.out.println("");
     }
