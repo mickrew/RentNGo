@@ -166,7 +166,7 @@ public class MongoDBConnection
 
     public User findUser(String email){
         MongoCollection<Document> myColl = db.getCollection("users");
-        MongoCursor<Document> cursor  = myColl.find(eq("Email", email)).iterator();
+        MongoCursor<Document> cursor  = myColl.find(and(eq("Email", email), exists("DateOfHiring", false))).iterator();
         User u;
 
         if (!cursor.hasNext()) {
@@ -183,7 +183,7 @@ public class MongoDBConnection
 
     public Worker findWorker(String email) throws ParseException {
         MongoCollection<Document> myColl = db.getCollection("users");
-        MongoCursor<Document> cursor  = myColl.find(eq("Email", email)).iterator();
+        MongoCursor<Document> cursor  = myColl.find(and(eq("Email", email), exists("DateOfHiring", true))).iterator();
         Worker w;
 
         if (!cursor.hasNext()) {
@@ -1010,23 +1010,29 @@ public class MongoDBConnection
 
                 System.out.printf(format,"StartOffice: " + d.getString("StartOffice") + " ");
                 System.out.printf(format, "EndOffice: " + d.getString("EndOffice") + " ");
-                System.out.printf(format,"PriceAccessories: " + d.getInteger("PriceAccessories") + " ");
+                //System.out.printf(format,"PriceAccessories: " + d.getInteger("PriceAccessories") + " ");
+                Double priceAccessories = 0.0;
+                try{
+                    priceAccessories = d.getDouble("PriceAccessories");
+                } catch (Exception e){
+                    priceAccessories = Double.valueOf((d.getInteger("PriceAccessories")));
+                }
 
+                System.out.printf(format, "PriceAccessories: " + priceAccessories + "€ ");
                 List<Document> accessories = d.get("Accessories", List.class);
                 if(accessories!=null) {
                     System.out.println("SERVICES: ");
                     for (Document service : accessories) {
                         System.out.println("\tSERVICE NAME: " + service.getString("SERVICES"));
-                        Double priceAccessories;
-                    /*
+
                     try{
                         priceAccessories = d.getDouble(service.getDouble("PRICE VAT INCLUDED "));
                     } catch (Exception e){
-                        priceAccessories = Double.valueOf((service.getInteger("PRICE VAT INCLUDED ")));
+                        priceAccessories = Double.valueOf((service.getString("PRICE VAT INCLUDED ")));
                     }
-                    */
 
-                        System.out.println("\tPRICE VAT INCLUDED: " + service.getString("PRICE VAT INCLUDED ") + "€");
+
+                        System.out.println("\tPRICE VAT INCLUDED: " + priceAccessories + "€");
                     }
                 }
                 System.out.println();
@@ -1089,15 +1095,14 @@ public class MongoDBConnection
                     for (Document service : accessories) {
                         System.out.println("\tSERVICE NAME: " + service.getString("SERVICES"));
 
-                    /*
+
                     try{
                         priceAccessories = d.getDouble(service.getDouble("PRICE VAT INCLUDED "));
                     } catch (Exception e){
-                        priceAccessories = Double.valueOf((service.getInteger("PRICE VAT INCLUDED ")));
+                        priceAccessories = Double.valueOf((service.getString("PRICE VAT INCLUDED ")));
                     }
-                    */
 
-                        System.out.println("\tPRICE VAT INCLUDED: " + service.getString("PRICE VAT INCLUDED ") + "€");
+                        System.out.println("\tPRICE VAT INCLUDED: " + priceAccessories + "€");
                     }
                 }
                 System.out.println();
@@ -1331,11 +1336,12 @@ public class MongoDBConnection
     String status, Double price, ArrayList<Service> services){
         MongoCollection<Document> myColl = db.getCollection("orders");
         ArrayList<Document> documents = new ArrayList<>();
+        Double priceAccessories = 0.0;
         for(Service s: services){
             Document d = new Document("SERVICES", s.getNameService()).append("PRICE VAT INCLUDED ", s.getPrice())
                     .append("MULTIPLICATOR", s.getMultiplicator());
+            priceAccessories += s.getPrice();
             documents.add(d);
-
         }
         Document order = new Document("CarPlate", new Document("CarPlate", plate).append("Brand", brand).append("Vehicle", vehicle))
                 .append("Email", email)
@@ -1347,6 +1353,7 @@ public class MongoDBConnection
                 .append("Status", status);
         if(documents!=null || !documents.isEmpty()){
             order.append("Accessories",documents);
+            order.append("PriceAccessories", priceAccessories);
         }
 
         myColl.insertOne(order);

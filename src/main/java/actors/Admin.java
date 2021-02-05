@@ -221,8 +221,9 @@ public class Admin extends Worker {
         System.out.println("Insert the new Salary: ");
         Integer salary = Integer.valueOf(sc.nextLine());
         a  = new Admin(w.getSurname(), w.getName(), emailWorker, w.getPassword(), w.getDateOfBirth(), salary, w.getHiringDate(),"", d);
-        db.insertAdmin(a);
-        db.deleteWorker(emailWorker);
+        //db.insertAdmin(a);
+        //db.deleteWorker(emailWorker);
+        db.promoteWorker(a);
 
     }
 
