@@ -6,18 +6,15 @@ import main.java.entities.Car;
 import main.java.entities.Office;
 import main.java.entities.Order;
 import main.java.entities.Service;
+import org.jasypt.util.text.BasicTextEncryptor;
 
-import java.rmi.server.ExportException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static com.mongodb.client.model.Filters.eq;
 
 
 public class User {
@@ -109,6 +106,7 @@ public class User {
                 System.out.println("Insert the password");
                 String password = sc.nextLine();
                 MongoDBConnection db = new MongoDBConnection("RentNGO");
+
                 User u =  db.login(email, password);
                 db.closeConnection();
                 return u;
@@ -134,8 +132,22 @@ public class User {
             u.setEmail(sc.nextLine());
         } while(validateEmail(u.getEmail())==false);
 
+
+        BasicTextEncryptor bte = new BasicTextEncryptor();
+        bte.setPassword("rentngo");
         System.out.print("Insert the user password: ");
-        u.setPassword(sc.nextLine());
+        String psw = sc.nextLine();
+
+        //String encrypted = bte.encrypt(psw);
+        String encrypted = bte.encrypt(psw);
+        /*
+        String encrypted1 = bte.encrypt(psw);
+        String encrypted3 = bte.decrypt(encrypted);
+        String encrypted4 = bte.decrypt(encrypted1);
+        */
+
+        u.setPassword(encrypted);
+
 
         System.out.print("Insert the date of birth. ( DD/MM/YYYY ): ");
         Date d= new Date();

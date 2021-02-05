@@ -70,7 +70,6 @@ public class RentNGo {
             Scanner sc =new Scanner(System.in);
             try{
                 i = Integer.valueOf(sc.nextLine());
-
             }
             catch(Exception e){
                 System.out.println("Error. Didn't insert an integer");

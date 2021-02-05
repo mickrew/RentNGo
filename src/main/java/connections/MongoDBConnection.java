@@ -26,6 +26,7 @@ import main.java.entities.Service;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.json.JsonWriterSettings;
+import org.jasypt.util.text.BasicTextEncryptor;
 
 import javax.print.Doc;
 
@@ -1249,12 +1250,17 @@ public class MongoDBConnection
 
     public User login(String email, String password) throws ParseException {
         MongoCollection<Document> myColl = db.getCollection("users");
+        BasicTextEncryptor bte = new BasicTextEncryptor();
+        bte.setPassword("rentngo");
+
         MongoCursor<Document> cursor = myColl.find(and(
-                eq("Email", email),
-                eq("Password", password)
+                eq("Email", email)
         )).iterator();
         if(cursor.hasNext()){
             Document d = cursor.next();
+            if (!bte.decrypt(d.getString("Password")).equals(password)){
+                return null;
+            }
             if(d.getString("DateOfHiring") == null){
                 return createUser(d);
             }
