@@ -616,6 +616,11 @@ public class MongoDBConnection
     public ArrayList<Car> getListOfCars(String office, int category,  long pickDate,long deliveryDate, String brand) {
         MongoCollection<Document> myColl = db.getCollection("cars");
         MongoCursor<Document> cursor;
+
+        Bson match= match(and(eq("cars.Office", office), exists("maintenance", false)));
+        Bson match2 = match(eq("Brand, brand"));
+        Bson unwind = unwind("availability");
+
         if(brand.equals("")) {
             cursor = myColl.find(and(eq("cars.Office", office), exists("maintenance", false))).iterator();
         }else{
@@ -850,13 +855,25 @@ public class MongoDBConnection
         //Bson match1 = match();
         MongoCollection<Document> myColl = db.getCollection("orders");
         Bson sort = sort(descending(Arrays.asList("count")));
-        Bson group = group(Arrays.asList("$StartOffice", "$CarPlate"), sum("count", 1));
-        Bson match= match(and(eq("StartOffice", startOffice), ne("Status", "Maintenance"),
-                gt("PickDate", date)));
-        Bson project = project(fields(include("_id", "count")));
+        Bson group = group(Arrays.asList("$StartOffice", "$CarPlate.Brand", "$CarPlate.Vehicle"), sum("count", 1));
+        Bson match= match(and(eq("StartOffice", startOffice),gt("PickDate", date)));
+        //Bson project = project(fields(include("_id", "count")));
         Bson limit = limit(3);
-        myColl.aggregate(Arrays.asList( match,group, sort, limit))
-               .forEach(printFormattedDocuments);
+        MongoCursor<Document> cursor =
+                myColl.aggregate(Arrays.asList(match,group, sort, limit))
+               .iterator();
+        while(cursor.hasNext()){
+            Document d = cursor.next();
+            List<String> documents = d.get("_id", List.class);
+            String office = documents.get(0);
+            System.out.print("Office: "+office);
+            String brand = documents.get(1);
+            System.out.print(", Brand: "+brand);
+            String vehicle = documents.get(2);
+            System.out.print(", Vehicle: "+vehicle);
+            //Document doc = documents.get(0);
+            System.out.println(", number of rents = "+ d.getInteger("count"));
+        }
 
     }
 
@@ -870,20 +887,25 @@ public class MongoDBConnection
         };
         MongoCollection<Document> myColl = db.getCollection("cars");
         Bson sort = sort(descending("AvgCO2"));
-        Bson group = group("$Office", avg("AvgCO2", "$CO2"));
+        Bson group = group("$cars.Office", avg("AvgCO2", "$CO2"));
         //Bson project = project(fields(include( "AvgCO2")));
         Bson limit = limit(3);
-
+        Bson unwind = unwind("$cars");
+/*
         Bson lookup = lookup(
                 "offices",
                 "_id",
                 "Position",
                 "Office"
-        );
+        ); */
         Bson project = project(fields(include("AvgCO2", "Office.City", "Office.Region", "Office.Name"), excludeId()));
 
-        myColl.aggregate(Arrays.asList( group, sort, limit, lookup, project))
-                .forEach(printFormattedDocuments);
+        MongoCursor<Document> cursor = myColl.aggregate(Arrays.asList( unwind, group, sort, limit))
+                .iterator();
+        while(cursor.hasNext()){
+            Document d = cursor.next();
+            System.out.println("Office: "+d.getString("_id") + " CO2 = "+ Math.ceil(d.getDouble("AvgCO2")));
+        }
 
     }
 
@@ -931,6 +953,8 @@ public class MongoDBConnection
             }
         }
     }
+    
+    
     
 
     public void changeStatusOrder(String carPlate, String email, String field, Date d, String status, ArrayList<Service> damage, double damageCost){
@@ -1375,6 +1399,7 @@ public class MongoDBConnection
         );
         listUsers.updateOne(filter, update1);
     }
+
 
 
 /*

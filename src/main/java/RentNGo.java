@@ -320,6 +320,9 @@ public class RentNGo {
                                         db.searchUserForDiscount(date2.getTime(), date1.getTime());
                                         System.out.println();
                                         break;
+                                    case 4:
+                                        db.showBestAccessories();
+                                        break;
                                     default:
                                         System.out.println("Wrong choice");
                                 }
