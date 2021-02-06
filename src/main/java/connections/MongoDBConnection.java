@@ -891,13 +891,15 @@ public class MongoDBConnection
         //Bson project = project(fields(include( "AvgCO2")));
         Bson limit = limit(3);
         Bson unwind = unwind("$cars");
-/*
+
+        /*
         Bson lookup = lookup(
                 "offices",
                 "_id",
                 "Position",
                 "Office"
-        ); */
+        );
+        */
         Bson project = project(fields(include("AvgCO2", "Office.City", "Office.Region", "Office.Name"), excludeId()));
 
         MongoCursor<Document> cursor = myColl.aggregate(Arrays.asList( unwind, group, sort, limit))
@@ -909,9 +911,33 @@ public class MongoDBConnection
 
     }
 
+    public void mostUsedAccessories (Integer year) throws ParseException {
+        MongoCollection<Document> orders = db.getCollection("orders");
+
+        Date date1 = new SimpleDateFormat("dd/MM/yyyy").parse("01/01/" + String.valueOf(year));
+        Date date2 = new SimpleDateFormat("dd/MM/yyyy").parse("31/12/" + String.valueOf(year));
+
+        Bson match = match(and(gte("PickDate", date1.getTime()),lte("PickDate", date2.getTime())));
+
+        Bson sort = sort(descending("count"));
+
+        Bson unwind = unwind("$Accessories");
+        Bson group = group("$Accessories.SERVICES", sum("count", 1));
+        MongoCursor<Document> cursor = orders.aggregate(Arrays.asList( match,unwind, group, sort))
+                .iterator();
+
+        int i = 1;
+        while(cursor.hasNext()) {
+            Document d = cursor.next();
+            System.out.println(i++ +") " + d.getString("_id") + ": " + d.getInteger("count"));
+                    }
+
+    }
+
 
 
     public void searchUserForDiscount(long currentDate, long lastYearDate){
+
         Consumer<Document> printFormattedDocuments = new Consumer<Document>() {
             @Override
             public void accept(Document document) {
