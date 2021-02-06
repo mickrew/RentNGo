@@ -207,8 +207,10 @@ public class User {
         } else {
             brand = "";
         }
-        ldb.searchCar(o.getpickOffice(),o.getDeliveryOffice(), o.getPickDate(), o.getDeliveryDate(), db.getListOfCars(o.getpickOffice(),
-                category, o.getPickDate().getTime(), o.getDeliveryDate().getTime(), brand), u);
+       // ldb.searchCar(o.getpickOffice(),o.getDeliveryOffice(), o.getPickDate(), o.getDeliveryDate(), db.getListOfCars(o.getpickOffice(),
+         //       category, o.getPickDate().getTime(), o.getDeliveryDate().getTime(), brand), u);
+        ldb.searchCar(o.getpickOffice(),o.getDeliveryOffice(), o.getPickDate(), o.getDeliveryDate(), db.getMostUsedCars(o.getpickOffice(),
+                brand, category, o.getPickDate().getTime(), o.getDeliveryDate().getTime()), u);
         return true;
     }
 

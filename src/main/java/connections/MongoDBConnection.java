@@ -12,9 +12,7 @@ import java.util.*;
 
 import java.util.function.Consumer;
 
-import com.mongodb.client.model.Accumulators;
-import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.Updates;
+import com.mongodb.client.model.*;
 import main.java.actors.Admin;
 import main.java.actors.UnregisteredUser;
 import main.java.actors.User;
@@ -613,14 +611,140 @@ public class MongoDBConnection
     }
 
 
-    public ArrayList<Car> getListOfCars(String office, int category,  long pickDate,long deliveryDate, String brand) {
-        MongoCollection<Document> myColl = db.getCollection("cars");
+    public ArrayList<Car> getMostUsedCars(String office, String brand, int category, long pickDate, long deliveryDate){
+        MongoCollection<Document> myColl = db.getCollection("cars1");
         MongoCursor<Document> cursor;
 
         Bson match= match(and(eq("cars.Office", office), exists("maintenance", false)));
-        Bson match2 = match(eq("Brand, brand"));
-        Bson unwind = unwind("availability");
+        Bson match2 = match(eq("Brand", brand));
+        Bson unwind = unwind("$cars");
+        //Bson unwind2 = unwind("$cars.availability", new UnwindOptions().preserveNullAndEmptyArrays(true));
+        Bson sort = sort(descending("count"));
+        Bson group = group(Arrays.asList("$Brand", "$Vehicle", "$Engine", "$Power", "$cars.availability"), sum("count", 1));
+        //Bson group2 = group(Arrays.asList("$_id.Brand", "$_id.Vehicle", "$_id.Engine"), sum("sum", "$count"));
+        //Bson group = group("$Brand" , sum("count", 1));
+        //Bson limit = limit(10);
 
+        if(!brand.contains("")) {
+            cursor = myColl.aggregate(Arrays.asList(unwind, match, group, sort))
+                    .iterator();
+        } else {
+            cursor = myColl.aggregate(Arrays.asList(match2, unwind, match, group, sort))
+                    .iterator();
+        }
+
+        boolean check =true;
+        ArrayList<Car> carsAvail = new ArrayList<>();
+        while(cursor.hasNext()){
+            Document elem = cursor.next();
+            List<Object> d = elem.get("_id", List.class);
+            String brandCar = d.get(0).toString();
+            String vehicle = d.get(1).toString();
+            String engine = d.get(2).toString();
+            String power = d.get(3).toString();
+
+            if(d.get(4)!=null){
+                ArrayList<Document> documents = (ArrayList<Document>) d.get(4);
+                for(Document doc: documents){
+                    Long dateP = doc.getLong("pickDate");
+                    Long dateD = doc.getLong("deliveryDate");
+                    if ((
+                            (dateP <= pickDate) && (dateD >= pickDate)
+                    ) ||
+                            (
+                                    (dateD >= deliveryDate) && (dateP <= deliveryDate)
+                            ) ||
+                            (
+                                    (pickDate <= dateP) && (deliveryDate >= dateD)
+                            )
+                    ) {
+                        check = false;
+                    }
+                }
+            }
+            if (check == true) {
+                Car c = new Car();
+                c.setBrand(brandCar);
+                c.setVehicle(vehicle);
+                c.setEngine(engine);
+                c.setPower(power);
+                Double kw = c.getKw(this);
+                switch (category) {
+                    case 1:
+                        if (kw < 75.0)
+                            carsAvail.add(c);
+                        break;
+                    case 2:
+                        if (kw > 75.0 && kw <= 120.0)
+                            carsAvail.add(c);
+                        break;
+                    case 3:
+                        if (kw > 120.0)
+                            carsAvail.add(c);
+                        break;
+                    default:
+                        carsAvail.add(c);
+                }
+            }
+            check= true;
+            /*
+            if( true){//checkIfCarRented(d,pickDate, deliveryDate)==true) {
+               // Car c = getCarFromDocument("", d);
+                Car c = new Car();
+                Double kw = c.getKw(this);
+                switch (category) {
+                    case 1:
+                        if (kw < 75.0)
+                            carsAvail.add(c);
+                        break;
+                    case 2:
+                        if (kw > 75.0 && kw <= 120.0)
+                            carsAvail.add(c);
+                        break;
+                    case 3:
+                        if (kw > 120.0)
+                            carsAvail.add(c);
+                        break;
+                    default:
+                        carsAvail.add(c);
+                }
+            }*/
+        }
+        return carsAvail;
+    /*    while(cursor.hasNext()){
+            Document d = cursor.next();
+            System.out.println("Office: "+d.getString("_id") + " CO2 = "+ Math.ceil(d.getDouble("AvgCO2")));
+        }*/
+    }
+
+
+    public ArrayList<Car> getListOfCars(String office, int category,  long pickDate,long deliveryDate, String brand) {
+        MongoCollection<Document> myColl = db.getCollection("cars");
+        MongoCursor<Document> cursor;
+/*
+        Bson match= match(and(eq("cars.Office", office), exists("maintenance", false)));
+        Bson match2 = match(eq("Brand, brand"));
+        Bson unwind = unwind("$cars.availability");
+        Bson sort = sort(descending("count"));
+        Bson group = group(Arrays.asList("$Brand", "$Vehicle", "$Engine"), avg("count", 1));
+        //Bson project = project(fields(include( "AvgCO2")));
+        Bson limit = limit(3);
+/*
+        Bson lookup = lookup(
+                "offices",
+                "_id",
+                "Position",
+                "Office"
+        );
+        Bson project = project(fields(include("AvgCO2", "Office.City", "Office.Region", "Office.Name"), excludeId()));
+
+        MongoCursor<Document> cursor = myColl.aggregate(Arrays.asList( unwind, group, sort, limit))
+                .iterator();
+        while(cursor.hasNext()){
+            Document d = cursor.next();
+            System.out.println("Office: "+d.getString("_id") + " CO2 = "+ Math.ceil(d.getDouble("AvgCO2")));
+        }
+*/
         if(brand.equals("")) {
             cursor = myColl.find(and(eq("cars.Office", office), exists("maintenance", false))).iterator();
         }else{
