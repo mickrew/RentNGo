@@ -567,7 +567,7 @@ public class MongoDBConnection
             Document car = new Document("Brand", c.getBrand().trim())
                     .append("Vehicle", c.getVehicle().trim())
                     .append("Engine", c.getEngine().trim())
-                    .append("Power (hp - kW /rpm)", c.getPower().trim())
+                    .append("Power", c.getPower().trim())
                     .append("AverageFuelConsumption", Double.valueOf(c.getAvgFuelCons()))
                     .append("CO2", Double.valueOf(c.getCo2()))
                     .append("Weight(3p/5p) kg", c.getWeight().trim())
@@ -612,7 +612,7 @@ public class MongoDBConnection
 
 
     public ArrayList<Car> getMostUsedCars(String office, String brand, int category, long pickDate, long deliveryDate){
-        MongoCollection<Document> myColl = db.getCollection("cars1");
+        MongoCollection<Document> myColl = db.getCollection("cars");
         MongoCursor<Document> cursor;
 
         Bson match= match(and(eq("cars.Office", office), exists("maintenance", false)));
@@ -625,7 +625,7 @@ public class MongoDBConnection
         //Bson group = group("$Brand" , sum("count", 1));
         //Bson limit = limit(10);
 
-        if(!brand.contains("")) {
+        if(brand.equals("")) {
             cursor = myColl.aggregate(Arrays.asList(unwind, match, group, sort))
                     .iterator();
         } else {
@@ -807,7 +807,7 @@ public class MongoDBConnection
                 d.getString("GearBox type"),
                 d.getString("Tyre"),
                 d.getString("Traction type"),
-                d.getString("Power (hp - kW /rpm)"),
+                d.getString("Power"),
                 0,
                 "");
 
@@ -915,12 +915,20 @@ public class MongoDBConnection
             System.out.printf(format, "StartOffice: " + d.getString("StartOffice") + " ");
             System.out.printf(format, "EndOffice: " + d.getString("EndOffice") + " ");
 
+            Double priceAccessories = 0.0;
+            try{
+                priceAccessories = d.getDouble("PriceAccessories");
+            } catch (Exception e){
+                priceAccessories = Double.valueOf((d.getInteger("PriceAccessories")));
+            }
+            System.out.printf(format, "Price Accessories: " + Math.ceil(priceAccessories) + "€ ");
+
             List<Document> accessories = d.get("Accessories", List.class);
             if(accessories!=null) {
-                System.out.println("SERVICES: ");
+                System.out.println("Services: ");
                 for (Document service : accessories) {
-                    System.out.println("\tSERVICE NAME: " + service.getString("SERVICES"));
-                    Double priceAccessories;
+                    System.out.println("\tService name: " + service.getString("SERVICES"));
+
 
                     try{
                         priceAccessories = service.getDouble("PRICE VAT INCLUDED ");
@@ -928,7 +936,7 @@ public class MongoDBConnection
                         priceAccessories = Double.valueOf((service.getString("PRICE VAT INCLUDED ")));
                     }
 
-                    System.out.println("\tPRICE VAT INCLUDED: " + priceAccessories + "€");
+                    System.out.println("\tPrice VAT included: " + priceAccessories + "€");
                 }
             }
             System.out.println();
@@ -949,7 +957,6 @@ public class MongoDBConnection
             Document d = cursor.next();
             o = getOfficeFromDocument(d);
         }
-
 
         System.out.println();
 
@@ -1255,7 +1262,6 @@ public class MongoDBConnection
                 System.out.printf(format,"EndOffice: " + d.getString("EndOffice") + " ");
 
 
-
                 Double priceAccessories = 0.0;
                 try{
                     priceAccessories = d.getDouble("PriceAccessories");
@@ -1456,7 +1462,7 @@ public class MongoDBConnection
         MongoCursor<Document> cursor  = myColl.find(and(
                 eq("Brand", c.getBrand()),
                 eq("Vehicle", c.getVehicle()),
-                eq("Power (hp - kW /rpm)", c.getPower())
+                eq("Power", c.getPower())
                 )
         ).iterator();
         Boolean check= true;
@@ -1517,15 +1523,51 @@ public class MongoDBConnection
         MongoCollection<Document> myColl = db.getCollection("orders");
         ArrayList<Document> documents = new ArrayList<>();
         Double priceAccessories = 0.0;
+
+        Long millisDay = 86400000L;
+        Integer numDays = Math.round((dateOfDelivery - dateOfPick) / (millisDay));
+        Double cost = price * numDays;
+
         for(Service s: services){
             Document d = new Document("SERVICES", s.getNameService()).append("PRICE VAT INCLUDED ", s.getPrice())
                     .append("MULTIPLICATOR", s.getMultiplicator());
-            priceAccessories += s.getPrice();
+            if (s.getMultiplicator().equals("day"))
+                priceAccessories += s.getPrice()*numDays;
+            else
+                priceAccessories += s.getPrice();
             documents.add(d);
         }
+
+        Document d1=null;
+
+        Date d = new Date();
+        User u = findUser(email);
+        if (u != null){
+            Integer age = Math.round((d.getTime() - u.getDateOfBirth().getTime())/(millisDay*365));
+
+            if (age < 21 ) {
+                d1 = new Document("SERVICES", "Young Driver 19/20").append("PRICE VAT INCLUDED ", 19.0)
+                        .append("MULTIPLICATOR", "day");
+                documents.add(d1);
+                priceAccessories += 19*numDays;
+            } else if (age < 24){
+                d1 = new Document("SERVICES", "Young Driver 21/24").append("PRICE VAT INCLUDED ", 6.0)
+                        .append("MULTIPLICATOR", "day");
+                documents.add(d1);
+                priceAccessories += 6*numDays;
+            }
+        }
+
+        if (!pickOffice.equals(deliveryOffice)){
+            d1 = new Document("SERVICES", "One Way Same Area").append("PRICE VAT INCLUDED ", 75.0)
+                    .append("MULTIPLICATOR", "per rent");
+            documents.add(d1);
+            priceAccessories += 75;
+        }
+
         Document order = new Document("CarPlate", new Document("CarPlate", plate).append("Brand", brand).append("Vehicle", vehicle))
                 .append("Email", email)
-                .append("CarPrice", price)
+                .append("CarPrice", cost)
                 .append("StartOffice", pickOffice)
                 .append("PickDate", dateOfPick)
                 .append("EndOffice", deliveryOffice)

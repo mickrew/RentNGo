@@ -249,7 +249,7 @@ public class User {
         double total;
 
         if(cars.isEmpty()){
-            System.out.println("Cart is empty");
+            System.out.println("Cart is empty\n");
             return ;
         }
 

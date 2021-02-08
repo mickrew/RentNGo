@@ -194,7 +194,7 @@ public class Admin extends Worker {
                 emailWorker = sc.nextLine();
                 w = db.findWorker(emailWorker);
                 if (w == null){
-                    System.out.println("Worker doesn't exists!");
+                    System.out.println("Worker doesn't exist!");
                     break;
                 }
                 db.deleteWorker(emailWorker);
@@ -202,13 +202,15 @@ public class Admin extends Worker {
         }
 
     }
+
+
     public void promoteWorker(MongoDBConnection db) throws ParseException {
         Scanner sc =new Scanner(System.in);
         System.out.println("Insert the Email of Worker: ");
         String emailWorker = sc.nextLine();
         Worker w = db.findWorker(emailWorker);
         if (w == null){
-            System.out.println("Worker doesn't exists!");
+            System.out.println("Worker doesn't exist!");
             return;
         }
         Admin a = db.findAdmin(emailWorker);
@@ -385,7 +387,7 @@ public class Admin extends Worker {
         String emailWorker = sc.nextLine();
         Worker w = db.findWorker(emailWorker);
         if (w == null){
-            System.out.println("Worker doesn't exists!");
+            System.out.println("Worker doesn't exist!");
             return;
         }
         System.out.println("Which field do you want to modify ? ");
@@ -437,7 +439,7 @@ public class Admin extends Worker {
                 String office = sc.nextLine();
                 Office o = db.findOfficeByName(office);
                 if (o == null){
-                    System.out.println("Office doesn't exists!");
+                    System.out.println("Office doesn't exist!");
                     return;
                 }
                 Integer position = o.getPosition();
@@ -454,7 +456,7 @@ public class Admin extends Worker {
         String carPlate = sc.nextLine();
         Car c = db.findCar(carPlate);
         if (c == null){
-            System.out.println("Car doesn't exists!");
+            System.out.println("Car doesn't exist!");
             return;
         }
 
@@ -501,7 +503,7 @@ public class Admin extends Worker {
         String emailWorker = sc.nextLine();
         Worker w = db.findWorker(emailWorker);
         if (w == null){
-            System.out.println("Worker doesn't exists!");
+            System.out.println("Worker doesn't exist!");
             return;
         }
         w.printUser();
@@ -513,7 +515,7 @@ public class Admin extends Worker {
         String emailUser = sc.nextLine();
         User u = db.findUser(emailUser);
         if (u == null){
-            System.out.println("User doesn't exists!");
+            System.out.println("User doesn't exist!");
             return;
         }
         db.deleteUser(emailUser);

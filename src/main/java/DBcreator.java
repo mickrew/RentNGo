@@ -233,7 +233,7 @@ public class DBcreator {
                     d.getString("GearBox type").trim(),
                     d.getString("Tyre").trim(),
                     d.getString("Traction type").trim(),
-                    d.getString("Power (hp - kW /rpm)").trim(),
+                    d.getString("Power").trim(),
                     d.getInteger("RegistrationYear"),
                     (d.getString("Office")));
 
@@ -252,7 +252,7 @@ public class DBcreator {
                 Document car = new Document("Brand", c.getBrand().trim())
                         .append("Vehicle", c.getVehicle().trim())
                         .append("Engine", c.getEngine().trim())
-                        .append("Power (hp - kW /rpm)", c.getPower().trim())
+                        .append("Power", c.getPower().trim())
                         .append("AverageFuelConsumption", Double.valueOf(c.getAvgFuelCons()))
                         .append("CO2", Double.valueOf(c.getCo2()))
                         .append("Weight(3p/5p) kg", c.getWeight().trim())

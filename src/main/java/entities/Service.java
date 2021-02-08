@@ -83,7 +83,7 @@ public class Service {
                     System.out.println("Value "+i+" out of range");
                 break;
             } else{
-                System.out.println("Service inserted");
+                System.out.println("Service inserted(Insert -2 to exit)");
                 chosenServices.add(services.get(i-1));
             }
         }
