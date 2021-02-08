@@ -262,6 +262,7 @@ public class RentNGo {
                                 System.out.println("1) Get most used car per Office");
                                 System.out.println("2) Get les eco friendly Office");
                                 System.out.println("3) Search user for future discount");
+                                System.out.println("4) Most used accessories per year");
                                 int choice=0;
                                 try {
                                     choice = Integer.valueOf(sc.nextLine());
@@ -320,8 +321,18 @@ public class RentNGo {
                                         db.searchUserForDiscount(date2.getTime(), date1.getTime());
                                         System.out.println();
                                         break;
-                                    case 5:
-                                        //db.getMostUsedCars("Cristoforo Colombo", "");
+                                    case 4:
+                                        System.out.println("Insert the year in which you want to perform statistic: ");
+                                        String yearString = sc.nextLine();
+                                        Integer year = 2020;
+                                        try {
+
+                                            year = Integer.valueOf(yearString);
+                                        } catch (Exception e){
+                                            System.out.println("Wrong year");
+                                            break;
+                                        }
+                                        db.mostUsedAccessories(year);
                                         break;
                                     default:
                                         System.out.println("Wrong choice");
