@@ -233,6 +233,7 @@ public class LevelDBConnection {
         } while(i != Max_N_Cars);
 
     }
+
 /*
         private boolean addCarInCart(String email, String plate, String brand, String engine, String power, String vehicle){
        String key = email + ":cart"; // KEY:= andrea@live.it:cart   VALUE:= AAA11AA~AAA21AA~..

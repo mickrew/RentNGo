@@ -1109,6 +1109,10 @@ public class MongoDBConnection
                         + doc.getInteger("countPrev"));
             }
         }
+
+        MongoCollection<Document> myColl1 = db.getCollection("prevYear");
+        if (myColl !=null) myColl.drop();
+        if (myColl1 !=null) myColl1.drop();
     }
     
     
@@ -1558,12 +1562,7 @@ public class MongoDBConnection
             }
         }
 
-        if (!pickOffice.equals(deliveryOffice)){
-            d1 = new Document("SERVICES", "One Way Same Area").append("PRICE VAT INCLUDED ", 75.0)
-                    .append("MULTIPLICATOR", "per rent");
-            documents.add(d1);
-            priceAccessories += 75;
-        }
+
 
         Document order = new Document("CarPlate", new Document("CarPlate", plate).append("Brand", brand).append("Vehicle", vehicle))
                 .append("Email", email)
