@@ -52,8 +52,8 @@ public class RentNGo {
             db = new MongoDBConnection("RentNGO");
             ldb = new LevelDBConnection();
             ldb.openDB();
-      //      ldb.deleteAllCarsInfo();
-       //     ldb.updateLDB(db.getListOfRecentOrders());
+                //ldb.deleteAllCarsInfo();
+                //ldb.updateLDB(db.getListOfRecentOrders());
             ldb.closeDB();
             db.closeConnection();
         } catch (Exception e){

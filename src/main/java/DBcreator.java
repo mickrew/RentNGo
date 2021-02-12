@@ -12,10 +12,7 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.json.JsonReader;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
+import java.io.*;
 import java.lang.reflect.Array;
 import java.text.ParseException;
 import java.util.*;
@@ -364,7 +361,109 @@ public class DBcreator {
         }
     }
 
-    public static void main(String args[]) throws ParseException {
+
+    private static String getPassword(String prompt) {
+
+        String password = "";
+        ConsoleEraser consoleEraser = new ConsoleEraser();
+        System.out.print(prompt);
+        BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+        consoleEraser.start();
+        try {
+            password = in.readLine();
+        }
+        catch (IOException e){
+            System.out.println("Error trying to read your password!");
+            System.exit(1);
+        }
+
+        consoleEraser.halt();
+        System.out.print("\b");
+
+        return password;
+    }
+
+    static class EraserThread implements Runnable {
+        private boolean stop;
+
+        public EraserThread(String prompt) {
+            System.out.print(prompt);
+        }
+
+        public void run () {
+            stop = true;
+            while (stop) {
+                System.out.print("\010*");
+                try {
+                    Thread.currentThread().sleep(1);
+                } catch(InterruptedException ie) {
+                    ie.printStackTrace();
+                }
+            }
+        }
+
+
+        public void stopMasking() {
+            this.stop = false;
+        }
+    }
+
+    public static String readPassword2 (String prompt) {
+        EraserThread et = new EraserThread(prompt);
+        Thread mask = new Thread(et);
+        mask.start();
+
+        BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+        String password = "";
+
+        try {
+            password = in.readLine();
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+        }
+        // stop masking
+        et.stopMasking();
+        // return the password entered by the user
+        return password;
+    }
+
+    public static class ConsoleEraser extends Thread {
+        private boolean running = true;
+        public void run() {
+            while (running) {
+                System.out.print("\b ");
+                try {
+                    Thread.currentThread().sleep(1);
+                }
+                catch(InterruptedException e) {
+                    break;
+                }
+            }
+        }
+        public synchronized void halt() {
+            running = false;
+        }
+    }
+
+    public static String getPasswordWithinEclipse(String msg)
+            throws IOException
+    {
+        // In Eclipse IDE
+        System.out.print(msg);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(
+                System.in));
+        String password = reader.readLine();
+        if (password != null) {
+            if (password.length() <= 0) {
+                System.out.println("Invalid input\n");
+                throw new IOException("Error reading in password");
+            }
+        }
+        return password;
+    }
+
+
+    public static void main(String args[]) throws ParseException, IOException {
 
         ConnectionString uri = new ConnectionString(
                 "mongodb://localhosts:27017");
@@ -379,7 +478,11 @@ public class DBcreator {
         //fillOrdersWithInfo(db);
         //FindCar("AA016AA", db);
         //removeCar("AA272AB", db);
-        setCarPrice(db);
+        //setCarPrice(db);
+        System.out.println("Start");
+
+        String password = getPasswordWithinEclipse("Password: ");
+
         System.out.println("fine");
 
 

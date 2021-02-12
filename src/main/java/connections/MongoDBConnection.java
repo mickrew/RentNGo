@@ -1,5 +1,6 @@
 package main.java.connections;
 
+import com.mongodb.ReadConcern;
 import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
 import com.mongodb.client.*;
@@ -60,88 +61,20 @@ public class MongoDBConnection
          mongoClient = MongoClients.create(
                 "mongodb://172.16.3.134:27022, 172.16.3.135:27022, 172.16.3.137:27022/");
 
-        db = mongoClient.getDatabase("RentNGO").withReadPreference(ReadPreference.nearest()).withWriteConcern(WriteConcern.W2);
+        //db = mongoClient.getDatabase("RentNGO").withReadPreference(ReadPreference.nearest()).withWriteConcern(WriteConcern.W2);
+
+        db = mongoClient.getDatabase("RentNGO").withReadConcern(ReadConcern.MAJORITY).withWriteConcern(WriteConcern.MAJORITY);
 
         Consumer<Document> printFormattedDocuments = new Consumer<Document>() {
             @Override
             public void accept(Document document) {
                 System.out.println(document.toJson(JsonWriterSettings.builder().indent(true).build()));
             }
-        }; /*
-        MongoCollection<Document> myColl = db.getCollection("offices");
-        MongoCursor<Document> cursor  = myColl.find().iterator();
-        while(cursor.hasNext()){
-            Document d = cursor.next();
-            Office o = new Office();
-            //o.setCapacity(Integer.valueOf(d.getString("Capacity")));
-            o.setCity(d.getString("City"));
-            o.setId(d.getString("ID"));
-            o.setName(d.getString("Name"));
-            o.setRegion(d.getString("Region"));
-            o.setPosition(Integer.valueOf(d.getString("Position")));
-            offices.add(o);
-        }
+        };
 
-        myColl = db.getCollection("services");
-        cursor  = myColl.find().iterator();
-        int i=0;
-        while(cursor.hasNext()){
-            Document d = cursor.next();
-            Service s = new Service();
-            s.setMultiplicator(d.getString("MULTIPLICATOR"));
-            s.setPrice(Double.valueOf(d.getString("PRICE VAT INCLUDED ")));
-            s.setNameService(d.getString("SERVICES"));
-            switch (s.getNameService()){
-                case "Deductible for insolvency or passive claim / car accident":
-                    servicesWorker.add(s);
-                    break;
-                case "Administrative expenses for fines/tolls/parking":
-                    servicesWorker.add(s);
-                    break;
-                case "Special vehicle clean":
-                    servicesWorker.add(s);
-                    break;
-                case "Nav system loss":
-                    servicesWorker.add(s);
-                    break;
-                case "Refective Jacket Loss":
-                    servicesWorker.add(s);
-                    break;
-                case "Administrative expenses for damages":
-                    servicesWorker.add(s);
-                    break;
-                case "One Way Same Area":
-                    servicesWorker.add(s);
-                    break;
-                case "One Way Mainland":
-                    servicesWorker.add(s);
-                    break;
-                case "One Way Mainland-Island":
-                    servicesWorker.add(s);
-                    break;
-                case "Plate loss":
-                    servicesWorker.add(s);
-                    break;
-                case "Keys Loss":
-                    servicesWorker.add(s);
-                    break;
-                case "Car documents loss":
-                    servicesWorker.add(s);
-                    break;
-                case "Truck Service":
-                    servicesWorker.add(s);
-                    break;
-                default:
-                    if(!s.getNameService().equals("Young Driver 19/20") && !s.getNameService().equals("Young Driver 21/24"))
-                        services.add(s);
-            }
-            i++;
-            //services.add(s);
-        }
-       */
     }
 
-    // String
+
 
     public ArrayList<Service> getServicesWorker(){
         ArrayList<Service> servicesUser = new ArrayList<>();
@@ -1111,7 +1044,7 @@ public class MongoDBConnection
         }
 
         MongoCollection<Document> myColl1 = db.getCollection("prevYear");
-        if (myColl !=null) myColl.drop();
+        if (myColl !=null) myColl.drop(); 
         if (myColl1 !=null) myColl1.drop();
     }
     

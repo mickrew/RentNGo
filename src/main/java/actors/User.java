@@ -1,5 +1,6 @@
 package main.java.actors;
 
+import main.java.DBcreator;
 import main.java.connections.LevelDBConnection;
 import main.java.connections.MongoDBConnection;
 import main.java.entities.Car;
@@ -8,6 +9,9 @@ import main.java.entities.Order;
 import main.java.entities.Service;
 import org.jasypt.util.text.BasicTextEncryptor;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -96,6 +100,7 @@ public class User {
     public void setDateofbirth(Date dateOfBirth){
         this.dateOfBirth = dateOfBirth;
     }
+
 
 
     public static User login(){

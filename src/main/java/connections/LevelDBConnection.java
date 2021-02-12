@@ -136,15 +136,15 @@ public class LevelDBConnection {
         String value;
         int i = 0;
         do {
-            key = email + ":cart"+i+":brand";
+            key = email + ":cart:"+i+":brand";
             value = getValue(key);
             if(value != null){
                 Car c = new Car();
                 c.setBrand(value);
-                key = email + ":cart"+i+":vehicle";
+                key = email + ":cart:"+i+":vehicle";
                 value = getValue(key);
                 c.setVehicle(value);
-                key = email + ":cart"+i+":power";
+                key = email + ":cart:"+i+":power";
                 value = getValue(key);
                 c.setPower(value);
                 cars.add(c);
@@ -220,12 +220,12 @@ public class LevelDBConnection {
         //System.out.println("Cart full");
         int i = 0;
         do {
-            String key = email + ":cart"+i+":brand";
+            String key = email + ":cart:"+i+":brand";
             if(getValue(key) == null){
                 putValue(key, brand);
-                key = email + ":cart"+i+":vehicle";
+                key = email + ":cart:"+i+":vehicle";
                 putValue(key, vehicle);
-                key = email + ":cart"+i+":power";
+                key = email + ":cart:"+i+":power";
                 putValue(key, power);
                 return ;
             }
@@ -236,7 +236,7 @@ public class LevelDBConnection {
 
 /*
         private boolean addCarInCart(String email, String plate, String brand, String engine, String power, String vehicle){
-       String key = email + ":cart"; // KEY:= andrea@live.it:cart   VALUE:= AAA11AA~AAA21AA~..
+       String key = email + ":cart:"; // KEY:= andrea@live.it:cart   VALUE:= AAA11AA~AAA21AA~..
        String s = getValue(key);
        if(s!=null){
            s += plate +  "~";
@@ -261,19 +261,19 @@ public class LevelDBConnection {
 */
 
     private void deleteCars(String email){
-        //String key = email + ":cart";
+        //String key = email + ":cart:";
         //deleteValue(key);
         int i = 0;
         do {
-            String key = email + ":cart"+i+":brand";
+            String key = email + ":cart:"+i+":brand";
             if(getValue(key) != null){
                 deleteValue(key);
             }
-            key = email + ":cart"+i+":vehicle";
+            key = email + ":cart:"+i+":vehicle";
             if(getValue(key)!=null){
                 deleteValue(key);
             }
-            key = email + ":cart"+i+":power";
+            key = email + ":cart:"+i+":power";
             if(getValue(key)!=null){
                 deleteValue(key);
             }
@@ -372,7 +372,7 @@ public class LevelDBConnection {
         value = getpickOffice + "~" + pickDate.getTime() + "~" + deliveryDate.getTime() + "~" + deliveryOffice;
         putValue(key, value);
 
-        key = u.getEmail() + ":cart";
+        key = u.getEmail() + ":cart:";
         value = "";
         String carsInCart = getValue(key);
         int j = 0;
@@ -539,7 +539,7 @@ public class LevelDBConnection {
 
 
     public void deleteUserCart(String email) {
-       /* String key = email + ":cart";
+       /* String key = email + ":cart:";
         deleteValue(key);
         key = email + ":order";
         deleteValue(key);
@@ -700,22 +700,22 @@ public class LevelDBConnection {
     public void deleteCarFromCart(String email, String brand, String vehicle, String power) {
         int i = 0;
         do {
-            String key = email + ":cart"+i+":brand";
+            String key = email + ":cart:"+i+":brand";
             String cartBrand = getValue(key);
             if(cartBrand!=null){
-                key = email + ":cart" + i + ":vehicle";
+                key = email + ":cart:" + i + ":vehicle";
                 String cartVehicle = getValue(key);
                 if (cartVehicle != null){
-                    key = email + ":cart" + i + ":power";
+                    key = email + ":cart:" + i + ":power";
                     String cartPower = getValue(key);
                     if (cartBrand!= null && cartBrand.equals(brand) && cartVehicle.equals(vehicle) && cartPower.equals(power)) {
-                        key = email + ":cart" + i + ":brand";
+                        key = email + ":cart:" + i + ":brand";
                         deleteValue(key);
 
-                        key = email + ":cart" + i + ":vehicle";
+                        key = email + ":cart:" + i + ":vehicle";
                         deleteValue(key);
 
-                        key = email + ":cart" + i + ":power";
+                        key = email + ":cart:" + i + ":power";
                         deleteValue(key);
                     }
                 }
