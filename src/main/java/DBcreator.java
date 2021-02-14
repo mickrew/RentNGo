@@ -336,6 +336,9 @@ public class DBcreator {
         }
     }
 
+
+
+
     public static void setCarPrice(MongoDatabase db){
         MongoCollection<Document> cars = db.getCollection("cars");
         MongoCollection<Document> listOrders = db.getCollection("newOrders1");
@@ -481,8 +484,15 @@ public class DBcreator {
         //setCarPrice(db);
         System.out.println("Start");
 
-        String password = getPasswordWithinEclipse("Password: ");
+        //String password = getPasswordWithinEclipse("Password: ");
+        Scanner sc = new Scanner(System.in);
+        String password = sc.next();
+        Integer lenght = password.length();
 
+        for(int i=0; i< lenght; i++ ){
+            System.out.print("\b");
+        }
+        System.out.flush();
         System.out.println("fine");
 
 

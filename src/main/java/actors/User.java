@@ -110,10 +110,13 @@ public class User {
                 String email = sc.nextLine();
                 System.out.println("Insert the password");
                 String password = sc.nextLine();
+
                 MongoDBConnection db = new MongoDBConnection("RentNGO");
 
                 User u =  db.login(email, password);
+
                 db.closeConnection();
+
                 return u;
             } catch (Exception e){
                 e.printStackTrace();

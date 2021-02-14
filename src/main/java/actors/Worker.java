@@ -89,6 +89,7 @@ public class Worker extends User {
         } else if (choice==2){
             System.out.print("Insert Brand: ");
             String brand = sc.nextLine();
+
             db.findCarByBrand(brand);
             System.out.println();
         }

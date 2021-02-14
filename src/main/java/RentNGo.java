@@ -4,7 +4,7 @@ package main.java;
 import main.java.connections.LevelDBConnection;
 import main.java.connections.MongoDBConnection;
 import main.java.actors.Admin;
-import main.java.actors.UnregisteredUser;
+
 import main.java.actors.User;
 import main.java.actors.Worker;
 import main.java.entities.Car;
@@ -27,27 +27,10 @@ public class RentNGo {
     static private User u;
 
 
-    public static ArrayList<String> setParameters(){
-        String email;
-        String password;
-        ArrayList<String> parameters= new ArrayList<String>();
-
-        System.out.println("Insert the Email");
-        Scanner sc = new Scanner(System.in);
-        email = sc.nextLine();
-        parameters.add(email);
-
-        System.out.println("Insert the Password");
-        password = sc.nextLine();
-        parameters.add(password);
-
-
-        return parameters;
-    }
-
-    public static void main(String args[]) throws ParseException {
+       public static void main(String args[]) throws ParseException {
         Logger mongoLogger = Logger.getLogger( "org.mongodb.driver" );
         mongoLogger.setLevel(Level.SEVERE);
+
        try {
             db = new MongoDBConnection("RentNGO");
             ldb = new LevelDBConnection();
@@ -79,7 +62,6 @@ public class RentNGo {
             if(i == 1) {
                 //db = new MongoDBConnection("RentNGO");
                 User u = User.login();
-
                 //db.closeConnection();
 
                 if (u == null) {
