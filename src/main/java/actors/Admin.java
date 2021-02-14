@@ -1,5 +1,6 @@
 package main.java.actors;
 
+import com.mongodb.client.MongoDatabase;
 import main.java.RentNGo;
 import main.java.connections.MongoDBConnection;
 import main.java.entities.Car;
@@ -521,6 +522,29 @@ public class Admin extends Worker {
         db.deleteUser(emailUser);
     }
 
+    public void addRemoveCars(MongoDBConnection db){
+        System.out.println("0) Exit");
+        System.out.println("1) Add car");
+        System.out.println("2) Remove car");
+        Scanner sc = new Scanner(System.in);
+        int i=0;
+        try {
+            i = Integer.valueOf(sc.nextLine());
+        } catch (Exception e) {
+            System.out.println("Error. Didn't insert an integer");
+
+        }
+        switch (i) {
+            case 1:
+                insertNewCar(db);
+                break;
+            case 2:
+                deleteCar(db);
+                break;
+            default:
+                return;
+        }
+    }
 
     public static void addRemoveOffice (MongoDBConnection db) throws ParseException {
         Integer i=0;
@@ -591,4 +615,85 @@ public class Admin extends Worker {
     }
 
 
+    public void performAnalytics(MongoDBConnection db) throws ParseException {
+        System.out.println("1) Get most used car per Office");
+        System.out.println("2) Get les eco friendly Office");
+        System.out.println("3) Search user for future discount");
+        System.out.println("4) Most used accessories per year");
+        int choice=0;
+        Scanner sc = new Scanner(System.in);
+        try {
+            choice = Integer.valueOf(sc.nextLine());
+        }
+        catch(Exception e){
+            choice = 100;
+        }
+
+        /*
+         * fare try catch per date
+         * */
+        switch (choice) {
+            case 1:
+                System.out.println("Insert the Office: ");
+                //String office = sc.nextLine();
+                Office o = Office.selectOffice(db.listOffices());
+                if(o == null)
+                    break;
+                System.out.print("Insert the date in which you want to start statistic: ");
+                String date = sc.nextLine();
+                Date date1;
+                try {
+                    date1 = new SimpleDateFormat("dd/MM/yyyy").parse(date.trim());
+                } catch(Exception e){
+                    System.out.println("Wrong date.");
+                    break;
+                }
+                //db.getMostUsedCarsPerOffice(office.trim(), date1.getTime());
+                db.getMostUsedCarsPerOffice(o.getName(), date1.getTime());
+                break;
+            case 2:
+                db.getLessEcoFriendlyOffice();
+                break;
+            case 3:
+                System.out.print("Insert the year in which you want to start statistic (ONLY THE YEAR): ");
+                String lastYear = sc.nextLine();
+
+                System.out.print("Insert the date in which you want to end statistic (ONLY THE YEAR): ");
+                String currentYear = sc.nextLine();
+                Date date2;
+                try {
+                    date1 = new SimpleDateFormat("dd/MM/yyyy").parse("01/01/" + lastYear.trim());
+                    if(date1.getTime() > new Date().getTime()) {
+                        System.out.println("Wrong date.");
+                        break;
+                    }
+                    date2 = new SimpleDateFormat("dd/MM/yyyy").parse("01/01/" + currentYear.trim());
+                    if((date2.getTime() < date1.getTime()) || (date2.getTime() > new Date().getTime())) {
+                        System.out.println("Wrong date.");
+                        break;
+                    }
+                } catch(Exception e){
+                    System.out.println("Wrong Date.");
+                    break;
+                }
+                db.searchUserForDiscount(date2.getTime(), date1.getTime());
+                System.out.println();
+                break;
+            case 4:
+                System.out.println("Insert the year in which you want to perform statistic: ");
+                String yearString = sc.nextLine();
+                Integer year = 2020;
+                try {
+
+                    year = Integer.valueOf(yearString);
+                } catch (Exception e){
+                    System.out.println("Wrong year");
+                    break;
+                }
+                db.mostUsedAccessories(year);
+                break;
+            default:
+                System.out.println("Wrong choice");
+        }
+    }
 }

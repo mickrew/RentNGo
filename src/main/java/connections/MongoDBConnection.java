@@ -1,11 +1,11 @@
 package main.java.connections;
 
 import com.mongodb.ReadConcern;
-import com.mongodb.ReadPreference;
+
 import com.mongodb.WriteConcern;
 import com.mongodb.client.*;
 
-import java.lang.reflect.Array;
+
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -15,7 +15,7 @@ import java.util.function.Consumer;
 
 import com.mongodb.client.model.*;
 import main.java.actors.Admin;
-import main.java.actors.UnregisteredUser;
+
 import main.java.actors.User;
 import main.java.actors.Worker;
 import main.java.entities.Car;
@@ -27,7 +27,7 @@ import org.bson.conversions.Bson;
 import org.bson.json.JsonWriterSettings;
 import org.jasypt.util.text.BasicTextEncryptor;
 
-import javax.print.Doc;
+
 
 import static com.mongodb.client.model.Projections.*;
 import static com.mongodb.client.model.Updates.*;
@@ -46,12 +46,11 @@ public class MongoDBConnection
             return doc -> System.out.println(doc.toJson(JsonWriterSettings.builder().indent(true).build()));
     }
 
-    //Consumer<Document> printFormattedDocuments;
+
     private MongoClient mongoClient;
     private MongoDatabase db;
-    private ArrayList<Office> offices = new ArrayList<Office>();
     private ArrayList<Service> services = new ArrayList<Service>();
-    private ArrayList<Service> servicesWorker = new ArrayList<Service>();
+
 
     public String pattern = "dd/MM/yyyy";
     public SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
@@ -551,12 +550,9 @@ public class MongoDBConnection
         Bson match= match(and(eq("cars.Office", office), exists("maintenance", false)));
         Bson match2 = match(eq("Brand", brand));
         Bson unwind = unwind("$cars");
-        //Bson unwind2 = unwind("$cars.availability", new UnwindOptions().preserveNullAndEmptyArrays(true));
+
         Bson sort = sort(descending("count"));
         Bson group = group(Arrays.asList("$Brand", "$Vehicle", "$Engine", "$Power", "$cars.availability"), sum("count", 1));
-        //Bson group2 = group(Arrays.asList("$_id.Brand", "$_id.Vehicle", "$_id.Engine"), sum("sum", "$count"));
-        //Bson group = group("$Brand" , sum("count", 1));
-        //Bson limit = limit(10);
 
         if(brand.equals("")) {
             cursor = myColl.aggregate(Arrays.asList(unwind, match, group, sort))
@@ -577,7 +573,7 @@ public class MongoDBConnection
             String power = d.get(3).toString();
 
             if(d.get(4)!=null){
-                ArrayList<Document> documents = (ArrayList<Document>) d.get(4);
+                    ArrayList<Document> documents = (ArrayList<Document>) d.get(4);
                 for(Document doc: documents){
                     Long dateP = doc.getLong("pickDate");
                     Long dateD = doc.getLong("deliveryDate");
@@ -620,101 +616,11 @@ public class MongoDBConnection
                 }
             }
             check= true;
-            /*
-            if( true){//checkIfCarRented(d,pickDate, deliveryDate)==true) {
-               // Car c = getCarFromDocument("", d);
-                Car c = new Car();
-                Double kw = c.getKw(this);
-                switch (category) {
-                    case 1:
-                        if (kw < 75.0)
-                            carsAvail.add(c);
-                        break;
-                    case 2:
-                        if (kw > 75.0 && kw <= 120.0)
-                            carsAvail.add(c);
-                        break;
-                    case 3:
-                        if (kw > 120.0)
-                            carsAvail.add(c);
-                        break;
-                    default:
-                        carsAvail.add(c);
-                }
-            }*/
+
         }
         return carsAvail;
-    /*    while(cursor.hasNext()){
-            Document d = cursor.next();
-            System.out.println("Office: "+d.getString("_id") + " CO2 = "+ Math.ceil(d.getDouble("AvgCO2")));
-        }*/
+
     }
-
-
-    public ArrayList<Car> getListOfCars(String office, int category,  long pickDate,long deliveryDate, String brand) {
-        MongoCollection<Document> myColl = db.getCollection("cars");
-        MongoCursor<Document> cursor;
-/*
-        Bson match= match(and(eq("cars.Office", office), exists("maintenance", false)));
-        Bson match2 = match(eq("Brand, brand"));
-        Bson unwind = unwind("$cars.availability");
-        Bson sort = sort(descending("count"));
-        Bson group = group(Arrays.asList("$Brand", "$Vehicle", "$Engine"), avg("count", 1));
-        //Bson project = project(fields(include( "AvgCO2")));
-        Bson limit = limit(3);
-/*
-        Bson lookup = lookup(
-                "offices",
-                "_id",
-                "Position",
-                "Office"
-        );
-        Bson project = project(fields(include("AvgCO2", "Office.City", "Office.Region", "Office.Name"), excludeId()));
-
-        MongoCursor<Document> cursor = myColl.aggregate(Arrays.asList( unwind, group, sort, limit))
-                .iterator();
-        while(cursor.hasNext()){
-            Document d = cursor.next();
-            System.out.println("Office: "+d.getString("_id") + " CO2 = "+ Math.ceil(d.getDouble("AvgCO2")));
-        }
-*/
-        if(brand.equals("")) {
-            cursor = myColl.find(and(eq("cars.Office", office), exists("maintenance", false))).iterator();
-        }else{
-            cursor = myColl.find(and(eq("cars.Office", office), eq("Brand", brand), exists("maintenance", false))).iterator();
-        }
-        ArrayList<Car> carsAvail = new ArrayList<>();
-        boolean check =true;
-        while(cursor.hasNext()){
-            Document d = cursor.next();
-            if(checkIfCarRented(d,pickDate, deliveryDate)==true) {
-                Car c = getCarFromDocument("", d);
-                Double kw = c.getKw(this);
-                switch (category) {
-                    case 1:
-                        if (kw < 75.0)
-                            carsAvail.add(c);
-                        break;
-                    case 2:
-                        if (kw > 75.0 && kw <= 120.0)
-                            carsAvail.add(c);
-                        break;
-                    case 3:
-                        if (kw > 120.0)
-                            carsAvail.add(c);
-                        break;
-                    default:
-                        carsAvail.add(c);
-                }
-            }
-
-
-
-        }
-        System.out.println(carsAvail.size());
-        return carsAvail;
-    }
-
 
 
     public void updateUser(){
@@ -1246,23 +1152,6 @@ public class MongoDBConnection
         return servicesUser;
     }
 
-    public ArrayList<Order> getListOfRecentOrders() {
-        MongoCollection<Document> myColl = db.getCollection("orders");
-        Date d =new Date();
-        MongoCursor<Document> cursor = myColl.find(gt("DeliveryDate", d.getTime())).iterator();
-        ArrayList<Order> orders = new ArrayList<>();
-        while(cursor.hasNext()){
-            Order o =new Order();
-            Document doc = cursor.next();
-            o.setCar(doc.getString("CarPlate"));
-            Date dPick = new Date(Long.valueOf(doc.getLong("PickDate")));
-            o.setPickDate(dPick);
-            Date dDelivery = new Date(Long.valueOf(doc.getLong("DeliveryDate")));
-            o.setDeliveryDate(dDelivery);
-            orders.add(o);
-        }
-        return orders;
-    }
 
     public void updateWorkerOffice(String emailWorker,String office) {
         MongoCollection<Document> myColl = db.getCollection("users");
@@ -1334,39 +1223,9 @@ public class MongoDBConnection
         System.out.println("");
     }
 
-    public boolean checkIfCarRented(Document d, long pickDate, long deliveryDate)  {
-        boolean check = true;
-        List<Document> cars = d.get("cars", List.class); // if there are some cars (carPlates)
-        for(Document doc: cars){
-            List<Document> availability = doc.get("availability", List.class);
-            if (availability != null && !availability.isEmpty()) {
-                for (Document avail : availability) { // check if car is available in that period
-                    Long dateP = avail.getLong("pickDate");
-                    Long dateD = avail.getLong("deliveryDate");
-                    if ((
-                            (dateP <= pickDate) && (dateD >= pickDate)
-                    ) ||
-                            (
-                                    (dateD >= deliveryDate) && (dateP <= deliveryDate)
-                            ) ||
-                            (
-                                    (pickDate <= dateP) && (deliveryDate >= dateD)
-                            )
-                    ) {
-                        check = false;
-                    }
-                }
-            }
-            if (check == true) {
-                return true;
-            }
-            check= true;
-        }
-        return false;
-    }
-
-    public User login(String email, String password) throws ParseException {
+   public User login(String email, String password) throws ParseException {
         MongoCollection<Document> myColl = db.getCollection("users");
+
         BasicTextEncryptor bte = new BasicTextEncryptor();
         bte.setPassword("rentngo");
 
@@ -1390,10 +1249,10 @@ public class MongoDBConnection
         return null;
     }
 
-    public void procedeWithOrder(Car c, Long dateOfPick,Long dateOfDelivery, String email, String pickOffice, String deliveryOffice, ArrayList<Service> services) {
+    public boolean procedeWithOrder(Car c, Long dateOfPick,Long dateOfDelivery, String email, String pickOffice, String deliveryOffice, ArrayList<Service> services) {
         if(c.getBrand() == null || c.getVehicle()== null) {
             System.out.println("Error");
-            return;
+            return false;
         }
         MongoCollection<Document> myColl = db.getCollection("cars");
         MongoCursor<Document> cursor  = myColl.find(and(
@@ -1402,6 +1261,7 @@ public class MongoDBConnection
                 eq("Power", c.getPower())
                 )
         ).iterator();
+
         Boolean check= true;
         if(cursor.hasNext()) { // if the car with that brand and that vehicle exists
             Document d = cursor.next();
@@ -1446,13 +1306,14 @@ public class MongoDBConnection
 
                         insertNewOrder(plate, c.getBrand(), c.getVehicle(), email, dateOfPick, dateOfDelivery, pickOffice, deliveryOffice,
                                 "Booked", Math.ceil(c.calcolatePrice()), services);
-                        return;
+                        return true;
                     }
                 }
                 check= true;
             }
         }
         System.out.println("Car Already Rented. Please choose another one or select different dates");
+        return false;
     }
 
     public void insertNewOrder(String plate, String brand, String vehicle, String email, Long dateOfPick, Long dateOfDelivery, String pickOffice, String deliveryOffice,

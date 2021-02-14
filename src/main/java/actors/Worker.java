@@ -206,30 +206,12 @@ public class Worker extends User {
         int p=0;
         ArrayList<Service> services = Service.chooseServices(db.getServicesWorker());
 
-    /*    do {
-            for(Service s: services){
-                System.out.print(p+") ");
-                s.printService();
-                p++;
-            }
-            System.out.println("Select one (Press -1 to exit)");
-            try{
-                p=Integer.valueOf(sc.nextLine());
-            } catch (Exception e){
-                p=-1;
-            }
-            if(p>=0 && p<services.size()){
-                if(!damage.contains(services.get(p).getNameService())) {
-                    damage += services.get(p).getName() + ", ";
-                    damageCost += services.get(p).getPrice();
-                    p=0;
-                }
-            }
-        }while(p!=-1); */
+
         System.out.println("The list of additional services is: " + damage );
         System.out.println("The surcharge is: " + Math.ceil(damageCost)+ "€\n");
         db.changeStatusOrder(plate, email, "DeliveryDate",d, "Completed", services, damageCost);
     }
+
     public void makeCarUnavailable(MongoDBConnection db, LevelDBConnection ldb, Scanner sc) {
         System.out.println("Insert the plate:");
         String plate = sc.nextLine();
