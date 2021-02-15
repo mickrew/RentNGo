@@ -1327,6 +1327,7 @@ public class MongoDBConnection
                     if (car.equals(plate)) {
                         Bson filter = Filters.eq("cars.CarPlate", plate);
                         myColl.updateOne(filter, set("cars.$.maintenance", 0));
+                        myColl.updateOne(filter, set("cars.$.availability", new ArrayList<Document>()));
                     }
                 }
                 System.out.println("Do you want to change the status of a car in available? (Y/N)");
@@ -1403,20 +1404,16 @@ public class MongoDBConnection
                             ));
                             myColl.updateOne(filter, set("cars.$.availability", documents));
                         }
-
-                        Double discount = Double.valueOf(user.getDiscount());
-                        if(discount==null)
-                            discount=0.0;
-                        Double finalPrice = 0.0;
                         Double price = Math.ceil(c.calcolatePrice());
-
-                        Double diff = (discount/100) * price;
-
-                        if (discount==0)
-                            finalPrice = price;
-                        else
+                        Double finalPrice = Math.ceil(c.calcolatePrice());
+                        Double discount = 0.0;
+                        if(user.getDiscount()!=null) {
+                            discount = Double.valueOf(user.getDiscount());
+                            if (discount == null)
+                                discount = 0.0;
+                            Double diff = (discount / 100) * price;
                             finalPrice = price - diff;
-
+                        }
 
                         /*
                         * Riepilogo ordine
