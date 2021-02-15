@@ -190,7 +190,6 @@ public class User {
         }
 
     public boolean searchForCar(MongoDBConnection db, LevelDBConnection ldb, User u, Scanner sc) {
-
         Order o = u.createOrder(db.listOffices());
         if(o == null){
             return false;
@@ -200,14 +199,12 @@ public class User {
         System.out.println("1) Class  (55-75kw)");
         System.out.println("2) Class  (76-120kw)");
         System.out.println("3) Class  (121-over)");
-
         try {
             category = Integer.valueOf(sc.nextLine());
         }
         catch(Exception e){
             category = 4;
         }
-
         String choice;
         System.out.println("Do you want to look for a specific Brand? Y/N");
         choice = sc.nextLine();
@@ -218,12 +215,10 @@ public class User {
         } else {
             brand = "";
         }
-       try {
-           ldb.searchCar(o.getpickOffice(), o.getDeliveryOffice(), o.getPickDate(), o.getDeliveryDate(), db.getMostUsedCars(o.getpickOffice(),
-                   brand, category, o.getPickDate().getTime(), o.getDeliveryDate().getTime()), u);
-       } catch (Exception e){
-           return false;
-       }
+       // ldb.searchCar(o.getpickOffice(),o.getDeliveryOffice(), o.getPickDate(), o.getDeliveryDate(), db.getListOfCars(o.getpickOffice(),
+         //       category, o.getPickDate().getTime(), o.getDeliveryDate().getTime(), brand), u);
+        ldb.searchCar(o.getpickOffice(),o.getDeliveryOffice(), o.getPickDate(), o.getDeliveryDate(), db.getMostUsedCars(o.getpickOffice(),
+                brand, category, o.getPickDate().getTime(), o.getDeliveryDate().getTime()), u);
         return true;
     }
 
@@ -261,7 +256,7 @@ public class User {
         ArrayList<Car> cars = ldb.getListOfCarsInCart(u.getEmail());
         double total;
 
-        if(cars==null || cars.isEmpty() ){
+        if(cars.isEmpty()){
             System.out.println("Cart is empty\n");
             return ;
         }
@@ -280,7 +275,6 @@ public class User {
         System.out.println("Insert another button to show the main menu");
         String  choice = sc.nextLine();
         if(choice.equals("Yes")){
-
             //Choose accessories
 
             ArrayList<Service> services = Service.chooseServices(db.getServices());
@@ -289,11 +283,8 @@ public class User {
             Car c = u.chooseCar(cars);
             if(c == null)
                 return;
-
-            Boolean b = db.procedeWithOrder(c, o.getPickDate().getTime(), o.getDeliveryDate().getTime(), email, o.getpickOffice(), o.getDeliveryOffice(), services);
-            if (b)
-                 ldb.deleteUserCart(email);
-
+            db.procedeWithOrder(c, o.getPickDate().getTime(), o.getDeliveryDate().getTime(), email, o.getpickOffice(), o.getDeliveryOffice(), services);
+            ldb.deleteUserCart(email);
         } else if (choice.equals("Delete")) {
             System.out.println("Choose a car:");
             Car c = u.chooseCar(cars);
