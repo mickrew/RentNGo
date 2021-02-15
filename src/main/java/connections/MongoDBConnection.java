@@ -543,6 +543,44 @@ public class MongoDBConnection
         }
     }
 
+    private Boolean checkCarAvailability(String carPlate, List<Document> documents, Long pickDate, Long deliveryDate){
+        if(documents == null)
+            return true;
+        Date d = new Date();
+        Boolean check = true;
+        ArrayList<Document> avail = new ArrayList<>();
+
+        for(Document doc: documents){
+            Long dateP = doc.getLong("pickDate");
+            Long dateD = doc.getLong("deliveryDate");
+            if ((
+                    (dateP <= pickDate) && (dateD >= pickDate)
+            ) ||
+                    (
+                            (dateD >= deliveryDate) && (dateP <= deliveryDate)
+                    ) ||
+                    (
+                            (pickDate <= dateP) && (deliveryDate >= dateD)
+                    )
+            ) {
+                check = false;
+            }
+            if(carPlate!=null && dateD >= d.getTime()){
+                avail.add(new Document("pickDate", dateP).append(
+                        "deliveryDate", dateD
+                ));
+            }
+
+        }
+
+        if(carPlate!=null){
+            MongoCollection<Document> myColl = db.getCollection("cars");
+            Bson filter = Filters.eq("cars.CarPlate", carPlate); //get the parent-document
+            myColl.updateOne(filter, set("cars.$.availability", avail));
+        }
+        return check;
+    }
+
 
     public ArrayList<Car> getMostUsedCars(String office, String brand, int category, long pickDate, long deliveryDate){
         MongoCollection<Document> myColl = db.getCollection("cars");
@@ -578,22 +616,7 @@ public class MongoDBConnection
 
             if(d.get(4)!=null){
                 ArrayList<Document> documents = (ArrayList<Document>) d.get(4);
-                for(Document doc: documents){
-                    Long dateP = doc.getLong("pickDate");
-                    Long dateD = doc.getLong("deliveryDate");
-                    if ((
-                            (dateP <= pickDate) && (dateD >= pickDate)
-                    ) ||
-                            (
-                                    (dateD >= deliveryDate) && (dateP <= deliveryDate)
-                            ) ||
-                            (
-                                    (pickDate <= dateP) && (deliveryDate >= dateD)
-                            )
-                    ) {
-                        check = false;
-                    }
-                }
+                check = checkCarAvailability(null, documents, pickDate, deliveryDate);
             }
             if (check == true) {
                 Car c = new Car();
@@ -620,34 +643,10 @@ public class MongoDBConnection
                 }
             }
             check= true;
-            /*
-            if( true){//checkIfCarRented(d,pickDate, deliveryDate)==true) {
-               // Car c = getCarFromDocument("", d);
-                Car c = new Car();
-                Double kw = c.getKw(this);
-                switch (category) {
-                    case 1:
-                        if (kw < 75.0)
-                            carsAvail.add(c);
-                        break;
-                    case 2:
-                        if (kw > 75.0 && kw <= 120.0)
-                            carsAvail.add(c);
-                        break;
-                    case 3:
-                        if (kw > 120.0)
-                            carsAvail.add(c);
-                        break;
-                    default:
-                        carsAvail.add(c);
-                }
-            }*/
+
         }
         return carsAvail;
-    /*    while(cursor.hasNext()){
-            Document d = cursor.next();
-            System.out.println("Office: "+d.getString("_id") + " CO2 = "+ Math.ceil(d.getDouble("AvgCO2")));
-        }*/
+
     }
 
 
@@ -1280,6 +1279,11 @@ public class MongoDBConnection
         Car c = findCar(plate);
         if(c == null)
             return;
+
+        MongoCollection<Document> myColl2 = db.getCollection("cars");
+        Bson filter = Filters.eq("cars.CarPlate", plate);
+        myColl2.updateOne(filter, set("cars.$.maintenance", 1));
+
         MongoCollection<Document> myColl = db.getCollection("orders");
         MongoCursor<Document> cursor = myColl.find(and(
                                                             eq("CarPlate.CarPlate", plate),
@@ -1287,19 +1291,61 @@ public class MongoDBConnection
                                                       )
                                     ).iterator();
 
+
+
         while(cursor.hasNext()){
             Document d = cursor.next();
+            String pickOffice = d.getString("StartOffice");
             Date d1 = new Date(d.getLong("PickDate"));
             Date d2 = new Date(d.getLong("DeliveryDate"));
             System.out.println("Email: " + d.getString("Email") + " ,date pick: " + d1 + ", date delivery: "+d2 );
-            myColl.updateOne(and(eq("Email",d.getString("Email")),
-                                 eq("CarPlate.CarPlate", plate),
-                                eq("PickDate", d.getLong("PickDate"))), set("Status", "Deleted"));
+
+            MongoCursor<Document> cursor2 = myColl2.find(eq("cars.CarPlate", plate)).iterator();
+            Boolean check = true;
+            if(cursor2.hasNext()){
+                    Document doc = cursor2.next();
+                    List<Document> cars = doc.get("cars", List.class);
+                    for(Document car: cars){
+                        if(car.getString("Office").equals(pickOffice) && car.getInteger("maintenance")==null) {
+                            List<Document> documents = car.get("availability", List.class);
+                            check = checkCarAvailability(car.getString("CarPlate"), documents, d1.getTime(), d2.getTime());
+                            if (check == true) {
+                                System.out.println("I'm changing carPlate");
+                                myColl.updateOne(and(eq("Email", d.getString("Email")),
+                                        eq("CarPlate.CarPlate", plate),
+                                        eq("PickDate", d.getLong("PickDate"))), set("CarPlate.CarPlate", car.getString("CarPlate")));
+                               /* filter = Filters.eq("cars.CarPlate", car.getString("CarPlate")); //get the parent-document
+                                avail.add(new Document("pickDate", d1.getTime()).append(
+                                        "deliveryDate", d2.getTime()
+                                )); */
+                                filter = Filters.eq("cars.CarPlate", car.getString("CarPlate")); //get the parent-document
+                                if (documents != null && !documents.isEmpty()) {
+                                    Bson setUpdate = Updates.push("cars.$.availability", new Document("pickDate", d1.getTime()).append(
+                                            "deliveryDate", d2.getTime()
+                                    ));
+                                    myColl2.updateOne(filter, setUpdate);
+                                } else {
+                                    ArrayList<Document> avail = new ArrayList<>();
+                                    avail.add(new Document("pickDate", d1.getTime()).append(
+                                            "deliveryDate", d2.getTime()
+                                    ));
+                                    myColl2.updateOne(filter, set("cars.$.availability", avail));
+                                }
+
+                                return ;
+                            }
+                        }
+                        check = true;
+                    }
+
+            }
+                myColl.updateOne(and(eq("Email", d.getString("Email")),
+                        eq("CarPlate.CarPlate", plate),
+                        eq("PickDate", d.getLong("PickDate"))), set("Status", "Deleted"));
+
         }
         // Add maintenance field
-        myColl = db.getCollection("cars");
-        Bson filter = Filters.eq("cars.CarPlate", plate);
-        myColl.updateOne(filter, set("cars.$.maintenance", 1));
+
         //insertOrder(new Order(plate, email, 0.0, nameOffice, start,nameOffice, stop,  0.0, ""), "Maintenance");
     }
 
@@ -1409,23 +1455,9 @@ public class MongoDBConnection
             for(Document doc: cars){
                 if(doc.getString("Office").equals(pickOffice)) {
                     List<Document> availability = doc.get("availability", List.class);
-                    if (availability != null && !availability.isEmpty()) {
-                        for (Document avail : availability) { // check if car is available in that period
-                            Long dateP = avail.getLong("pickDate");
-                            Long dateD = avail.getLong("deliveryDate");
-                            if ((
-                                    (dateP <= dateOfPick) && (dateD >= dateOfPick)
-                            ) ||
-                                    (
-                                            (dateD >= dateOfDelivery) && (dateP <= dateOfDelivery)
-                                    ) ||
-                                    (
-                                            (dateOfPick <= dateP) && (dateOfDelivery >= dateD)
-                                    )
-                            ) {
-                                check = false;
-                            }
-                        }
+                     if (availability != null && !availability.isEmpty()) {
+                         check = checkCarAvailability(doc.getString("CarPlate"), availability, dateOfPick, dateOfDelivery);
+
                     }
                     if (check == true) {
                         String plate = doc.getString("CarPlate");
