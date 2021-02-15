@@ -1243,7 +1243,7 @@ public class MongoDBConnection
                             List<Document> documents = car.get("availability", List.class);
                             check = checkCarAvailability(car.getString("CarPlate"), documents, d1.getTime(), d2.getTime());
                             if (check == true) {
-                                System.out.println("I'm changing carPlate");
+                                System.out.println("Car changed!\n");
                                 myColl.updateOne(and(eq("Email", d.getString("Email")),
                                         eq("CarPlate.CarPlate", plate),
                                         eq("PickDate", d.getLong("PickDate"))), set("CarPlate.CarPlate", car.getString("CarPlate")));
@@ -1412,7 +1412,7 @@ public class MongoDBConnection
                             o.printOrder(discount);
                         } catch (Exception e){}
 
-                        System.out.println("Total: " + (finalPrice+o.getPriceAccessories())+ "€\n");
+                        System.out.println("Total: " + (finalPrice*Math.round((dateOfDelivery - dateOfPick) / (86400000L))+o.getPriceAccessories())+ "€\n");
                         /*
                         *
                         *

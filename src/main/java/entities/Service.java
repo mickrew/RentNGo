@@ -69,8 +69,9 @@ public class Service {
         for(Service s : services){
             System.out.print(i++ + ") ");
             s.printService();
-            System.out.println("");
+
         }
+        System.out.println("Choose service (Insert -2 to exit)");
         while(i != -2) {
             try {
                 i = Integer.valueOf(sc.nextLine());
@@ -83,7 +84,8 @@ public class Service {
                     System.out.println("Value "+i+" out of range");
                 break;
             } else{
-                System.out.println("Service inserted(Insert -2 to exit)");
+
+                System.out.println("Service inserted (Insert -2 to exit)");
                 chosenServices.add(services.get(i-1));
             }
         }
