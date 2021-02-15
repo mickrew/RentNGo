@@ -24,7 +24,7 @@ public class Worker extends User {
     }
 
     public Worker(String surname, String name, String email, String password, Date dateofbirth, int salary, Date hiringDate, String office){
-        super(surname, name, email, password, dateofbirth);
+        super(surname, name, email, password, dateofbirth, 0);
         this.salary = salary;
         this.hiringDate = hiringDate;
         this.office = office;

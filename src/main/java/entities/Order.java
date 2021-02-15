@@ -10,23 +10,22 @@ import java.util.Date;
 import java.util.Scanner;
 
 public class Order {
-    String car;
+    Car car;
     String user;
     Date pickDate = new Date();
     Date deliveryDate = new Date();
     String pickOffice ;
     String deliveryOffice ;
-    String accessories ;
+    ArrayList<Service> accessories ;
     Double priceCar;
     Double priceAccessories;
-    int idOfficePick;
-    int idOfficeDelivery;
+
 
     public String pattern = "dd/MM/yyyy";
     public SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
     
     public Order() {
-        this.car=car;
+        /*this.car=car;
         this.user=user;
         this.priceCar=priceCar;
         this.pickDate=pickDate;
@@ -34,11 +33,11 @@ public class Order {
         this.deliveryDate=deliveryDate;
         this.deliveryOffice=deliveryOffice;
         this.priceAccessories=priceAccessories;
-        this.accessories=accessories;
+        this.accessories=accessories;*/
     }
 
-    public Order(String car,String user,Double priceCar,String pickOffice,Date pickDate,String deliveryOffice, Date deliveryDate,
-                 Double priceAccessories, String accessories){
+    public Order(Car car,String user,Double priceCar,String pickOffice,Date pickDate,String deliveryOffice, Date deliveryDate,
+                 Double priceAccessories, ArrayList<Service> accessories){
         this.car=car;
         this.user=user;
         this.priceCar=priceCar;
@@ -50,11 +49,11 @@ public class Order {
         this.accessories=accessories;
     }
     
-    public String getCar() {
+    public Car getCar() {
         return car;
     }
 
-    public void setCar(String car) {
+    public void setCar(Car car) {
         this.car = car;
     }
 
@@ -62,7 +61,7 @@ public class Order {
         return user;
     }
 
-    public String getAccessories() {
+    public ArrayList<Service> getAccessories() {
         return accessories;
     }
 
@@ -94,7 +93,7 @@ public class Order {
         this.deliveryOffice = deliveryOffice;
     }
 
-    public void setAccessories(String accessories) {
+    public void setAccessories(ArrayList<Service> accessories) {
         this.accessories = accessories;
     }
 
@@ -208,23 +207,20 @@ public class Order {
         return true;
     }
 
-    public void printOrder(){
-        System.out.println("Car: " + "\t" + car);
+    public void printOrder(Double discount){
+        car.printCar();
         System.out.println("User: " + "\t" +user);
-        System.out.println("Price: " + "\t" + priceCar + "€");
+        if (discount == 0 )
+            System.out.println("Price car per Day: " + "\t" + priceCar + "€");
+        else
+            System.out.println("You have a coupon of " + discount + "%\n" +"Price: " + "\t" + priceCar + "€" + "-" + discount + "% = " + (priceCar-(discount/100*priceCar)) + "€");
         System.out.println("Pick Office: " + "\t" + pickOffice);
         System.out.println("Pick Date: " + "\t" + simpleDateFormat.format(pickDate));
         System.out.println("Delivery Office: " + "\t" + deliveryOffice);
         System.out.println("Delivery Date: " + "\t" + simpleDateFormat.format(deliveryDate));
         System.out.println("Price accessories: " + "\t" + priceAccessories + "€");
-        System.out.println("List accessories: " + "\t" + accessories.toString());
+        for(int i=0; i<accessories.size(); i++)
+            accessories.get(i).printService();
     }
 
-    public int getOfficePickPosition() {
-        return idOfficePick;
-    }
-
-    public int getOfficeDeliveryPosition() {
-        return idOfficeDelivery;
-    }
 }

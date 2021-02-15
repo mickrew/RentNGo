@@ -204,7 +204,13 @@ public class MongoDBConnection
             System.out.println("Error");
             return null;
         }
-        User u = new User(d.getString("Surname"), d.getString("Name"),d.getString("Email"), d.getString("Password"), date);
+        Integer discount =0;
+        try {
+            discount=d.getInteger("Discount");
+        } catch (Exception e){
+
+        }
+        User u = new User(d.getString("Surname"), d.getString("Name"),d.getString("Email"), d.getString("Password"), date, discount);
         return u;
     }
 
@@ -687,7 +693,7 @@ public class MongoDBConnection
         if(us != null){
             if(s.get(1).equals(us.getPassword())) {
                 us.printUser();
-                return new User(us.getSurname(), us.getName(), us.getEmail(), us.getPassword(), us.getDateOfBirth());
+                return new User(us.getSurname(), us.getName(), us.getEmail(), us.getPassword(), us.getDateOfBirth(), us.getDiscount());
             }
             return null;
             //u=us;
@@ -939,6 +945,7 @@ public class MongoDBConnection
 
         MongoCollection<Document> myColl = db.getCollection("currentYear");
         MongoCursor<Document> cursor = myColl.aggregate(Arrays.asList( merge)).cursor();
+        ArrayList<String> emails = new ArrayList<>();
         while(cursor.hasNext()){
             Document doc = cursor.next();
             if(doc.getInteger("countPrev") != null && doc.getInteger("countCurrent")!=null
@@ -946,16 +953,29 @@ public class MongoDBConnection
                 System.out.println("User: "+ doc.getString("_id")
                  + ", Start Year Rent: "+ doc.getInteger("countCurrent") + ", End Year Rent: "
                         + doc.getInteger("countPrev"));
+                emails.add(doc.getString("_id"));
             }
         }
 
         MongoCollection<Document> myColl1 = db.getCollection("prevYear");
         if (myColl !=null) myColl.drop(); 
         if (myColl1 !=null) myColl1.drop();
+
+        applyDiscoutn(emails);
     }
-    
-    
-    
+
+    private void applyDiscoutn(ArrayList<String> emails) {
+        MongoCollection<Document> myColl = db.getCollection("users");
+        for(int i = 0; i<emails.size(); i++){
+            myColl.updateOne((eq("Email", emails.get(i))), set("Discount", 10));
+        }
+    }
+
+    private void deleteDiscount(String email) {
+        MongoCollection<Document> myColl = db.getCollection("users");
+        myColl.updateOne((eq("Email", email)), set("Discount", 0));
+    }
+
 
     public void changeStatusOrder(String carPlate, String email, String field, Date d, String status, ArrayList<Service> damage, double damageCost){
         MongoCollection<Document> myColl = db.getCollection("orders");
@@ -1249,7 +1269,7 @@ public class MongoDBConnection
         return null;
     }
 
-    public boolean procedeWithOrder(Car c, Long dateOfPick,Long dateOfDelivery, String email, String pickOffice, String deliveryOffice, ArrayList<Service> services) {
+    public boolean procedeWithOrder(Car c, Long dateOfPick,Long dateOfDelivery, User user, String pickOffice, String deliveryOffice, ArrayList<Service> services) {
         if(c.getBrand() == null || c.getVehicle()== null) {
             System.out.println("Error");
             return false;
@@ -1304,9 +1324,56 @@ public class MongoDBConnection
                             myColl.updateOne(filter, set("cars.$.availability", documents));
                         }
 
-                        insertNewOrder(plate, c.getBrand(), c.getVehicle(), email, dateOfPick, dateOfDelivery, pickOffice, deliveryOffice,
-                                "Booked", Math.ceil(c.calcolatePrice()), services);
-                        return true;
+                        Double discount = Double.valueOf(user.getDiscount());
+                        if(discount==null)
+                            discount=0.0;
+                        Double finalPrice = 0.0;
+                        Double price = Math.ceil(c.calcolatePrice());
+
+                        Double diff = (discount/100) * price;
+
+                        if (discount==0)
+                            finalPrice = price;
+                        else
+                            finalPrice = price - diff;
+
+
+                        /*
+                        * Riepilogo ordine
+                        * */
+
+                        Order o = new Order();
+                        o.setCar(findCar(plate));
+                        o.setUser(user.getEmail());
+                        o.setPickDate(new Date(dateOfPick));
+                        o.setpickOffice(pickOffice);
+                        o.setDeliveryDate(new Date(dateOfDelivery));
+                        o.setDeliveryOffice(deliveryOffice);
+                        o.setAccessories(services);
+                        o.setPriceAccessories(priceAccessories(services, Math.round((dateOfDelivery - dateOfPick) / (86400000L))));
+                        o.setPriceCar(price);
+                        try {
+                            o.printOrder(discount);
+                        } catch (Exception e){}
+
+                        System.out.println("Total: " + (finalPrice+o.getPriceAccessories())+ "€\n");
+                        /*
+                        *
+                        *
+                        * */
+
+                        System.out.println("Do you want to proceed with the operation? (Y/N) ");
+                        Scanner sc = new Scanner(System.in);
+                        String r = sc.nextLine();
+
+                        if(r.equals("Y")){
+                            insertNewOrder(plate, c.getBrand(), c.getVehicle(), user.getEmail(), dateOfPick, dateOfDelivery, pickOffice, deliveryOffice,
+                                    "Booked", finalPrice, services);
+                            deleteDiscount(user.getEmail());
+                            return true;
+                        } else {
+                            return false;
+                        }
                     }
                 }
                 check= true;
@@ -1316,23 +1383,34 @@ public class MongoDBConnection
         return false;
     }
 
+    public Double priceAccessories(ArrayList<Service> services, Integer numDays){
+        Double priceAccessories = 0.0;
+        for(Service s: services){
+
+            if (s.getMultiplicator().equals("day"))
+                priceAccessories += s.getPrice()*numDays;
+            else
+                priceAccessories += s.getPrice();
+        }
+        return priceAccessories;
+    }
+
     public void insertNewOrder(String plate, String brand, String vehicle, String email, Long dateOfPick, Long dateOfDelivery, String pickOffice, String deliveryOffice,
     String status, Double price, ArrayList<Service> services){
         MongoCollection<Document> myColl = db.getCollection("orders");
+
         ArrayList<Document> documents = new ArrayList<>();
-        Double priceAccessories = 0.0;
+
 
         Long millisDay = 86400000L;
         Integer numDays = Math.round((dateOfDelivery - dateOfPick) / (millisDay));
         Double cost = price * numDays;
 
+        Double priceAccessories = priceAccessories(services,numDays);
+
         for(Service s: services){
             Document d = new Document("SERVICES", s.getNameService()).append("PRICE VAT INCLUDED ", s.getPrice())
                     .append("MULTIPLICATOR", s.getMultiplicator());
-            if (s.getMultiplicator().equals("day"))
-                priceAccessories += s.getPrice()*numDays;
-            else
-                priceAccessories += s.getPrice();
             documents.add(d);
         }
 

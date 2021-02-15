@@ -27,6 +27,7 @@ public class User {
     String name;
     String surname;
     Date dateOfBirth = new Date();
+    Integer discount = 0;
 
     static final Pattern VALID_EMAIL_ADDRESS_REGEX =
             Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
@@ -40,12 +41,13 @@ public class User {
     }
 
 
-    public User(String surname, String name, String email, String password, Date dateofbirth) {
+    public User(String surname, String name, String email, String password, Date dateofbirth, Integer discount) {
         this.email = email;
         this.name = name;
         this.surname = surname;
         this.dateOfBirth = dateofbirth;
         this.password = password;
+        this.discount = discount;
     }
 
     public User(){
@@ -89,6 +91,14 @@ public class User {
 
     public void setSurname(String surname) {
         this.surname = surname;
+    }
+
+    public Integer getDiscount() {
+        return discount;
+    }
+
+    public void setDiscount(Integer discount) {
+        this.discount = discount;
     }
 
     public void printUser(){
@@ -290,7 +300,7 @@ public class User {
             if(c == null)
                 return;
 
-            Boolean b = db.procedeWithOrder(c, o.getPickDate().getTime(), o.getDeliveryDate().getTime(), email, o.getpickOffice(), o.getDeliveryOffice(), services);
+            Boolean b = db.procedeWithOrder(c, o.getPickDate().getTime(), o.getDeliveryDate().getTime(), u, o.getpickOffice(), o.getDeliveryOffice(), services);
             if (b)
                  ldb.deleteUserCart(email);
 

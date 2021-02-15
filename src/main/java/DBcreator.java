@@ -485,15 +485,8 @@ public class DBcreator {
         System.out.println("Start");
 
         //String password = getPasswordWithinEclipse("Password: ");
-        Scanner sc = new Scanner(System.in);
-        String password = sc.next();
-        Integer lenght = password.length();
-
-        for(int i=0; i< lenght; i++ ){
-            System.out.print("\b");
-        }
-        System.out.flush();
-        System.out.println("fine");
+        MongoCollection<Document> myColl = db.getCollection("newUsers");
+        myColl.updateOne((eq("Email", "manueld.acosta@gmail.eu")), set("Discount", 10));
 
 
     }

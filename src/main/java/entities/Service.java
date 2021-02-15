@@ -93,7 +93,8 @@ public class Service {
     public void printService(){
         System.out.println("Name service: " + "\t" + nameService);
         System.out.println("Price: " + "\t" + price + "€");
-        System.out.println("Multiplicator: " + "\t" + multiplicator);
+        System.out.println("Multiplicator: " + "\t" + multiplicator );
+        System.out.println();
     }
 
 }
