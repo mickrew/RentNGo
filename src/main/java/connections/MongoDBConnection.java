@@ -28,6 +28,7 @@ import org.bson.json.JsonWriterSettings;
 import org.jasypt.util.text.BasicTextEncryptor;
 
 
+import javax.print.Doc;
 
 import static com.mongodb.client.model.Projections.*;
 import static com.mongodb.client.model.Updates.*;
@@ -591,7 +592,9 @@ public class MongoDBConnection
         MongoCollection<Document> myColl = db.getCollection("cars");
         MongoCursor<Document> cursor;
 
-        Bson match= match(and(eq("cars.Office", office), exists("maintenance", false)));
+        Bson match= match(and(eq("cars.Office", office), or(
+                exists( "cars.maintenance", false),
+                and( exists( "cars.maintenance", true), eq("cars.maintenance", 0)))));
         Bson match2 = match(eq("Brand", brand));
         Bson unwind = unwind("$cars");
 
@@ -943,7 +946,6 @@ public class MongoDBConnection
                 System.out.println(document.toJson(JsonWriterSettings.builder().indent(true).build()));
             }
         };
-        Bson match = match(ne("Status", "Maintenance"));
         Bson group = group("$Email", sum("countCurrent", 1));
         Bson group2 = group("$Email", sum("countPrev", 1));
         Bson matchCurrent = match(gt("PickDate", currentDate));
@@ -953,13 +955,11 @@ public class MongoDBConnection
         MongoCollection<Document> collection = db.getCollection("orders");
 
         collection.aggregate(Arrays.asList(
-                match,
                 matchCurrent,
                 group,
                 out("currentYear"))).toCollection();
 
         collection.aggregate(Arrays.asList(
-                match,
                 matchPrev,
                 group2,
                 out("prevYear"))).toCollection();
@@ -1239,7 +1239,7 @@ public class MongoDBConnection
                     Document doc = cursor2.next();
                     List<Document> cars = doc.get("cars", List.class);
                     for(Document car: cars){
-                        if(car.getString("Office").equals(pickOffice) && car.getInteger("maintenance")==null) {
+                        if(car.getString("Office").equals(pickOffice) && (car.getInteger("maintenance")==null || (car.getInteger("maintenance")!=null && car.getInteger("maintenance")==0))) {
                             List<Document> documents = car.get("availability", List.class);
                             check = checkCarAvailability(car.getString("CarPlate"), documents, d1.getTime(), d2.getTime());
                             if (check == true) {
@@ -1297,19 +1297,43 @@ public class MongoDBConnection
 
     public void showAllCarsInMaintenance() {
         MongoCollection<Document> myColl = db.getCollection("cars");
-        MongoCursor<Document> cursor = myColl.find(exists( "cars.maintenance", true)
-        ).iterator();
+        MongoCursor<Document> cursor = myColl.find(or(
+                exists( "cars.maintenance", true),
+                and( exists( "cars.maintenance", true), eq("cars.maintenance", 1))
+        )).iterator();
+        ArrayList<String> carsPlate= new ArrayList<>();
         while(cursor.hasNext()){
             Document d = cursor.next();
             Car c = getCarFromDocument("", d);
             List<Document> documents = d.get("cars", List.class);
             for(Document car: documents){
-                if(car.getInteger("maintenance")!=null){
+                if(car.getInteger("maintenance")!=null && car.getInteger("maintenance")==1){
+                    carsPlate.add(car.getString("CarPlate"));
                     c.setPlate(car.getString("CarPlate"));
                     c.printCar();
                 }
             }
+
         }
+
+        if(carsPlate!=null && !carsPlate.isEmpty()) {
+            System.out.println("Do you want to change the status of a car in available? (Y/N)");
+            Scanner sc = new Scanner(System.in);
+            String choice = sc.nextLine();
+            while (choice.equals("Y")) {
+                System.out.println("Insert the car plate");
+                String plate = sc.nextLine();
+                for (String car : carsPlate) {
+                    if (car.equals(plate)) {
+                        Bson filter = Filters.eq("cars.CarPlate", plate);
+                        myColl.updateOne(filter, set("cars.$.maintenance", 0));
+                    }
+                }
+                System.out.println("Do you want to change the status of a car in available? (Y/N)");
+                choice = sc.nextLine();
+            }
+        }
+
         System.out.println("");
     }
 
