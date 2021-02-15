@@ -1390,20 +1390,6 @@ public class MongoDBConnection
                     }
                     if (check == true) {
                         String plate = doc.getString("CarPlate");
-                        //add new dates
-                        Bson filter = Filters.eq("cars.CarPlate", plate); //get the parent-document
-                        if (availability != null && !availability.isEmpty()) {
-                            Bson setUpdate = Updates.push("cars.$.availability", new Document("pickDate", dateOfPick).append(
-                                    "deliveryDate", dateOfDelivery
-                            ));
-                            myColl.updateOne(filter, setUpdate);
-                        } else {
-                            ArrayList<Document> documents = new ArrayList<>();
-                            documents.add(new Document("pickDate", dateOfPick).append(
-                                    "deliveryDate", dateOfDelivery
-                            ));
-                            myColl.updateOne(filter, set("cars.$.availability", documents));
-                        }
                         Double price = Math.ceil(c.calcolatePrice());
                         Double finalPrice = Math.ceil(c.calcolatePrice());
                         Double discount = 0.0;
@@ -1444,6 +1430,20 @@ public class MongoDBConnection
                         String r = sc.nextLine();
 
                         if(r.equals("Y")){
+                            //add new dates
+                            Bson filter = Filters.eq("cars.CarPlate", plate); //get the parent-document
+                            if (availability != null && !availability.isEmpty()) {
+                                Bson setUpdate = Updates.push("cars.$.availability", new Document("pickDate", dateOfPick).append(
+                                        "deliveryDate", dateOfDelivery
+                                ));
+                                myColl.updateOne(filter, setUpdate);
+                            } else {
+                                ArrayList<Document> documents = new ArrayList<>();
+                                documents.add(new Document("pickDate", dateOfPick).append(
+                                        "deliveryDate", dateOfDelivery
+                                ));
+                                myColl.updateOne(filter, set("cars.$.availability", documents));
+                            }
                             insertNewOrder(plate, c.getBrand(), c.getVehicle(), user.getEmail(), dateOfPick, dateOfDelivery, pickOffice, deliveryOffice,
                                     "Booked", finalPrice, services);
                             deleteDiscount(user.getEmail());
