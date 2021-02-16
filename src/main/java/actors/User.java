@@ -1,6 +1,5 @@
 package main.java.actors;
 
-import main.java.DBcreator;
 import main.java.connections.LevelDBConnection;
 import main.java.connections.MongoDBConnection;
 import main.java.entities.Car;
@@ -9,9 +8,7 @@ import main.java.entities.Order;
 import main.java.entities.Service;
 import org.jasypt.util.text.BasicTextEncryptor;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -156,13 +153,8 @@ public class User {
         System.out.print("Insert the user password: ");
         String psw = sc.nextLine();
 
-        //String encrypted = bte.encrypt(psw);
+
         String encrypted = bte.encrypt(psw);
-        /*
-        String encrypted1 = bte.encrypt(psw);
-        String encrypted3 = bte.decrypt(encrypted);
-        String encrypted4 = bte.decrypt(encrypted1);
-        */
 
         u.setPassword(encrypted);
 
@@ -171,7 +163,6 @@ public class User {
         Date d= new Date();
 
         String dateString = sc.nextLine();
-        //System.out.println(dateString);
 
         DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
         try {
@@ -188,7 +179,6 @@ public class User {
             e.printStackTrace();
         }
         return u;
-        //return new User(u.getSurname(), u.getName(), u.getEmail(), u.getPassword(), u.getDateOfBirth());
     }
 
     public void showMenu(){

@@ -194,9 +194,7 @@ public class MongoDBConnection
 
 
     private User createUser(Document d) {
-        ////////
-        //////// errore d.getDate("DateOfBirth")
-        ////////
+
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
         Date date;
         try {
@@ -287,18 +285,7 @@ public class MongoDBConnection
     }
 
     public boolean insertUser(User u)  {
-        //
 
-        //check email
-
-        /*
-        MongoCursor<Document> cursor = myColl.find(eq("Email", u.getEmail())).iterator();
-
-        if(cursor.hasNext()){
-            System.out.println("User already present in the database");
-            return false;
-        }
-        */
 
         User user1 = findUser(u.getEmail());
         if (user1 != null){
@@ -450,17 +437,7 @@ public class MongoDBConnection
     }
 
     public void deleteCar(String plate) {
-        /*
-        MongoCollection<Document> myColl = db.getCollection("cars");
-        MongoCursor<Document> cursor  = myColl.find(eq("cars.CarPlate", plate)).iterator();
-        Car c;
-        if (!cursor.hasNext()) {
-            System.out.println("Car not found");
-            return ;
-        } else {
-            myColl.deleteOne(eq("CarPlate", plate));
-            System.out.println("Car deleted successfully");
-        }*/
+
         Car c = findCar(plate);
         if (c==null){
             System.out.println("Car not found!");
@@ -473,18 +450,6 @@ public class MongoDBConnection
 
     }
 
-
-
-   /* public void deleteOrders(){
-        MongoCollection<Document> myColl = db.getCollection("orders");
-        MongoCursor<Document> cursor  = myColl.find().iterator();
-        while(cursor.hasNext()){
-            Document d = cursor.next();
-            if(d.getString("CarPlate").contains("@")){
-                myColl.deleteOne(eq("CarPlate", d.getString("CarPlate")));
-            }
-        }
-    } */
 
     public void insertNewCar(Car c) {
 
@@ -500,7 +465,7 @@ public class MongoDBConnection
                 .append("RegistrationYear", c.getRegistrationYear())
                 .append("Office", c.getOffice());
 
-        MongoCursor<Document> cursor = myColl.find(and(eq("Brand", c.getBrand()), eq("Vehicle", c.getVehicle()))).iterator();
+        MongoCursor<Document> cursor = myColl.find(and(eq("Brand", c.getBrand()), eq("Vehicle", c.getVehicle()), eq("Power", c.getPower()))).iterator();
 
         if (!cursor.hasNext()) {
             Document car = new Document("Brand", c.getBrand().trim())
@@ -700,13 +665,7 @@ public class MongoDBConnection
                 }
             }
         }
-        /*
-        for(int i = 0; i< cars.size(); i++) {
-                if(!cars.get(i).getString("CarPlate").equals(plate) || !plate.equals(""))
-                    c.setPlate(d.getString("CarPlate"));
-                    c.setOffice(d.getString("Office"));
-                    c.setRegistrationYear(d.getInteger("RegistrationYear"));
-        }*/
+
         return c;
         }
 
@@ -890,25 +849,16 @@ public class MongoDBConnection
         MongoCollection<Document> myColl = db.getCollection("cars");
         Bson sort = sort(descending("AvgCO2"));
         Bson group = group("$cars.Office", avg("AvgCO2", "$CO2"));
-        //Bson project = project(fields(include( "AvgCO2")));
+
         Bson limit = limit(3);
         Bson unwind = unwind("$cars");
 
-        /*
-        Bson lookup = lookup(
-                "offices",
-                "_id",
-                "Position",
-                "Office"
-        );
-        */
-        Bson project = project(fields(include("AvgCO2", "Office.City", "Office.Region", "Office.Name"), excludeId()));
 
         MongoCursor<Document> cursor = myColl.aggregate(Arrays.asList( unwind, group, sort, limit))
                 .iterator();
         while(cursor.hasNext()){
             Document d = cursor.next();
-            System.out.println("Office: "+d.getString("_id") + " CO2 = "+ Math.ceil(d.getDouble("AvgCO2")));
+            System.out.println("Office: "+d.getString("_id") + " average CO2 = "+ Math.ceil(d.getDouble("AvgCO2")));
         }
 
     }
@@ -1413,7 +1363,7 @@ public class MongoDBConnection
                         o.setDeliveryDate(new Date(dateOfDelivery));
                         o.setDeliveryOffice(deliveryOffice);
                         o.setAccessories(services);
-                        o.setPriceAccessories(priceAccessories(services, Math.round((dateOfDelivery - dateOfPick) / (86400000L))));
+                        o.setPriceAccessories(Service.priceAccessories(services, Math.round((dateOfDelivery - dateOfPick) / (86400000L))));
                         o.setPriceCar(price);
                         try {
                             o.printOrder(discount);
@@ -1460,17 +1410,7 @@ public class MongoDBConnection
         return false;
     }
 
-    public Double priceAccessories(ArrayList<Service> services, Integer numDays){
-        Double priceAccessories = 0.0;
-        for(Service s: services){
 
-            if (s.getMultiplicator().equals("day"))
-                priceAccessories += s.getPrice()*numDays;
-            else
-                priceAccessories += s.getPrice();
-        }
-        return priceAccessories;
-    }
 
     public void insertNewOrder(String plate, String brand, String vehicle, String email, Long dateOfPick, Long dateOfDelivery, String pickOffice, String deliveryOffice,
     String status, Double price, ArrayList<Service> services){
@@ -1483,7 +1423,7 @@ public class MongoDBConnection
         Integer numDays = Math.round((dateOfDelivery - dateOfPick) / (millisDay));
         Double cost = price * numDays;
 
-        Double priceAccessories = priceAccessories(services,numDays);
+        Double priceAccessories = Service.priceAccessories(services,numDays);
 
         for(Service s: services){
             Document d = new Document("SERVICES", s.getNameService()).append("PRICE VAT INCLUDED ", s.getPrice())
@@ -1525,7 +1465,6 @@ public class MongoDBConnection
             order.append("Accessories",documents);
             order.append("PriceAccessories", priceAccessories);
         }
-
         myColl.insertOne(order);
         System.out.println("Order completed successfully");
     }

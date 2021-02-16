@@ -4,6 +4,7 @@ import main.java.RentNGo;
 import main.java.connections.MongoDBConnection;
 import main.java.entities.Car;
 import main.java.entities.Office;
+import org.jasypt.util.text.BasicTextEncryptor;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -141,14 +142,18 @@ public class Admin extends Worker {
 
                 System.out.print("Insert the worker password: ");
                 assert w != null;
-                w.setPassword(sc.nextLine());
+
+                BasicTextEncryptor bte = new BasicTextEncryptor();
+                bte.setPassword("rentngo");
+                String psw = sc.nextLine();
+                String encrypted = bte.encrypt(psw);
+                w.setPassword(encrypted);
 
                 System.out.print("Insert the date of birth. ( DD/MM/YYYY ): ");
                 Date d= new Date();
 
-
                 String dateString = sc.nextLine();
-                //System.out.println(dateString);
+
 
                 DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
                 String today = formatter.format(d);
@@ -176,7 +181,7 @@ public class Admin extends Worker {
                     System.out.println("Error. Didn't insert an integer");
                     return;
                 }
-                int idOfficePick = i;
+
                 if(i > offices.size() || i<1) {
                     System.out.println("Index out of range");
                     return;
@@ -223,8 +228,7 @@ public class Admin extends Worker {
         System.out.println("Insert the new Salary: ");
         Integer salary = Integer.valueOf(sc.nextLine());
         a  = new Admin(w.getSurname(), w.getName(), emailWorker, w.getPassword(), w.getDateOfBirth(), salary, w.getHiringDate(),"", d);
-        //db.insertAdmin(a);
-        //db.deleteWorker(emailWorker);
+
         db.promoteWorker(a);
 
     }
@@ -433,18 +437,6 @@ public class Admin extends Worker {
                     return;
                 }
 
-
-                /*
-                System.out.println("Insert the new office: ");
-                String office = sc.nextLine();
-                Office o = db.findOfficeByName(office);
-                if (o == null){
-                    System.out.println("Office doesn't exist!");
-                    return;
-                }
-                Integer position = o.getPosition();
-
-                 */
                 db.updateWorkerOffice(emailWorker, offices.get(i-1).getName());
                 break;
         }
@@ -590,5 +582,92 @@ public class Admin extends Worker {
 
     }
 
+
+    public void performAnalytics(MongoDBConnection db) throws ParseException {
+        System.out.println("1) Get most used car per Office");
+        System.out.println("2) Get les eco friendly Office");
+        System.out.println("3) Search user for future discount");
+        System.out.println("4) Most used accessories per year");
+
+        int choice=0;
+        Scanner sc = new Scanner(System.in);
+
+        try {
+            choice = Integer.valueOf(sc.nextLine());
+        }
+        catch(Exception e){
+            choice = 100;
+        }
+
+        switch (choice) {
+            case 1:
+                System.out.println("Insert the Office: ");
+                //String office = sc.nextLine();
+                Office o = Office.selectOffice(db.listOffices());
+                if(o == null)
+                    break;
+                System.out.print("Insert the date in which you want to start statistic: ");
+                String date = sc.nextLine();
+                Date date1;
+                try {
+                    date1 = new SimpleDateFormat("dd/MM/yyyy").parse(date.trim());
+                } catch(Exception e){
+                    System.out.println("Wrong date.");
+                    break;
+                }
+                db.getMostUsedCarsPerOffice(o.getName(), date1.getTime());
+                break;
+
+            case 2:
+                db.getLessEcoFriendlyOffice();
+                break;
+
+            case 3:
+                System.out.print("Insert the year in which you want to start statistic (ONLY THE YEAR): ");
+                String lastYear = sc.nextLine();
+
+                System.out.print("Insert the date in which you want to end statistic (ONLY THE YEAR): ");
+                String currentYear = sc.nextLine();
+                Date date2;
+                try {
+                    date1 = new SimpleDateFormat("dd/MM/yyyy").parse("01/01/" + lastYear.trim());
+                    if(date1.getTime() > new Date().getTime()) {
+                        System.out.println("Wrong date.");
+                        break;
+                    }
+                    date2 = new SimpleDateFormat("dd/MM/yyyy").parse("01/01/" + currentYear.trim());
+                    if((date2.getTime() < date1.getTime()) || (date2.getTime() > new Date().getTime())) {
+                        System.out.println("Wrong date.");
+                        break;
+                    }
+                } catch(Exception e){
+                    System.out.println("Wrong Date.");
+                    break;
+                }
+                db.searchUserForDiscount(date2.getTime(), date1.getTime());
+                System.out.println();
+                break;
+
+            case 4:
+                System.out.print("Insert the year in which you want to perform statistic: ");
+                String yearString = sc.nextLine();
+
+                Integer year = 2020;
+                try {
+                    year = Integer.valueOf(yearString);
+                } catch (Exception e){
+                    System.out.println("Wrong year");
+                    break;
+                }
+
+                db.mostUsedAccessories(year);
+                break;
+
+            default:
+                System.out.println("Wrong choice");
+        }
+        System.out.println("");
+
+    }
 
 }

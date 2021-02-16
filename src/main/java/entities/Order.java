@@ -25,15 +25,7 @@ public class Order {
     public SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
     
     public Order() {
-        /*this.car=car;
-        this.user=user;
-        this.priceCar=priceCar;
-        this.pickDate=pickDate;
-        this.pickOffice=pickOffice;
-        this.deliveryDate=deliveryDate;
-        this.deliveryOffice=deliveryOffice;
-        this.priceAccessories=priceAccessories;
-        this.accessories=accessories;*/
+
     }
 
     public Order(Car car,String user,Double priceCar,String pickOffice,Date pickDate,String deliveryOffice, Date deliveryDate,
@@ -145,23 +137,6 @@ public class Order {
         if(pickOffice == null)
             return false;
         setpickOffice(pickOffice.getName());
-    /*    int i = 1;
-        for(Office o : offices){
-            System.out.print(i++ + ") ");
-            o.printOffice();
-        }
-        try {
-            i = Integer.valueOf(sc.nextLine());
-        } catch (Exception p){
-            System.out.println("Error. Didn't insert an integer");
-            return false;
-        }
-        idOfficePick = i;
-        if(i > offices.size() || i<1){
-            System.out.println("Index out of range");
-            return false;
-        }
-        setpickOffice(offices.get(i-1).getName()); */
 
         System.out.print("Insert the date of delivery. ( DD/MM/YYYY ): ");
         Date d2;
@@ -180,26 +155,7 @@ public class Order {
             return false;
         }
         setDeliveryDate(d2);
-/*
-        System.out.println("Insert the delivery Office");
-        i = 1;
-        for(Office o : offices){
-            System.out.print(i++ + ") ");
-            o.printOffice();
-        }
 
-        try {
-            i = Integer.valueOf(sc.nextLine());
-        } catch (Exception p){
-            System.out.println("Error. Didn't insert an integer");
-            return false;
-        }
-        if(i > offices.size() || i<1){
-            System.out.println("Index out of range");
-            return false;
-        }
-        idOfficeDelivery = i;
-        setDeliveryOffice(offices.get(i-1).getName()); */
         Office deliveryOff = Office.selectOffice(offices);
         if(deliveryOff == null)
             return false;

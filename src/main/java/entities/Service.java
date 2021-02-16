@@ -99,4 +99,16 @@ public class Service {
         System.out.println();
     }
 
+    public static Double priceAccessories(ArrayList<Service> services, Integer numDays){
+        Double priceAccessories = 0.0;
+        for(Service s: services){
+
+            if (s.getMultiplicator().equals("day"))
+                priceAccessories += s.getPrice()*numDays;
+            else
+                priceAccessories += s.getPrice();
+        }
+        return priceAccessories;
+    }
+
 }
